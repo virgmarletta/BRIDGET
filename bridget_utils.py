@@ -356,12 +356,13 @@ def exit_MiC(fea_vals, user_patience, low_belief_count, desired_performance):
 ###########
 # -- UTILITIES / PREPROCESSING FUNCTIONS
 
-def clean_compas(data, col_to_delete, col_to_strip= None, drop_duplicates=True):
+def clean_compas(data, col_to_delete=None, col_to_strip= None, drop_duplicates=True):
 
     if col_to_strip is not None:
         data[col_to_strip] = data[col_to_strip].str.strip("()")
     
-    data= data.drop(columns= col_to_delete)
+    if col_to_delete is not None:
+        data= data.drop(columns= col_to_delete)
 
     if drop_duplicates:
         data= data.drop_duplicates()
@@ -370,8 +371,14 @@ def clean_compas(data, col_to_delete, col_to_strip= None, drop_duplicates=True):
 
 
 def stratif(start_point, end_point, class_0, class_1):
-    class_0_perc= class_0.iloc[int(len(class_0)*start_point) : int(len(class_0)*end_point)]
-    class_1_perc= class_1.iloc[int(len(class_1)*start_point) : int(len(class_1)*end_point)]
+    start_idx_0 = int(len(class_0) * start_point)
+    end_idx_0 = int(len(class_0) * end_point)
+    
+    start_idx_1 = int(len(class_1) * start_point)
+    end_idx_1 = int(len(class_1) * end_point)
+
+    class_0_perc = class_0.iloc[start_idx_0 : end_idx_0]
+    class_1_perc = class_1.iloc[start_idx_1 : end_idx_1]
 
     total= pd.concat([class_0_perc, class_1_perc]).sample(frac=1, random_state= 42).reset_index(drop=True)
     #chiaramente se c'è il concat bisogna rifare lo shuffle
@@ -450,6 +457,8 @@ def create_loader(df, features, target, batch_size=128, shuffle=False):
 
     #establish external order, pass target col
     # then pass df acc t or whatever
+    df= df.copy()
+    set_all_seeds(42)
 
     X = torch.tensor(df[features].values, dtype=torch.float32)
     y = torch.tensor(df[target].values, dtype=torch.long)
@@ -484,7 +493,7 @@ def net_trainer(net, optimizer, criterion, device, acc_t_loader, val_loader, sch
                 log_interval=100, patience=25, max_epochs=50):
 
     # first set the structures
-
+    set_all_seeds(42)
     training_history = {'accuracy':[],'loss':[]}
     validation_history = {'accuracy':[],'loss':[]}
     val_metrics = {"accuracy": Accuracy(), "loss": Loss(criterion)}
