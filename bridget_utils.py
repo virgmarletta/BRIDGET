@@ -6,7 +6,7 @@ from xailib.models.sklearn_classifier_wrapper import sklearn_classifier_wrapper
 import time
 import pandas as pd
 from xailib.explainers.lore_explainer import LoreTabularExplainer
-from sklearn.metrics import accuracy_score,f1_score
+from sklearn.metrics import accuracy_score,f1_score, classification_report, confusion_matrix
 import fatf.fairness.data.measures as fatf_dfm
 from sklearn.metrics import confusion_matrix
 from growingspheres import counterfactuals as cf
@@ -14,7 +14,9 @@ import os
 import pickle
 import orjson
 import random
-
+import matplotlib.pyplot as plt
+import seaborn as sns
+from pathlib import Path
 from torch.utils.data import TensorDataset, DataLoader
 from torch.optim.lr_scheduler import StepLR
 
@@ -22,8 +24,11 @@ from ignite.metrics import Accuracy, Loss
 from ignite.engine import Engine, Events, create_supervised_trainer, create_supervised_evaluator
 from ignite.handlers import EarlyStopping, ModelCheckpoint
 from ignite.contrib.handlers import global_step_from_engine
-
-
+from collections import Counter
+from master_config import DATASETS
+import joblib
+import logging
+import sys
 ###########
 # -- FUNZIONI NECESSARIE PER LA PREDIZIONE DEGLI ESPERTI (prese da Open L2D)
 def sig(x):
@@ -249,7 +254,7 @@ def convert_dict_list_to_float32(dict_list):
     ]
 
 
-def get_percentage_and_df(df_train, processed, target): # modificata leggermente aggiungendo le colonne di provider, model conf ecc
+def get_percentage_and_df(df_train, processed, target, feature_names= None): # modificata leggermente aggiungendo le colonne di provider, model conf ecc
 
     #  issue: è necessario aggiungere il caso in cui il log sia vuoto (cioè la primissima riga del ciclo start HiC)
     user_truth= 'expert prediction'
@@ -282,6 +287,12 @@ def get_percentage_and_df(df_train, processed, target): # modificata leggermente
                 
         df_proc = pd.DataFrame(rows)
 
+        if feature_names is not None:
+            info_cols= [model_conf, g_truths, user_truth, machine_prediction, target, provider_f]
+            order= feature_names + info_cols
+
+            df_proc = df_proc[order]
+
         if df_train is None or df_train.empty: # se il log è vuoto
             df_log= df_proc
         
@@ -289,6 +300,7 @@ def get_percentage_and_df(df_train, processed, target): # modificata leggermente
             df_log = pd.concat([df_train,df_proc], ignore_index=True)
 
     else:
+        # if the processed is empty return the structure you pass
         df_log= df_train if df_train is not None else pd.DataFrame()
     
     percentage_dict= dict()
@@ -296,7 +308,9 @@ def get_percentage_and_df(df_train, processed, target): # modificata leggermente
     if not df_log.empty and target in df_log.columns:
         percentage_dict = (df_log[target].value_counts(normalize=True) * 100).round(2).to_dict()
 
-    return  percentage_dict, df_log
+    return  percentage_dict, df_log[order]
+
+
 
 def convert_numpy(obj):
     if isinstance(obj, np.integer):
@@ -331,6 +345,7 @@ def exit_HiC(available_budget, current_budget, fea_vals, desired_performance):
         return True
 
 
+"""
 def exit_MiC(fea_vals, user_patience, low_belief_count, desired_performance):
     # same in form, different concept, this time the user patience is an input param given deliberately by the user
 
@@ -347,8 +362,26 @@ def exit_MiC(fea_vals, user_patience, low_belief_count, desired_performance):
         return True
 
     return False
-    
+"""
 
+def exit_MiC(fea_vals, desired_performance, warm_up):
+
+    # new variant of exit_MiC disregarding any user patience budget as a exit condition, 
+    # thus also invalidating the low belief count condition
+    # filosofia è facciamolo andare a briglia sciolta
+
+    if not fea_vals:
+        return False
+    
+    if len(fea_vals)< warm_up:
+        return False
+    
+    avg_fea= np.mean(fea_vals)
+
+    if avg_fea < desired_performance:
+        return True
+
+    return False
 
 
 
@@ -365,7 +398,7 @@ def clean_compas(data, col_to_delete=None, col_to_strip= None, drop_duplicates=T
         data= data.drop(columns= col_to_delete)
 
     if drop_duplicates:
-        data= data.drop_duplicates()
+        data= data.sort_values(by= list(data.columns)).drop_duplicates()
 
     return data.reset_index(drop=True)
 
@@ -380,21 +413,31 @@ def stratif(start_point, end_point, class_0, class_1):
     class_0_perc = class_0.iloc[start_idx_0 : end_idx_0]
     class_1_perc = class_1.iloc[start_idx_1 : end_idx_1]
 
-    total= pd.concat([class_0_perc, class_1_perc]).sample(frac=1, random_state= 42).reset_index(drop=True)
+    total= pd.concat([class_0_perc, class_1_perc]).reset_index(drop=True)
     #chiaramente se c'è il concat bisogna rifare lo shuffle
 
-    return total
+    return total.sample(frac=1, random_state= 42).reset_index(drop=True)
 
-def scale_df(data, pipe, target_c):  # a quanto pare usando questa pipeline di River la label viene persa per strada quindi la devo riattaccarre
+def scale_df(data, pipe, target_col, feat_order, save_path, filename):  # a quanto pare usando questa pipeline di River la label viene persa per strada quindi la devo riattaccarre
+    
+    # this scale df function requires feat_order passed with the target col btw, just for the ordering
     processed_r= []
-    labels= data[target_c].values
-    X = data.drop(columns=[target_c])
+    labels= data[target_col].values
+    X = data.drop(columns=[target_col])
 
     for i,r in enumerate(X.to_dict(orient='records')):
         scaled_r = pipe.transform_one(r)
-        scaled_r[target_c] = labels[i]
+        scaled_r[target_col] = labels[i]
         processed_r.append(scaled_r)
-    return pd.DataFrame(processed_r)
+
+    df_result= pd.DataFrame(processed_r)
+    df_result= apply_order(df_result, feat_order)
+
+    os.makedirs(save_path, exist_ok=True)
+    full_path = os.path.join(save_path, filename)
+    df_result.to_parquet(full_path, index=False)
+
+    return df_result
 
 def apply_map(data, col_mapping):
 
@@ -403,10 +446,11 @@ def apply_map(data, col_mapping):
             data[col] = data[col].map(mapping)
     return data
 
-def apply_order(data):
 
-    order= [c for c in data if c not in ['ground truth', 'proba_model', 'provider', 'machine prediction', 'expert prediction']]
-    return data[order]
+def apply_order(data, feat_order):
+    
+    return data[feat_order]
+
 
 def x_y_split(df, target):
     X = df.drop(columns=target)
@@ -454,7 +498,7 @@ def save_data(directory, prefix, data_dict):
                     f.write(f"{data}\n")
 
 def create_loader(df, features, target, batch_size=128, shuffle=False):
-
+    # features = features order
     #establish external order, pass target col
     # then pass df acc t or whatever
     df= df.copy()
@@ -468,10 +512,185 @@ def create_loader(df, features, target, batch_size=128, shuffle=False):
     
     return X, y, loader
 
+def scale_data(ds_name, iteration, params):
+
+        set_all_seeds(42)
+        user_name= params['user_name']
+        user_suffix= params['user_suffix']
+        incr_learner_name= params['incremental_learner_name']
+        target= DATASETS[ds_name]['target']
+
+        prepr_dir= DATASETS[ds_name]['paths']['trained_preprocessor'] # prepr_dir
+        prepr_path= os.path.join(
+                prepr_dir, 
+                f"iter_{iteration}", 
+                f"results_{user_name}",
+                f"User_{user_name}_{incr_learner_name}_preprocessor.pkl"
+                )
+        trained_preprocessor = joblib.load(prepr_path)
 
 
+        hic_save_dir= DATASETS[ds_name]['paths']['hic_df_save_path'] # r".\processed_data\dutch\hic_switch_ds"
+        hic_path=  os.path.join(
+                        hic_save_dir, 
+                        f"iter_{iteration}", 
+                        f"results_{user_name}",
+                        f"hic_{user_name}.parquet"
+                )
+        df_hic_final = pd.read_parquet(hic_path)
+
+        ordering = [c for c in df_hic_final.columns if c not in [
+        'ground truth', 
+        'proba_model', 'provider', 'machine prediction', 'expert prediction']]
 
 
+        val_dir= DATASETS[ds_name]['paths']['validation_data_save_path']
+        val_path=  os.path.join(
+                        val_dir, 
+                        f"iter_{iteration}", 
+                )
+        filename = f"{user_suffix}_validation.parquet"
+        validation_data= scale_df(params['validation_set'], trained_preprocessor,target, ordering, val_path, filename)
+        
+
+        scaled_mic_data_dir= DATASETS[ds_name]['paths']['scaled_mic_batch'] # r".\processed_data\dutch\mic_result_ds"
+        mic_path=  os.path.join(
+                        scaled_mic_data_dir, 
+                        f"iter_{iteration}"
+                )
+
+        filename = fr"{user_suffix}_scaled_batch.parquet"
+        batch_3= scale_df(params['batch3'], trained_preprocessor, target, ordering, mic_path, filename)
+
+        return validation_data, batch_3
+
+
+def get_hic_data(ds_name, iteration, user_name, metrics):
+    """
+    the idea here is to join every txt file containing the metrics relative to a user
+    """
+    base_path = Path(f"./HIC_res/{ds_name}/iter_{iteration}/results_{user_name}")
+    
+    main_df = None
+    
+    for metric in metrics:
+        # careful here because there might be some other DefNet/ARF shenanigans
+        file_name = f"User_{user_name}_{metric}.txt"
+        path = base_path / file_name
+        
+        if path.exists():
+            
+            df = pd.read_parquet(path, sep=" ", header=None, names=['idx', metric])
+            df.set_index('idx', inplace=True)
+            
+            if main_df is None:
+                main_df = df
+            else:
+                main_df = main_df.join(df, how='inner')
+        else:
+            print(f"file not found in {path}")
+            
+    return main_df
+
+
+def get_mic_data(ds_name, iteration, user_name, strategy, beta, metrics):
+    """
+    the idea here is to join every txt file containing the metrics relative to a user
+    """
+    base_path = Path(fr"./MIC_res/{ds_name}/iter_{iteration}/{user_name}_{strategy}\beta_{beta}")
+    
+    main_df = None
+    
+    for metric in metrics:
+        # careful here because there might be some other DefNet/ARF shenanigans
+
+        prefix = "MIC_DRIFT_" if iteration != 3 else ""
+
+        file_name = f"{prefix}User_{user_name}_Def_Net{metric}.txt"
+
+        path = base_path / file_name
+        
+        if path.exists():
+            
+            df = pd.read_parquet(path, sep=" ", header=None, names=['idx', metric])
+            df.set_index('idx', inplace=True)
+            
+            if main_df is None:
+                main_df = df
+            else:
+                main_df = main_df.join(df, how='inner')
+        else:
+            print(f"file not found in {path}")
+            
+    return main_df
+
+def retrieve_metric(path, col_names):
+
+    data= pd.read_parquet(path, sep=" ", header=None, names=col_names)
+
+    return data 
+
+
+def plot_sns(df, metrics, color='royalblue', alpha= 0.8, mean_required=None):
+
+    sns.set_theme(style="whitegrid")
+
+    if metrics is None:
+        metrics = df.columns
+
+    for metric in metrics:
+        plt.figure(figsize=(10, 5))
+
+        ax = sns.lineplot(data=df, x=df.index, y=metric, color=color, linewidth=2, alpha=alpha)
+
+        if mean_required: 
+            avg= df[metric].mean().round(4)
+
+            plt.axhline(y=avg, color='#e74c3c', linestyle='-', 
+                        label=f'Avg {metric.replace("_", " ")}: {avg}', linewidth=1.5)
+        
+        plt.title(f'Evolution of {metric.replace("_", " ")}', fontsize=12, fontweight='bold', pad=15)
+        plt.xlabel('Records', fontsize=10)
+        plt.ylabel('Value', fontsize=10)
+
+        plt.legend(loc='lower right', frameon=True, shadow=True)
+        plt.tight_layout()
+        plt.show()
+
+
+def custom_log(name, log_file, custom_format=None):
+    
+    log_dir = os.path.dirname(log_file)
+    
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir, exist_ok=True)
+
+    logger = logging.getLogger(log_file) 
+    logger.setLevel(logging.DEBUG)
+    logger.propagate = False
+    
+    for handler in logger.handlers[:]:
+        handler.close() # Close the file connection!
+        logger.removeHandler(handler)
+
+    if custom_format is None:
+        custom_format = '%(asctime)s | %(levelname)s | %(message)s'
+
+    formatter = logging.Formatter(custom_format)
+
+    # setup handlers
+    s_handler = logging.StreamHandler(sys.stdout)
+    s_handler.setFormatter(formatter)
+    s_handler.setLevel(logging.WARNING) 
+
+    f_handler = logging.FileHandler(log_file)
+    f_handler.setFormatter(formatter)
+    f_handler.setLevel(logging.DEBUG) # Store EVERY detail (even math debugs)
+
+    logger.addHandler(s_handler)
+    logger.addHandler(f_handler)
+
+    return logger
 
 
 ###########
@@ -489,8 +708,8 @@ def create_loader(df, features, target, batch_size=128, shuffle=False):
 # 8. add the event handler and checkpoint
 # 9. call trainer run with train loader and max epochs as params
 
-def net_trainer(net, optimizer, criterion, device, acc_t_loader, val_loader, scheduler, iter, model_prefix, directory_name,
-                log_interval=100, patience=25, max_epochs=50):
+def net_trainer(net, optimizer, criterion, device, train_loader, val_loader, scheduler, iter, model_prefix, directory_name,
+                log_interval=100, patience=5, max_epochs=20):
 
     # first set the structures
     set_all_seeds(42)
@@ -511,7 +730,7 @@ def net_trainer(net, optimizer, criterion, device, acc_t_loader, val_loader, sch
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_training_results(trainer):
-        train_evaluator.run(acc_t_loader)
+        train_evaluator.run(train_loader)
         metrics = train_evaluator.state.metrics
         training_history['accuracy'].append(metrics['accuracy']*100)
         training_history['loss'].append(metrics['loss'])
@@ -555,12 +774,23 @@ def net_trainer(net, optimizer, criterion, device, acc_t_loader, val_loader, sch
 
     # finally call run
 
-    trainer.run(acc_t_loader, max_epochs= max_epochs)
+    trainer.run(train_loader, max_epochs= max_epochs)
 
     return training_history, validation_history
 
 
 
+def compute_class_weights(labels):
+
+    label_distrib= Counter(labels.numpy())
+    n_rows= len(labels)
+    classes= 2
+
+    class_0_w= n_rows / (classes * label_distrib[0])
+    class_1_w= n_rows / (classes * label_distrib[1])
+
+    print(class_0_w, class_1_w)
+    return class_0_w, class_1_w
 
 
 
@@ -584,7 +814,249 @@ def evaluate_threshold(tau, max_conf, y_gt, y_preds):
 
 ###########
 # -- FUNZIONI DI SUPPORTO MIC PHASE 
+
+
+def plot_confusion_matrix(model, dataloader, device,save_path):
+    model.eval()
+    all_preds = []
+    all_labels = []
     
+    with torch.no_grad():
+        for inputs, labels in dataloader:
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = model(inputs)
+            _, preds = torch.max(outputs, 1)
+            all_preds.extend(preds.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
+    
+    cm = confusion_matrix(all_labels, all_preds)
+
+    plt.figure(figsize=(6,4))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+    plt.xlabel('Predictions')
+    plt.ylabel('Ground Truths')
+    plt.title('Confusion Matrix, DefNet')
+    
+    cm_path = os.path.join(save_path, f"confusion_matrix.png")
+
+    plt.savefig(cm_path)
+    plt.close() 
+
+    # 3. Get Classification Report as a Dict (for saving)
+    report = classification_report(all_labels, all_preds, output_dict=True)
+    return report
+
+def calibrate_tau(net, device, X_val, y_val, min_coverage= 0.6):
+
+   with torch.no_grad():
+      probas= net.predict_proba_nn(X_val, device)
+      y_pred= net.predict(X_val,device)
+
+   max_conf= probas.max(axis=1)
+
+   taus= np.linspace(0.50, 0.99, 50)
+   y_val_np= y_val.cpu().numpy() if torch.is_tensor(y_val) else np.array(y_val)
+
+   res= [evaluate_threshold(t, max_conf, y_pred, y_val_np) for t in taus]
+
+   best_tau = None
+   best_acc = -1
+   for tau, (acc_sel, cov, _) in zip(taus, res):
+      if cov >= min_coverage and acc_sel > best_acc:
+         best_acc = acc_sel 
+         best_tau = tau
+
+   return best_tau, best_acc
+
+
+def train_r_net(df, 
+                ds_name,
+                user_name, 
+                device, 
+                alpha, 
+                beta, 
+                feat_order, 
+                layers, 
+                dropout,
+                learning_rate,
+                iter,
+                output_size,
+                log,
+                batch_size=128,
+                epochs= 20,
+                baseline= False
+                ):
+
+    
+    log.info(f"Training r-net | User: {user_name} | Beta: {beta} | Iter: {iter}")
+
+    def_data, pred_correct, C = [], [], []
+    
+    # 1. fill necessary structures
+    for _, row in df.iterrows():
+
+        x_i = row[feat_order].values.tolist() 
+        corr = 1.0 if row['machine prediction'] == row['ground truth'] else 0.0 # la ground truth originale
+    
+        # Costo di deferral C
+        if row['provider'] == "H":
+            c_i = beta # L'umano è stato scelto ed era utile
+        else:
+            c_i = alpha + beta # L'umano non è stato scelto, chiamarlo sarebbe un costo extra
+        
+        def_data.append(x_i)
+        pred_correct.append(corr)
+        C.append(c_i)
+
+
+    # 2. generate tensor datasets + loaders
+
+    X_def = torch.tensor(def_data, dtype=torch.float32)
+    pred_correct = torch.tensor(pred_correct, dtype=torch.float32)
+    C = torch.tensor(C, dtype=torch.float32)
+
+    log.debug(f"Input Tensor Shape: {X_def.shape}")
+
+    set_all_seeds(42)
+
+    from classes import DeferralNet
+    r_net= DeferralNet(input_size=X_def.shape[1], 
+                       hidden_layer1=layers[0], 
+                       hidden_layer2=layers[1], 
+                       output_size=output_size, 
+                       dropout_coeff= dropout)
+
+    optimizer = torch.optim.Adam(r_net.parameters(), lr=learning_rate)
+    dataset = torch.utils.data.TensorDataset(X_def, pred_correct, C)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False)
+
+    
+
+    r_net.to(device)
+    r_net.train()
+
+    for epoch in range(epochs):
+        running_loss = 0.0
+        for xb, pc_b, c_b in loader:
+        
+            xb, pc_b, c_b = xb.to(device), pc_b.to(device), c_b.to(device)
+            
+            r_vals = r_net(xb).view(-1) # .view(-1) assicura che r sia un vettore piatto
+        
+            loss = deferral_loss(r_vals, pc_b, c_b)
+
+            if torch.isnan(loss):
+                log.critical(f" NaN Loss detected at Epoch {epoch+1}!")
+                return None
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            
+            running_loss += loss.item()
+
+        log.info(f"Epoch {epoch+1}/{epochs} - Loss: {running_loss/len(loader):.4f}")
+    
+    beta_str = str(beta).replace('.', '')
+
+    if baseline:
+        save_dir = DATASETS[ds_name]['baseline_paths']['calibrated_r_nets']
+    else:
+        save_dir = DATASETS[ds_name]['paths']['r_net_path']
+        save_dir= os.path.join(save_dir,
+                               f"iter_{iter}")
+
+    save_dir= os.path.join(save_dir,
+                           f"beta_{beta_str}")
+    
+        #save_dir = fr'.\r_nets\{ds_name}\iter_{iter}\beta_{beta_str}'
+    os.makedirs(save_dir, exist_ok=True)
+    save_path = os.path.join(save_dir, f'r_net_{user_name}.pth')
+    
+    torch.save(r_net.state_dict(), save_path)
+    log.info(f"r-net saved to: {save_path}")
+
+    return r_net
+
+
+def generate_thresh_report(X_cal, 
+                           y_cal,
+                           r_net,
+                           net_path, 
+                           ds_name,
+                           user_name,
+                           device, 
+                           iter,
+                           beta,
+                           def_net_layers, #must be a list
+                           lower_thresh= 0.0, 
+                           upper_thresh=0.8, 
+                           linspace_dimension=50,
+                           baseline= False
+                           ):
+    
+    p_defer_calib = p_defer(X_cal.to(device), r_net).flatten()
+
+    #1. define net 
+    from classes import DeferralNet
+
+    net= DeferralNet(input_size= X_cal.shape[1], 
+                           hidden_layer1= def_net_layers[0], 
+                           hidden_layer2= def_net_layers[1], 
+                           output_size=2, 
+                           dropout_coeff=0.0)
+    net.load_state_dict(torch.load(net_path, map_location=device))
+    net.to(device)
+    net.eval()
+
+    with torch.no_grad():
+        y_h_calib = net.predict(X_cal.to(device), device)
+    y_gt_calib = y_cal.numpy()
+    
+    thresholds = np.linspace(lower_thresh, upper_thresh, linspace_dimension)
+    calibration_results = []
+
+    for tr in thresholds:
+        # Maschera di chi viene mandato all'umano
+        defer_mask = (p_defer_calib >= tr)
+        
+        # ACCURATEZZA TEAM:
+        # Se defer_mask è True (H), diamo 1 (assumiamo che l'umano indovini)
+        # Se defer_mask è False (M), verifichiamo se h ha indovinato il target vero
+        correct_decisions = np.where(defer_mask, 1.0, (y_h_calib == y_gt_calib))
+        team_acc = np.mean(correct_decisions)
+        
+        # Tasso di Deferral: quante istanze la r_net ha "scartato"
+        defer_rate = np.mean(defer_mask)
+        
+        calibration_results.append({
+            'tau_r': tr,
+            'team_accuracy': team_acc,
+            'deferral_rate': defer_rate
+        })
+    
+    beta_str = str(beta).replace('.', '')
+
+    if baseline:
+        save_dir = DATASETS[ds_name]['baseline_paths']['anqi_mao_thresh_baseline']
+
+    else:
+        save_dir= DATASETS[ds_name]['paths']['anqi_mao_thresholds']
+        save_dir= os.path.join(save_dir,
+                           f"iter_{iter}")
+        
+        #fr'.\r_nets_results\{ds_name}\{user_name}\iter_{iter}\beta_{beta_str}'
+
+    save_dir= os.path.join(save_dir,
+                           f"beta_{beta_str}")
+                           
+    os.makedirs(save_dir, exist_ok=True)
+
+    report= pd.DataFrame(calibration_results)
+    file_path = os.path.join(save_dir, f"report_{user_name}.parquet")
+
+    report.to_parquet(file_path, index=False)
+ 
+
 
 
 def deferral_loss(r, pred_correct, C):
@@ -607,6 +1079,7 @@ def deferral_loss(r, pred_correct, C):
     term_expert = C * (-log_p1)
 
     return (term_model + term_expert).mean()
+
 
 def p_defer(x_tensor, net):
 
@@ -1347,47 +1820,6 @@ def get_GS_cfe(log, curr_rec, torch_model, cats, target):
     
     elapsed_time = time.time() - start_time
     return curr_rec, elapsed_time, 0
-
-
-
-
-
-
-# with open(os.path.join(dir,'User_'+self.name+str(self.mic_model_name)+'model.pkl'), 'wb') as file:
-                            #pickle.dump(self.mic_model, file)
-
-
-
-def assess_risk(ground_truth, mach_pred, current_confidence, threshold_conf= 0.8):
-        # ok so basically the idea is to create a priority queue storing problematic instances
-        # basically, during the main loop in BRIDGET, once a record is process, we update the log and have access to the current
-        # conf level of the machine for that specific record
-
-        # the issue is basically to correct cases when the machine got the final decision, and it was wrong
-        # we want to revisit these instances again, and we could store them in a queue that gets evaluated at the start of the next iteration
-
-        # we could design it as a ranking system, i.e. 
-        # 1. low priority instance is one the machine had predicted wrongly with LOW confidence
-        # 2. high priority instance if the machine was wrong ultimately, with confidence > threshold (def 0.8 seems reasonable?)
-
-        # now the issue is how the instances would be evaluated at the next iter since we ideally dont want to add instances to the queue
-        # so to empy it we could aim to re evaluate 4/5 instances max (according to an extra budget allocated by the user)
-        # or at least empty the high priority ones, so when inserting an item to the queue just add a counter to the tuple
-        # store it like instance (priority_level, counter)
-        # the counter increases everytime the item stays in the queue
-
-        #also if two instance have the exact same priority level and counter, 
-        # the one with the higher counter gets to be evaluated first
-
-        # wrt to the ranking, since heapq natively sorts in increasing order, for the priority 
-        # we'll do 1 = Max priority, 2 Low priority, 0 for non problematic instances
-        if mach_pred != ground_truth:
-            if current_confidence >= threshold_conf:
-                return 1 
-            else:
-                return 2
-        return 0
-
 
 
 

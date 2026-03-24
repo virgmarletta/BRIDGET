@@ -1,0 +1,149 @@
+2026-03-24 16:50:10,866 | INFO | STARTING MIC RUN | User: accurate_not_trusting | DS: compas
+2026-03-24 16:50:10,866 | INFO | ---  ITERATION 1/3 ---
+2026-03-24 16:50:10,866 | DEBUG | RETRIEVING NET | User accurate_not_trusting | Iter 1 | NET 32_16_model_*.pt
+2026-03-24 16:50:10,878 | INFO | STARTING STRAT Confidence | USER accurate_not_trusting | Iter 1
+2026-03-24 16:50:10,882 | INFO |  Best tau for compas, Iter 1: 0.99 (Acc: 0.6275565123789021)
+2026-03-24 16:50:10,883 | INFO | Iteration 1 starting with benchmark: 63.00, delta: 0.05
+2026-03-24 16:52:46,000 | INFO | Finished Iteration 1, strat Confidence | System FEA: 68.31 | Delta: 0.05
+2026-03-24 16:52:46,005 | INFO | Saved Strat 1 results to: .\processed_data\compas\mic_result_ds\iter_1\results_acc_nt\strats\Confidence.parquet
+2026-03-24 16:52:46,005 | INFO | STARTING STRAT Mao | USER accurate_not_trusting | Iter 1
+2026-03-24 16:52:46,005 | INFO |  Current Beta 0.1 | Start Perf: 63.00
+2026-03-24 16:52:46,005 | DEBUG | RETRIEVING NET | User accurate_not_trusting | Iter 1
+2026-03-24 16:52:46,009 | DEBUG | RETRIEVING R-NET | PATH .\r_nets\compas\iter_1\beta_01\r_net_accurate_not_trusting.pth
+2026-03-24 16:52:46,013 | DEBUG | CURRENT ANQI MAO THRESH: 0.32642140468227426 | USER accurate_not_trusting | ITER 1
+2026-03-24 16:53:26,000 | WARNING | Drift here! Record index 270
+2026-03-24 16:53:26,019 | WARNING | DRIFT DETECTED | Phase: MiC | Strat: Mao
+2026-03-24 16:53:26,020 | INFO | DRIFT METRICS: Current  belief_threshold: 0.7 | Last 5 FEA: [0.605755088989213, 0.6099835714585382, 0.6141636684936891, 0.6182959983469508, 0.6116787104241437]
+2026-03-24 16:53:26,025 | INFO | Drift df saved to: processed_data\compas\drift_checkpoints\MiC\iter_1\MiC_accurate_not_trusting_Mao.parquet
+2026-03-24 16:53:26,029 | INFO | Beta 01 | Iteration 1 | System FEA: 57.62
+2026-03-24 16:53:26,032 | INFO | Saved Strat 2, Beta 0.1 results to: .\processed_data\compas\mic_result_ds\iter_1\results_acc_nt\strats\Mao_beta_01.parquet
+2026-03-24 16:53:26,032 | INFO |  Current Beta 0.3 | Start Perf: 63.00
+2026-03-24 16:53:26,032 | DEBUG | RETRIEVING NET | User accurate_not_trusting | Iter 1
+2026-03-24 16:53:26,036 | DEBUG | RETRIEVING R-NET | PATH .\r_nets\compas\iter_1\beta_03\r_net_accurate_not_trusting.pth
+2026-03-24 16:53:26,038 | DEBUG |  Picking closest thresh: 33.102493%
+2026-03-24 16:53:26,038 | DEBUG | CURRENT ANQI MAO THRESH: 0.39866220735785957 | USER accurate_not_trusting | ITER 1
+2026-03-24 16:56:00,317 | INFO | Beta 03 | Iteration 1 | System FEA: 65.42
+2026-03-24 16:56:00,321 | INFO | Saved Strat 2, Beta 0.3 results to: .\processed_data\compas\mic_result_ds\iter_1\results_acc_nt\strats\Mao_beta_03.parquet
+2026-03-24 16:56:00,321 | INFO |  Current Beta 0.5 | Start Perf: 63.00
+2026-03-24 16:56:00,321 | DEBUG | RETRIEVING NET | User accurate_not_trusting | Iter 1
+2026-03-24 16:56:00,325 | DEBUG | RETRIEVING R-NET | PATH .\r_nets\compas\iter_1\beta_05\r_net_accurate_not_trusting.pth
+2026-03-24 16:56:00,327 | DEBUG | CURRENT ANQI MAO THRESH: 0.4896321070234114 | USER accurate_not_trusting | ITER 1
+2026-03-24 16:58:35,161 | INFO | Beta 05 | Iteration 1 | System FEA: 66.58
+2026-03-24 16:58:35,164 | INFO | Saved Strat 2, Beta 0.5 results to: .\processed_data\compas\mic_result_ds\iter_1\results_acc_nt\strats\Mao_beta_05.parquet
+2026-03-24 16:58:35,164 | INFO |  Current Beta 0.7 | Start Perf: 63.00
+2026-03-24 16:58:35,164 | DEBUG | RETRIEVING NET | User accurate_not_trusting | Iter 1
+2026-03-24 16:58:35,168 | DEBUG | RETRIEVING R-NET | PATH .\r_nets\compas\iter_1\beta_07\r_net_accurate_not_trusting.pth
+2026-03-24 16:58:35,172 | DEBUG |  Picking closest thresh: 25.761773%
+2026-03-24 16:58:35,172 | DEBUG | CURRENT ANQI MAO THRESH: 0.5618729096989967 | USER accurate_not_trusting | ITER 1
+2026-03-24 17:01:12,296 | INFO | Beta 07 | Iteration 1 | System FEA: 67.71
+2026-03-24 17:01:12,300 | INFO | Saved Strat 2, Beta 0.7 results to: .\processed_data\compas\mic_result_ds\iter_1\results_acc_nt\strats\Mao_beta_07.parquet
+2026-03-24 17:01:12,301 | INFO |  Current Beta 0.9 | Start Perf: 63.00
+2026-03-24 17:01:12,301 | DEBUG | RETRIEVING NET | User accurate_not_trusting | Iter 1
+2026-03-24 17:01:12,305 | DEBUG | RETRIEVING R-NET | PATH .\r_nets\compas\iter_1\beta_09\r_net_accurate_not_trusting.pth
+2026-03-24 17:01:12,309 | DEBUG | CURRENT ANQI MAO THRESH: 0.6180602006688964 | USER accurate_not_trusting | ITER 1
+2026-03-24 17:03:52,380 | INFO | Beta 09 | Iteration 1 | System FEA: 65.68
+2026-03-24 17:03:52,384 | INFO | Saved Strat 2, Beta 0.9 results to: .\processed_data\compas\mic_result_ds\iter_1\results_acc_nt\strats\Mao_beta_09.parquet
+2026-03-24 17:03:52,389 | INFO | STARTING MIC RUN | User: accurate_not_trusting | DS: compas
+2026-03-24 17:03:52,389 | INFO | ---  ITERATION 2/3 ---
+2026-03-24 17:03:52,389 | DEBUG | RETRIEVING NET | User accurate_not_trusting | Iter 2 | NET 32_16_model_*.pt
+2026-03-24 17:03:52,399 | INFO | STARTING STRAT Confidence | USER accurate_not_trusting | Iter 2
+2026-03-24 17:03:52,402 | INFO |  Best tau for compas, Iter 2: 0.99 (Acc: 0.5962616822429907)
+2026-03-24 17:03:52,403 | INFO | Iteration 2 starting with benchmark: 68.31, delta: 0.05
+2026-03-24 17:04:32,927 | WARNING | Drift here! Record index 270
+2026-03-24 17:04:32,939 | WARNING | DRIFT DETECTED | Phase: MiC | Strat: Confidence
+2026-03-24 17:04:32,939 | INFO | DRIFT METRICS: Current  belief_threshold: 0.7 | Last 5 FEA: [0.6526259433481768, 0.6563517114375723, 0.6600348465237699, 0.6636758933564877, 0.6565729289421819]
+2026-03-24 17:04:32,945 | INFO | Drift df saved to: processed_data\compas\drift_checkpoints\MiC\iter_2\MiC_accurate_not_trusting_Confidence.parquet
+2026-03-24 17:04:32,947 | INFO | Finished Iteration 2, strat Confidence | System FEA: 61.69 | Delta: 0.03
+2026-03-24 17:04:32,950 | INFO | Saved Strat 1 results to: .\processed_data\compas\mic_result_ds\iter_2\results_acc_nt\strats\Confidence.parquet
+2026-03-24 17:04:32,950 | INFO | STARTING STRAT Mao | USER accurate_not_trusting | Iter 2
+2026-03-24 17:04:32,950 | INFO |  Current Beta 0.1 | Start Perf: 57.62
+2026-03-24 17:04:32,950 | DEBUG | RETRIEVING NET | User accurate_not_trusting | Iter 2
+2026-03-24 17:04:32,954 | DEBUG | RETRIEVING R-NET | PATH .\r_nets\compas\iter_2\beta_01\r_net_accurate_not_trusting.pth
+2026-03-24 17:04:32,959 | DEBUG | CURRENT ANQI MAO THRESH: 0.3210702341137124 | USER accurate_not_trusting | ITER 2
+2026-03-24 17:07:11,893 | INFO | Beta 01 | Iteration 2 | System FEA: 63.85
+2026-03-24 17:07:11,896 | INFO | Saved Strat 2, Beta 0.1 results to: .\processed_data\compas\mic_result_ds\iter_2\results_acc_nt\strats\Mao_beta_01.parquet
+2026-03-24 17:07:11,896 | INFO |  Current Beta 0.3 | Start Perf: 65.42
+2026-03-24 17:07:11,896 | DEBUG | RETRIEVING NET | User accurate_not_trusting | Iter 2
+2026-03-24 17:07:11,899 | DEBUG | RETRIEVING R-NET | PATH .\r_nets\compas\iter_2\beta_03\r_net_accurate_not_trusting.pth
+2026-03-24 17:07:11,902 | DEBUG | CURRENT ANQI MAO THRESH: 0.3933110367892977 | USER accurate_not_trusting | ITER 2
+2026-03-24 17:07:52,614 | WARNING | Drift here! Record index 270
+2026-03-24 17:07:52,633 | WARNING | DRIFT DETECTED | Phase: MiC | Strat: Mao
+2026-03-24 17:07:52,633 | INFO | DRIFT METRICS: Current  belief_threshold: 0.7 | Last 5 FEA: [0.6326876826215095, 0.6366272989651169, 0.6405218352951147, 0.644371867628271, 0.6374755037688037]
+2026-03-24 17:07:52,638 | INFO | Drift df saved to: processed_data\compas\drift_checkpoints\MiC\iter_2\MiC_accurate_not_trusting_Mao.parquet
+2026-03-24 17:07:52,643 | INFO | Beta 03 | Iteration 2 | System FEA: 60.83
+2026-03-24 17:07:52,646 | INFO | Saved Strat 2, Beta 0.3 results to: .\processed_data\compas\mic_result_ds\iter_2\results_acc_nt\strats\Mao_beta_03.parquet
+2026-03-24 17:07:52,646 | INFO |  Current Beta 0.5 | Start Perf: 66.58
+2026-03-24 17:07:52,646 | DEBUG | RETRIEVING NET | User accurate_not_trusting | Iter 2
+2026-03-24 17:07:52,650 | DEBUG | RETRIEVING R-NET | PATH .\r_nets\compas\iter_2\beta_05\r_net_accurate_not_trusting.pth
+2026-03-24 17:07:52,654 | DEBUG | CURRENT ANQI MAO THRESH: 0.4735785953177258 | USER accurate_not_trusting | ITER 2
+2026-03-24 17:08:33,165 | WARNING | Drift here! Record index 270
+2026-03-24 17:08:33,182 | WARNING | DRIFT DETECTED | Phase: MiC | Strat: Mao
+2026-03-24 17:08:33,183 | INFO | DRIFT METRICS: Current  belief_threshold: 0.7 | Last 5 FEA: [0.6314783042730953, 0.6354308918307938, 0.6393382509486257, 0.6432009595398984, 0.6470195868440023]
+2026-03-24 17:08:33,187 | INFO | Drift df saved to: processed_data\compas\drift_checkpoints\MiC\iter_2\MiC_accurate_not_trusting_Mao.parquet
+2026-03-24 17:08:33,191 | INFO | Beta 05 | Iteration 2 | System FEA: 61.12
+2026-03-24 17:08:33,194 | INFO | Saved Strat 2, Beta 0.5 results to: .\processed_data\compas\mic_result_ds\iter_2\results_acc_nt\strats\Mao_beta_05.parquet
+2026-03-24 17:08:33,195 | INFO |  Current Beta 0.7 | Start Perf: 67.71
+2026-03-24 17:08:33,195 | DEBUG | RETRIEVING NET | User accurate_not_trusting | Iter 2
+2026-03-24 17:08:33,199 | DEBUG | RETRIEVING R-NET | PATH .\r_nets\compas\iter_2\beta_07\r_net_accurate_not_trusting.pth
+2026-03-24 17:08:33,203 | DEBUG |  Picking closest thresh: 25.761773%
+2026-03-24 17:08:33,204 | DEBUG | CURRENT ANQI MAO THRESH: 0.548494983277592 | USER accurate_not_trusting | ITER 2
+2026-03-24 17:09:14,222 | WARNING | Drift here! Record index 270
+2026-03-24 17:09:14,235 | WARNING | DRIFT DETECTED | Phase: MiC | Strat: Mao
+2026-03-24 17:09:14,236 | INFO | DRIFT METRICS: Current  belief_threshold: 0.7 | Last 5 FEA: [0.6703479326019803, 0.6738836231056206, 0.6773788556148467, 0.6808341470878696, 0.6842500067238602]
+2026-03-24 17:09:14,241 | INFO | Drift df saved to: processed_data\compas\drift_checkpoints\MiC\iter_2\MiC_accurate_not_trusting_Mao.parquet
+2026-03-24 17:09:14,245 | INFO | Beta 07 | Iteration 2 | System FEA: 63.02
+2026-03-24 17:09:14,248 | INFO | Saved Strat 2, Beta 0.7 results to: .\processed_data\compas\mic_result_ds\iter_2\results_acc_nt\strats\Mao_beta_07.parquet
+2026-03-24 17:09:14,249 | INFO |  Current Beta 0.9 | Start Perf: 65.68
+2026-03-24 17:09:14,249 | DEBUG | RETRIEVING NET | User accurate_not_trusting | Iter 2
+2026-03-24 17:09:14,253 | DEBUG | RETRIEVING R-NET | PATH .\r_nets\compas\iter_2\beta_09\r_net_accurate_not_trusting.pth
+2026-03-24 17:09:14,257 | DEBUG | CURRENT ANQI MAO THRESH: 0.6046822742474917 | USER accurate_not_trusting | ITER 2
+2026-03-24 17:11:51,279 | INFO | Beta 09 | Iteration 2 | System FEA: 66.64
+2026-03-24 17:11:51,282 | INFO | Saved Strat 2, Beta 0.9 results to: .\processed_data\compas\mic_result_ds\iter_2\results_acc_nt\strats\Mao_beta_09.parquet
+2026-03-24 17:11:51,284 | INFO | STARTING MIC RUN | User: accurate_not_trusting | DS: compas
+2026-03-24 17:11:51,284 | INFO | ---  ITERATION 3/3 ---
+2026-03-24 17:11:51,284 | DEBUG | RETRIEVING NET | User accurate_not_trusting | Iter 3 | NET 32_16_model_*.pt
+2026-03-24 17:11:51,295 | INFO | STARTING STRAT Confidence | USER accurate_not_trusting | Iter 3
+2026-03-24 17:11:51,298 | INFO |  Best tau for compas, Iter 3: 0.99 (Acc: 0.5942432683379758)
+2026-03-24 17:11:51,299 | INFO | Iteration 3 starting with benchmark: 61.69, delta: 0.03
+2026-03-24 17:14:22,427 | INFO | Finished Iteration 3, strat Confidence | System FEA: 68.31 | Delta: 0.05
+2026-03-24 17:14:22,430 | INFO | Saved Strat 1 results to: .\processed_data\compas\mic_result_ds\iter_3\results_acc_nt\strats\Confidence.parquet
+2026-03-24 17:14:22,430 | INFO | STARTING STRAT Mao | USER accurate_not_trusting | Iter 3
+2026-03-24 17:14:22,430 | INFO |  Current Beta 0.1 | Start Perf: 63.85
+2026-03-24 17:14:22,430 | DEBUG | RETRIEVING NET | User accurate_not_trusting | Iter 3
+2026-03-24 17:14:22,433 | DEBUG | RETRIEVING R-NET | PATH .\r_nets\compas\iter_3\beta_01\r_net_accurate_not_trusting.pth
+2026-03-24 17:14:22,436 | DEBUG | CURRENT ANQI MAO THRESH: 0.32374581939799335 | USER accurate_not_trusting | ITER 3
+2026-03-24 17:15:00,740 | WARNING | Drift here! Record index 270
+2026-03-24 17:15:00,757 | WARNING | DRIFT DETECTED | Phase: MiC | Strat: Mao
+2026-03-24 17:15:00,758 | INFO | DRIFT METRICS: Current  belief_threshold: 0.7 | Last 5 FEA: [0.6247724445502935, 0.628796955954027, 0.6327754159118762, 0.6367084128532339, 0.6298940668086407]
+2026-03-24 17:15:00,763 | INFO | Drift df saved to: processed_data\compas\drift_checkpoints\MiC\iter_3\MiC_accurate_not_trusting_Mao.parquet
+2026-03-24 17:15:00,767 | INFO | Beta 01 | Iteration 3 | System FEA: 58.79
+2026-03-24 17:15:00,771 | INFO | Saved Strat 2, Beta 0.1 results to: .\processed_data\compas\mic_result_ds\iter_3\results_acc_nt\strats\Mao_beta_01.parquet
+2026-03-24 17:15:00,771 | INFO |  Current Beta 0.3 | Start Perf: 60.83
+2026-03-24 17:15:00,772 | DEBUG | RETRIEVING NET | User accurate_not_trusting | Iter 3
+2026-03-24 17:15:00,775 | DEBUG | RETRIEVING R-NET | PATH .\r_nets\compas\iter_3\beta_03\r_net_accurate_not_trusting.pth
+2026-03-24 17:15:00,779 | DEBUG |  Picking closest thresh: 27.524205%
+2026-03-24 17:15:00,780 | DEBUG | CURRENT ANQI MAO THRESH: 0.39598662207357865 | USER accurate_not_trusting | ITER 3
+2026-03-24 17:17:30,798 | INFO | Beta 03 | Iteration 3 | System FEA: 64.36
+2026-03-24 17:17:30,801 | INFO | Saved Strat 2, Beta 0.3 results to: .\processed_data\compas\mic_result_ds\iter_3\results_acc_nt\strats\Mao_beta_03.parquet
+2026-03-24 17:17:30,802 | INFO |  Current Beta 0.5 | Start Perf: 61.12
+2026-03-24 17:17:30,802 | DEBUG | RETRIEVING NET | User accurate_not_trusting | Iter 3
+2026-03-24 17:17:30,805 | DEBUG | RETRIEVING R-NET | PATH .\r_nets\compas\iter_3\beta_05\r_net_accurate_not_trusting.pth
+2026-03-24 17:17:30,809 | DEBUG | CURRENT ANQI MAO THRESH: 0.47892976588628766 | USER accurate_not_trusting | ITER 3
+2026-03-24 17:20:01,600 | INFO | Beta 05 | Iteration 3 | System FEA: 66.98
+2026-03-24 17:20:01,603 | INFO | Saved Strat 2, Beta 0.5 results to: .\processed_data\compas\mic_result_ds\iter_3\results_acc_nt\strats\Mao_beta_05.parquet
+2026-03-24 17:20:01,603 | INFO |  Current Beta 0.7 | Start Perf: 63.02
+2026-03-24 17:20:01,603 | DEBUG | RETRIEVING NET | User accurate_not_trusting | Iter 3
+2026-03-24 17:20:01,606 | DEBUG | RETRIEVING R-NET | PATH .\r_nets\compas\iter_3\beta_07\r_net_accurate_not_trusting.pth
+2026-03-24 17:20:01,610 | DEBUG | CURRENT ANQI MAO THRESH: 0.5538461538461539 | USER accurate_not_trusting | ITER 3
+2026-03-24 17:22:33,015 | INFO | Beta 07 | Iteration 3 | System FEA: 68.52
+2026-03-24 17:22:33,018 | INFO | Saved Strat 2, Beta 0.7 results to: .\processed_data\compas\mic_result_ds\iter_3\results_acc_nt\strats\Mao_beta_07.parquet
+2026-03-24 17:22:33,018 | INFO |  Current Beta 0.9 | Start Perf: 66.64
+2026-03-24 17:22:33,019 | DEBUG | RETRIEVING NET | User accurate_not_trusting | Iter 3
+2026-03-24 17:22:33,022 | DEBUG | RETRIEVING R-NET | PATH .\r_nets\compas\iter_3\beta_09\r_net_accurate_not_trusting.pth
+2026-03-24 17:22:33,026 | DEBUG | CURRENT ANQI MAO THRESH: 0.6073578595317727 | USER accurate_not_trusting | ITER 3
+2026-03-24 17:23:11,639 | WARNING | Drift here! Record index 270
+2026-03-24 17:23:11,656 | WARNING | DRIFT DETECTED | Phase: MiC | Strat: Mao
+2026-03-24 17:23:11,657 | INFO | DRIFT METRICS: Current  belief_threshold: 0.7 | Last 5 FEA: [0.6659289207322483, 0.669512007444948, 0.673054093820639, 0.6765557037473977, 0.6800173532502498]
+2026-03-24 17:23:11,661 | INFO | Drift df saved to: processed_data\compas\drift_checkpoints\MiC\iter_3\MiC_accurate_not_trusting_Mao.parquet
+2026-03-24 17:23:11,667 | INFO | Beta 09 | Iteration 3 | System FEA: 62.04
+2026-03-24 17:23:11,671 | INFO | Saved Strat 2, Beta 0.9 results to: .\processed_data\compas\mic_result_ds\iter_3\results_acc_nt\strats\Mao_beta_09.parquet

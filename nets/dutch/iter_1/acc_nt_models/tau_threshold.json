@@ -1,0 +1,6 @@
+{
+    "16_8_acc_nt_model": {
+        "tau_threshold": 0.72,
+        "net_path": ".\\nets\\dutch\\iter_1\\acc_nt_models\\16_8_acc_nt_model_14.pt"
+    }
+}

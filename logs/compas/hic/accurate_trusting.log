@@ -1,0 +1,286 @@
+2026-03-19 12:37:23,046 | INFO | STARTING HIC RUN | User: accurate_trusting | DS: compas
+2026-03-19 12:37:23,046 | INFO | ---  ITERATION 1/3 ---
+2026-03-19 12:37:23,046 | INFO | Current performance benchmark: 63.00
+2026-03-19 12:37:32,184 | INFO | Retraining HiC model at record 108, Group Fairness
+2026-03-19 12:37:41,814 | INFO | Retraining HiC model at record 217, Group Fairness
+2026-03-19 12:37:43,075 | INFO | Record already processed...
+2026-03-19 12:37:43,075 | INFO | And you are consistent! Decision accepted.
+2026-03-19 12:37:51,835 | INFO | Retraining HiC model at record 325, Group Fairness
+2026-03-19 12:37:53,824 | INFO | Record already processed...
+2026-03-19 12:37:53,824 | INFO | And you are consistent! Decision accepted.
+2026-03-19 12:38:02,829 | INFO | Retraining HiC model at record 433, Group Fairness
+2026-03-19 12:38:14,815 | INFO | Retraining HiC model at record 542, Group Fairness
+2026-03-19 12:38:26,562 | INFO | Record already processed...
+2026-03-19 12:38:26,562 | INFO | Inconsistent. You previously said: 1, Want to change old decision?
+2026-03-19 12:38:27,002 | INFO | Retraining HiC model at record 648
+2026-03-19 12:38:27,770 | INFO | Retraining HiC model at record 650, Group Fairness
+2026-03-19 12:38:30,253 | INFO | Record already processed...
+2026-03-19 12:38:30,254 | INFO | Inconsistent. You previously said: 0, Want to change old decision?
+2026-03-19 12:38:30,379 | INFO | Retraining HiC model at record 669
+2026-03-19 12:38:32,203 | INFO | Record already processed...
+2026-03-19 12:38:32,203 | INFO | Inconsistent. You previously said: 1, Want to change old decision?
+2026-03-19 12:38:37,324 | WARNING | DRIFT DETECTED | Phase: HiC | Strat: None
+2026-03-19 12:38:37,325 | INFO | DRIFT METRICS: Current desired performance: 66.1500 | Last 5 FEA: [0.6145943144509269, 0.6184511763460628, 0.622269413761738, 0.6160422808459609, 0.6098775076534051]
+2026-03-19 12:38:37,350 | INFO | Drift df saved to: processed_data\compas\drift_checkpoints\HiC\iter_1\HiC_accurate_trusting_None.parquet
+2026-03-19 12:38:37,358 | INFO | HiC df saved to: .\processed_data\compas\hic_switch_ds\iter_1\results_accurate_trusting\hic_accurate_trusting.parquet
+2026-03-19 12:38:37,368 | INFO | HiC evaluation res saved to:      human_fairness  human_acc  systemic  frank_fairness  frank_acc  \
+0          0.000000   0.000000         0       -0.038941   0.634011   
+1          0.000000   0.500000         0       -0.048287   0.639556   
+2          0.000000   0.333333         0       -0.046417   0.637708   
+3          0.000000   0.500000         0       -0.040810   0.635860   
+4          0.000000   0.600000         0       -0.038941   0.634011   
+..              ...        ...       ...             ...        ...   
+722        0.529986   0.536212        19       -0.288104   0.619224   
+723        0.530641   0.535466        19       -0.289963   0.621072   
+724        0.531293   0.536111        19       -0.278810   0.621072   
+725        0.530556   0.536755        19       -0.282528   0.621072   
+726        0.529820   0.537396        19       -0.288104   0.619224   
+
+     rules_count  past_count  ok_count  no_count  xai_ok  xai_no  skept_count  \
+0              0           0         0         1       0       4            1   
+1              0           0         1         1       0       4            2   
+2              0           0         2         1       0       4            3   
+3              0           0         2         1       0       4            3   
+4              0           0         2         1       0       4            3   
+..           ...         ...       ...       ...     ...     ...          ...   
+722            0           1        55        67      21     247          122   
+723            0           1        55        67      21     247          122   
+724            0           1        55        67      21     247          122   
+725            0           1        55        67      21     247          122   
+726            0           1        55        67      21     247          122   
+
+     agree_count  disagree_count  
+0              0               0  
+1              0               0  
+2              0               0  
+3              1               0  
+4              1               1  
+..           ...             ...  
+722          396             199  
+723          397             199  
+724          397             200  
+725          397             201  
+726          397             202  
+
+[727 rows x 14 columns]
+2026-03-19 12:38:37,368 | INFO |  HiC Session completed. Training Acc: 0.6260, F1 Acc: 0.4643
+2026-03-19 12:38:37,368 | INFO |  Scaling validation and MIC sets...
+2026-03-19 12:38:37,437 | INFO | Calibrating Def Net: SMALL (Layers: [16, 8])
+2026-03-19 12:38:40,693 | INFO | Plots and conf matrix saved | ITER 1 | ARCHITECTURE small
+2026-03-19 12:38:40,693 | INFO | Calibrating Def Net: MEDIUM (Layers: [32, 16])
+2026-03-19 12:38:41,714 | INFO | Plots and conf matrix saved | ITER 1 | ARCHITECTURE medium
+2026-03-19 12:38:41,715 | INFO | Loading updated objects for the next iter...
+2026-03-19 12:38:42,390 | INFO | Iteration 1 res | Machine FEA: 62.75
+2026-03-19 12:38:42,390 | INFO | ---  ITERATION 2/3 ---
+2026-03-19 12:38:42,390 | INFO | Current performance benchmark: 62.75
+2026-03-19 12:38:53,560 | INFO | Retraining HiC model at record 108, Group Fairness
+2026-03-19 12:39:04,989 | INFO | Retraining HiC model at record 217, Group Fairness
+2026-03-19 12:39:06,447 | INFO | Record already processed...
+2026-03-19 12:39:06,447 | INFO | And you are consistent! Decision accepted.
+2026-03-19 12:39:15,722 | INFO | Record already processed...
+2026-03-19 12:39:15,723 | INFO | Inconsistent. You previously said: 1, Want to change old decision?
+2026-03-19 12:39:16,684 | INFO | Retraining HiC model at record 325, Group Fairness
+2026-03-19 12:39:17,001 | INFO | Record already processed...
+2026-03-19 12:39:17,002 | INFO | Inconsistent. You previously said: 0, Want to change old decision?
+2026-03-19 12:39:18,906 | INFO | Record already processed...
+2026-03-19 12:39:18,906 | INFO | And you are consistent! Decision accepted.
+2026-03-19 12:39:25,284 | INFO | Record already processed...
+2026-03-19 12:39:25,284 | INFO | Inconsistent. You previously said: 1, Want to change old decision?
+2026-03-19 12:39:27,272 | INFO | Record already processed...
+2026-03-19 12:39:27,272 | INFO | And you are consistent! Decision accepted.
+2026-03-19 12:39:28,616 | INFO | Record already processed...
+2026-03-19 12:39:28,616 | INFO | And you are consistent! Decision accepted.
+2026-03-19 12:39:28,953 | INFO | Retraining HiC model at record 433, Group Fairness
+2026-03-19 12:39:31,488 | INFO | Record already processed...
+2026-03-19 12:39:31,488 | INFO | Inconsistent. You previously said: 1, Want to change old decision?
+2026-03-19 12:39:32,992 | INFO | Record already processed...
+2026-03-19 12:39:32,992 | INFO | And you are consistent! Decision accepted.
+2026-03-19 12:39:41,451 | INFO | Retraining HiC model at record 542, Group Fairness
+2026-03-19 12:39:46,457 | INFO | Record already processed...
+2026-03-19 12:39:46,457 | INFO | Inconsistent. You previously said: 0, Want to change old decision?
+2026-03-19 12:39:47,148 | INFO | Record already processed...
+2026-03-19 12:39:47,148 | INFO | And you are consistent! Decision accepted.
+2026-03-19 12:39:52,702 | INFO | Record already processed...
+2026-03-19 12:39:52,702 | INFO | Inconsistent. You previously said: 0, Want to change old decision?
+2026-03-19 12:39:53,632 | INFO | Record already processed...
+2026-03-19 12:39:53,632 | INFO | Inconsistent. You previously said: 1, Want to change old decision?
+2026-03-19 12:39:53,962 | INFO | Retraining HiC model at record 645
+2026-03-19 12:39:54,729 | INFO | Record already processed...
+2026-03-19 12:39:54,729 | INFO | Inconsistent. You previously said: 1, Want to change old decision?
+2026-03-19 12:39:55,056 | INFO | Retraining HiC model at record 648
+2026-03-19 12:39:55,709 | INFO | Record already processed...
+2026-03-19 12:39:55,709 | INFO | And you are consistent! Decision accepted.
+2026-03-19 12:39:55,960 | INFO | Retraining HiC model at record 650, Group Fairness
+2026-03-19 12:39:58,588 | INFO | Record already processed...
+2026-03-19 12:39:58,589 | INFO | Inconsistent. You previously said: 0, Want to change old decision?
+2026-03-19 12:39:58,924 | INFO | Retraining HiC model at record 669
+2026-03-19 12:40:00,862 | INFO | Record already processed...
+2026-03-19 12:40:00,862 | INFO | Inconsistent. You previously said: 1, Want to change old decision?
+2026-03-19 12:40:03,556 | INFO | Record already processed...
+2026-03-19 12:40:03,556 | INFO | Inconsistent. You previously said: 1, Want to change old decision?
+2026-03-19 12:40:05,819 | INFO | Record already processed...
+2026-03-19 12:40:05,819 | INFO | Inconsistent. You previously said: 0, Want to change old decision?
+2026-03-19 12:40:06,996 | INFO | Record already processed...
+2026-03-19 12:40:06,996 | INFO | Inconsistent. You previously said: 1, Want to change old decision?
+2026-03-19 12:40:07,824 | INFO | Record already processed...
+2026-03-19 12:40:07,824 | INFO | And you are consistent! Decision accepted.
+2026-03-19 12:40:08,554 | WARNING | DRIFT DETECTED | Phase: HiC | Strat: None
+2026-03-19 12:40:08,555 | INFO | DRIFT METRICS: Current desired performance: 65.8846 | Last 5 FEA: [0.6171167372267465, 0.6109410783874912, 0.6148344708953672, 0.6186888736528657, 0.6225046776695966]
+2026-03-19 12:40:08,561 | INFO | Drift df saved to: processed_data\compas\drift_checkpoints\HiC\iter_2\HiC_accurate_trusting_None.parquet
+2026-03-19 12:40:08,570 | INFO | HiC df saved to: .\processed_data\compas\hic_switch_ds\iter_2\results_accurate_trusting\hic_accurate_trusting.parquet
+2026-03-19 12:40:08,581 | INFO | HiC evaluation res saved to:      human_fairness  human_acc  systemic  frank_fairness  frank_acc  \
+0          0.000000   0.000000         0       -0.295539   0.622921   
+1          0.000000   0.500000         0       -0.295539   0.622921   
+2          0.000000   0.333333         0       -0.289963   0.628466   
+3          0.000000   0.500000         0       -0.288104   0.626617   
+4          0.000000   0.600000         0       -0.289963   0.628466   
+..              ...        ...       ...             ...        ...   
+738        0.506276   0.548747        75       -0.038414   0.597043   
+739        0.506964   0.547983        75       -0.038414   0.597043   
+740        0.506259   0.547222        75       -0.038414   0.597043   
+741        0.505556   0.547850        75       -0.038414   0.597043   
+742        0.504854   0.548476        75       -0.038414   0.597043   
+
+     rules_count  past_count  ok_count  no_count  xai_ok  xai_no  skept_count  \
+0              0           0         0         1       0       4            1   
+1              0           0         1         1       0       4            2   
+2              0           0         2         1       0       4            3   
+3              0           0         2         1       0       4            3   
+4              0           0         2         1       0       4            3   
+..           ...         ...       ...       ...     ...     ...          ...   
+738            0           1        58        75      18     282          133   
+739            0           1        58        76      18     286          134   
+740            0           1        58        76      18     286          134   
+741            0           1        58        76      18     286          134   
+742            0           1        58        76      18     286          134   
+
+     agree_count  disagree_count  
+0              0               0  
+1              0               0  
+2              0               0  
+3              1               0  
+4              1               1  
+..           ...             ...  
+738          415             169  
+739          415             169  
+740          416             169  
+741          417             169  
+742          418             169  
+
+[743 rows x 14 columns]
+2026-03-19 12:40:08,586 | INFO |  HiC Session completed. Training Acc: 0.6593, F1 Acc: 0.5684
+2026-03-19 12:40:08,586 | INFO |  Scaling validation and MIC sets...
+2026-03-19 12:40:08,628 | INFO | Calibrating Def Net: SMALL (Layers: [16, 8])
+2026-03-19 12:40:09,074 | INFO | Plots and conf matrix saved | ITER 2 | ARCHITECTURE small
+2026-03-19 12:40:09,075 | INFO | Calibrating Def Net: MEDIUM (Layers: [32, 16])
+2026-03-19 12:40:09,708 | INFO | Plots and conf matrix saved | ITER 2 | ARCHITECTURE medium
+2026-03-19 12:40:09,708 | INFO | Loading updated objects for the next iter...
+2026-03-19 12:40:10,729 | INFO | Iteration 2 res | Machine FEA: 62.03
+2026-03-19 12:40:10,734 | INFO | ---  ITERATION 3/3 ---
+2026-03-19 12:40:10,734 | INFO | Current performance benchmark: 62.03
+2026-03-19 12:40:22,670 | INFO | Retraining HiC model at record 108, Group Fairness
+2026-03-19 12:40:35,543 | INFO | Retraining HiC model at record 217, Group Fairness
+2026-03-19 12:40:37,334 | INFO | Record already processed...
+2026-03-19 12:40:37,335 | INFO | And you are consistent! Decision accepted.
+2026-03-19 12:40:47,639 | INFO | Record already processed...
+2026-03-19 12:40:47,639 | INFO | Inconsistent. You previously said: 1, Want to change old decision?
+2026-03-19 12:40:48,636 | INFO | Retraining HiC model at record 325, Group Fairness
+2026-03-19 12:40:48,953 | INFO | Record already processed...
+2026-03-19 12:40:48,954 | INFO | Inconsistent. You previously said: 0, Want to change old decision?
+2026-03-19 12:40:49,452 | INFO | Retraining HiC model at record 326
+2026-03-19 12:40:51,610 | INFO | Record already processed...
+2026-03-19 12:40:51,610 | INFO | And you are consistent! Decision accepted.
+2026-03-19 12:40:57,880 | INFO | Record already processed...
+2026-03-19 12:40:57,880 | INFO | Inconsistent. You previously said: 1, Want to change old decision?
+2026-03-19 12:40:59,868 | INFO | Record already processed...
+2026-03-19 12:40:59,868 | INFO | And you are consistent! Decision accepted.
+2026-03-19 12:41:01,236 | INFO | Record already processed...
+2026-03-19 12:41:01,237 | INFO | And you are consistent! Decision accepted.
+2026-03-19 12:41:01,999 | INFO | Retraining HiC model at record 433, Group Fairness
+2026-03-19 12:41:04,567 | INFO | Record already processed...
+2026-03-19 12:41:04,567 | INFO | Inconsistent. You previously said: 1, Want to change old decision?
+2026-03-19 12:41:06,186 | INFO | Record already processed...
+2026-03-19 12:41:06,187 | INFO | And you are consistent! Decision accepted.
+2026-03-19 12:41:15,274 | INFO | Retraining HiC model at record 542, Group Fairness
+2026-03-19 12:41:20,790 | INFO | Record already processed...
+2026-03-19 12:41:20,790 | INFO | Inconsistent. You previously said: 0, Want to change old decision?
+2026-03-19 12:41:21,686 | INFO | Record already processed...
+2026-03-19 12:41:21,687 | INFO | And you are consistent! Decision accepted.
+2026-03-19 12:41:28,029 | INFO | Record already processed...
+2026-03-19 12:41:28,029 | INFO | Inconsistent. You previously said: 0, Want to change old decision?
+2026-03-19 12:41:29,144 | INFO | Record already processed...
+2026-03-19 12:41:29,144 | INFO | Inconsistent. You previously said: 1, Want to change old decision?
+2026-03-19 12:41:29,725 | INFO | Retraining HiC model at record 645
+2026-03-19 12:41:30,699 | INFO | Record already processed...
+2026-03-19 12:41:30,699 | INFO | Inconsistent. You previously said: 1, Want to change old decision?
+2026-03-19 12:41:31,263 | INFO | Retraining HiC model at record 648
+2026-03-19 12:41:32,297 | INFO | Record already processed...
+2026-03-19 12:41:32,297 | INFO | And you are consistent! Decision accepted.
+2026-03-19 12:41:32,743 | INFO | Retraining HiC model at record 650, Group Fairness
+2026-03-19 12:41:35,874 | INFO | Record already processed...
+2026-03-19 12:41:35,874 | INFO | Inconsistent. You previously said: 0, Want to change old decision?
+2026-03-19 12:41:36,455 | INFO | Retraining HiC model at record 669
+2026-03-19 12:41:38,858 | INFO | Record already processed...
+2026-03-19 12:41:38,859 | INFO | Inconsistent. You previously said: 1, Want to change old decision?
+2026-03-19 12:41:41,832 | INFO | Record already processed...
+2026-03-19 12:41:41,832 | INFO | Inconsistent. You previously said: 1, Want to change old decision?
+2026-03-19 12:41:43,743 | INFO | Record already processed...
+2026-03-19 12:41:43,743 | INFO | Inconsistent. You previously said: 0, Want to change old decision?
+2026-03-19 12:41:44,930 | INFO | Record already processed...
+2026-03-19 12:41:44,930 | INFO | Inconsistent. You previously said: 1, Want to change old decision?
+2026-03-19 12:41:45,873 | INFO | Retraining HiC model at record 731
+2026-03-19 12:41:47,263 | INFO | Record already processed...
+2026-03-19 12:41:47,263 | INFO | And you are consistent! Decision accepted.
+2026-03-19 12:41:48,307 | WARNING | DRIFT DETECTED | Phase: HiC | Strat: None
+2026-03-19 12:41:48,309 | INFO | DRIFT METRICS: Current desired performance: 65.1280 | Last 5 FEA: [0.6412702768845067, 0.6448601588760096, 0.6484140905741758, 0.65193243250735, 0.645408550418661]
+2026-03-19 12:41:48,315 | INFO | Drift df saved to: processed_data\compas\drift_checkpoints\HiC\iter_3\HiC_accurate_trusting_None.parquet
+2026-03-19 12:41:48,323 | INFO | HiC df saved to: .\processed_data\compas\hic_switch_ds\iter_3\results_accurate_trusting\hic_accurate_trusting.parquet
+2026-03-19 12:41:48,332 | INFO | HiC evaluation res saved to:      human_fairness  human_acc  systemic  frank_fairness  frank_acc  \
+0          0.000000   0.000000         0       -0.036555   0.598891   
+1          0.000000   0.000000         0       -0.036555   0.598891   
+2          0.000000   0.333333         0       -0.038414   0.600739   
+3          0.000000   0.500000         0       -0.036555   0.598891   
+4          0.000000   0.600000         0       -0.040273   0.598891   
+..              ...        ...       ...             ...        ...   
+739        0.512535   0.556328        73        0.015489   0.591497   
+740        0.511822   0.555556        73        0.013631   0.589649   
+741        0.511111   0.556172        73        0.009913   0.593346   
+742        0.510402   0.556787        73        0.009913   0.593346   
+743        0.509695   0.556017        73        0.008055   0.591497   
+
+     rules_count  past_count  ok_count  no_count  xai_ok  xai_no  skept_count  \
+0              0           0         0         0       0       0            0   
+1              0           0         0         1       1       3            1   
+2              0           0         0         1       1       3            1   
+3              0           0         0         1       1       3            1   
+4              0           0         0         1       1       3            1   
+..           ...         ...       ...       ...     ...     ...          ...   
+739            0           1        58        73      16     276          131   
+740            0           1        58        73      16     276          131   
+741            0           1        58        73      16     276          131   
+742            0           1        58        73      16     276          131   
+743            0           1        58        73      16     276          131   
+
+     agree_count  disagree_count  
+0              1               0  
+1              1               0  
+2              1               1  
+3              2               1  
+4              3               1  
+..           ...             ...  
+739          447             140  
+740          448             140  
+741          449             140  
+742          450             140  
+743          450             141  
+
+[744 rows x 14 columns]
+2026-03-19 12:41:48,340 | INFO |  HiC Session completed. Training Acc: 0.7026, F1 Acc: 0.6350
+2026-03-19 12:41:48,340 | INFO |  Scaling validation and MIC sets...
+2026-03-19 12:41:48,382 | INFO | Calibrating Def Net: SMALL (Layers: [16, 8])
+2026-03-19 12:41:48,769 | INFO | Plots and conf matrix saved | ITER 3 | ARCHITECTURE small
+2026-03-19 12:41:48,769 | INFO | Calibrating Def Net: MEDIUM (Layers: [32, 16])
+2026-03-19 12:41:49,688 | INFO | Plots and conf matrix saved | ITER 3 | ARCHITECTURE medium
+2026-03-19 12:41:49,688 | INFO | Loading updated objects for the next iter...
+2026-03-19 12:41:51,109 | INFO | Iteration 3 res | Machine FEA: 64.24
+2026-03-19 12:41:51,114 | INFO | ALL HIC ITERATIONS FINISHED SUCCESSFULLY!

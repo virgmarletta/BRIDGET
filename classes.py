@@ -5,9 +5,24 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
-import torch.optim as optim
-import heapq
 from sklearn.base import BaseEstimator
+import copy
+import math
+from pyexpat import model
+import torch
+import numpy as np
+import torch.nn as nn
+import torch.nn.functional as F
+import argparse
+import os
+import random
+import shutil
+import time
+import torch.utils.data as data
+import sys
+import pickle
+import logging
+from tqdm import tqdm
 
 
 # -- Di seguito manteniamo la classe principale User di FRANK, che rappresenta le caratteristiche (in senso di attributi) dell'User
@@ -482,10 +497,14 @@ class PyTorchWrapper(BaseEstimator):  # esclusivamente per la XAI in MiC
             X= X[self.features_names].values
         
         X_t = torch.tensor(X, dtype= torch.float32)
+        device = next(self.model.parameters()).device
+    
+        # 3. Move the data to that device (The missing step!)
+        X_t = X_t.to(device)
 
         with torch.no_grad():
             outputs = self.model(X_t)
-            preds = torch.argmax(outputs, dim=1).numpy()
+            preds = torch.argmax(outputs, dim=1).cpu().numpy()
         return preds
 
 
@@ -531,18 +550,101 @@ class PyTorchWrapper(BaseEstimator):  # esclusivamente per la XAI in MiC
 
 
 
+class Baseline:
 
-class PriorityManager: 
+    def __init__(self, 
+                 user, #user is already calibrated
+                 label,
+                 train_set,
+                 test_set,
+                 val_set,
+                 x_train,
+                 y_train,
+                 x_test,
+                 y_test,
+                 x_val,
+                 y_val,
+                 model= None,
+                 strat= None):
+        
+        ## note, remember that train set and test set must be transformed to tensors anyways
 
-    def __init__(self):
-        self.queue= []
+        self.model= model
+        self.user= user
+        self.label= label
+        self.strat= strat
 
-    def is_empty(self):
-        return len(self.queue) == 0
+        self.train_set= train_set
+        self.test_set= test_set
+        self.val_set= val_set
+        self.features_names= [c for c in self.train_set if c != self.label]
 
-    def add_to_queue(self, priority, idx):
-        heapq.heappush(self.queue, (priority, idx))
+        self.x_train= x_train
+        self.y_train= y_train
+
+        self.x_test= x_test
+        self.y_test= y_test
+
+        self.x_val= x_val
+        self.y_val= y_val
+
+    
+
+    def fit_expert(self, scaler):
+    
+        train_scaled= scaler.fit_transform(self.x_train)
+        test_scaled= scaler.transform(self.x_test)
+        val_scaled= scaler.transform(self.x_val)
+
+        train= pd.DataFrame(train_scaled, columns= self.features_names)
+        test= pd.DataFrame(test_scaled, columns= self.features_names)
+        val= pd.DataFrame(val_scaled, columns= self.features_names)
+
+        train_user_preds= []
+        test_user_preds= []
+        val_user_preds= []
+
+
+        for i in tqdm(range(len(train))):
+            x= train.iloc[i]
+            y_gt= self.y_train.iloc[i]
+            
+            user_pred= self.user.predict(x, y_gt, i)
+            train_user_preds.append(user_pred)
         
 
-    def exit_queue(self):
-        return heapq.heappop(self.queue) if self.queue else None
+        for i in tqdm(range(len(test))):
+            x= test.iloc[i]
+            y_gt= self.y_test.iloc[i]
+            
+            user_pred = self.user.predict(x, y_gt, i)
+           
+            test_user_preds.append(user_pred)
+        
+        for i in tqdm(range(len(val))):
+            x= val.iloc[i]
+            y_gt= self.y_val.iloc[i]
+            
+            user_pred = self.user.predict(x, y_gt, i)
+           
+            val_user_preds.append(user_pred)
+        
+        train_df = self.train_set.copy()
+        test_df = self.test_set.copy()
+        val_df = self.val_set.copy()
+
+        train_df[self.features_names] = train
+        test_df[self.features_names] = test
+        val_df[self.features_names] = val
+
+        train_df['expert prediction'] = train_user_preds
+        test_df['expert prediction'] = test_user_preds
+        val_df['expert prediction'] = val_user_preds
+
+        return train_df, test_df, val_df
+    
+    
+    def fit_model(self, train_loader):
+        pass
+
+
