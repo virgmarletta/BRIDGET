@@ -1,0 +1,8 @@
+{
+    "model_key": "64_32_acc_nt_model",
+    "tau_threshold": 0.77,
+    "best_val_acc": 0.9043982895540623,
+    "net_path": "./nets/adult/iter_3/acc_nt_models/64_32/64_32_model_6.pt",
+    "ds_name": "adult",
+    "iteration": 3
+}

@@ -129,8 +129,11 @@ class BRIDGET:
                                f"iter_{self.training_iter}")
             
             os.makedirs(dir, exist_ok=True)
-            file_path = os.path.join(dir, f"{current_phase}_{self.name}_{strat}.parquet")
-
+            if current_phase == 'MiC' and self.human_deferral_cost is not None:
+                file_path = os.path.join(dir, f"{current_phase}_{self.name}_{strat}_{self.human_deferral_cost}.parquet")
+            else:
+                file_path = os.path.join(dir, f"{current_phase}_{self.name}_{strat}.parquet")
+                
             current_log.to_parquet(file_path, index= False)
 
             self.log.info(f"Drift df saved to: {file_path}")
@@ -202,7 +205,7 @@ class HiC(BRIDGET):
         self.hic_acc = metrics.Accuracy()
         self.hic_F1 = metrics.F1()
         self.fairness_records = [len(self.X) - 1]
-        for i in range(0, 100, 5)[1:]:
+        for i in range(0, 100, 10)[1:]: #was 5 before
             self.fairness_records.append(percentage(i, len(self.X)))
 
         self.retrain_count= 0
@@ -326,17 +329,17 @@ class HiC(BRIDGET):
                 if record in self.processed: #Duplicated record
                     self.processed[record]['times'] += 1
 
-                    self.log.info("Record already processed...")
+                    self.log.info(f"Record, row {i} already processed...")
                     old_decision = int(self.processed[record]['decision'])                    
 
                     if user_truth == old_decision:
                         
-                        self.log.info("And you are consistent! Decision accepted.")
+                        self.log.info(f"And you are consistent! Decision accepted, class {old_decision}, record {i}.")
                         decision = old_decision
                     
                     else:
                 
-                        self.log.info(f"Inconsistent. You previously said: {old_decision}, Want to change old decision?")
+                        self.log.info(f"Inconsistent, record {i}. You previously said: {old_decision}, Want to change old decision?")
                         confirm = random.choices(population=[False, True], weights=[0.8, 0.2], k=1)[0]
 
                         if confirm == False:
@@ -377,13 +380,7 @@ class HiC(BRIDGET):
                                         
                     machine_conf_lvls.append(pred_proba)
                     
-                    # FEA COMPUTATION (con la nuova formula il for loop ammazza tutto)
-
-                    fea_num_machine *= 0.99
-                    fea_num_user *= 0.99
-
-                    fea_den_machine *= 0.99
-                    fea_den_user *= 0.99
+                    # FEA COMPUTATION (con la nuova formula il for loop ammazza tutto
 
                     if machine_prediction == y:
                         fea_num_machine += 1 
@@ -421,7 +418,7 @@ class HiC(BRIDGET):
 
                     # - LABELING LOGIC
 
-                    provider= 'H'
+                    #provider= 'H'
                     ideal_value = ideal_record_test(x, self.rule_att, self.rule_value) #Is record covered by Ideal Rule Check?
 
                     vs_records, vs_decision = get_value_swap_records(x, self.processed,
@@ -454,6 +451,7 @@ class HiC(BRIDGET):
 
 
                     elif vs_decision is not None and user_truth != vs_decision and self.PAST: #IRC not triggered. User not consistent w.r.t. Individual Fairnesss
+                        self.log.info(f"Record {i}, user not consistend w Individual Fairness")
                         self.processed[record]['vs'] = True
                         self.past_count += 1
                         for rec in vs_records:
@@ -464,10 +462,12 @@ class HiC(BRIDGET):
                             if machine_prediction == vs_decision:
                                 provider= 'M'
                                 self.stats[machine_prediction]['machine']['got'] += 1
+                                self.log.info(f"Not confirmed, assigned to M record {i}")
 
                         elif confirm in [1, "1", True]:
                             decision = user_truth
                             provider= 'H'
+                            self.log.info(f"Confirmed, assigned to H record {i}")
                             self.stats[user_truth]['user']['got'] += 1
                             if machine_prediction == user_truth:
                                 self.stats[machine_prediction]['machine']['got'] += 1
@@ -485,7 +485,9 @@ class HiC(BRIDGET):
                             self.stats[machine_prediction]['machine']['got'] += 1
                     
                     else: #Other conditions not triggered. Skeptical Learning Check
+                        
                         if user_truth != machine_prediction and self.SKEPT:
+                            self.log.info(f"Skepticality at record {i}, coeff: {skepticism}")
 
                             if skepticism > self.skepticism_threshold:
                                 #print("High skepticism, asking for XAI...")
@@ -496,7 +498,7 @@ class HiC(BRIDGET):
                                 #confirm = None
                                 
                                 if confirm in [0, "0", False]: # Frank originale dice if confirm == None ma non si attiva mai
-                                    
+                                    self.log.info(f"XAI requested at record {i}")
                                     start_time = time.time()
                                     xai_log = prepr_log_for_xai(warm_up_set, self.processed, self.attr_list, self.target)
 
@@ -572,6 +574,7 @@ class HiC(BRIDGET):
                                             confirm = False           
 
                                 if confirm in [0, "0", False]:
+                                    self.log.info(f"Unconfirmed explaination, record {i} given to user")
                                     self.no_count += 1
                                     decision = user_truth
                                     provider= 'H'
@@ -579,6 +582,7 @@ class HiC(BRIDGET):
                                     
                                                             
                                 else:
+                                    self.log.info(f"Explaination satisfactory, record {i} given to machine")
                                     self.ok_count += 1
                                     decision = machine_prediction
                                     provider= 'M'
@@ -586,12 +590,14 @@ class HiC(BRIDGET):
 
                                     
                             else:
+                                self.log.info(f"Skepticality less than threshold, record {i} given to user")
                                 self.disagree_count += 1
                                 decision = user_truth
                                 provider= 'H'
                                 self.stats[user_truth]['user']['got'] += 1
                                 
                         else:
+                            self.log.info(f"Both agreed, record {i} given to user")
                             self.agree_count += 1
                             decision = user_truth
                             provider='H'
@@ -827,7 +833,7 @@ class MiC(BRIDGET):
 
         self.belief_threshold= belief_threshold
         self.tau= tau_threshold
-        self.anqi_mao_thresh= anqi_mao_thresh
+        #self.anqi_mao_thresh= anqi_mao_thresh
         # works just like the one in HiC, however like a lower performance bound
         self.performance_thresh= (self.benchmark_performance - (self.benchmark_performance * self.performance_delta)) /100
 
@@ -936,7 +942,7 @@ class MiC(BRIDGET):
                 deferral_proba= p_defer(x_rec, r_net)
                 p_val = deferral_proba.item()
                 #print(p_val)
-                if p_val >= self.anqi_mao_thresh:
+                if p_val >= 0.5: # prova con 0.5
                     
                     x_input_user = x_rec.squeeze().cpu().numpy()    
                     user_pred = self.user_model.predict(x_input_user, y_gt, record)
@@ -1045,9 +1051,7 @@ class MiC(BRIDGET):
             ## - FEA COMPUTATION
 
             # MiC System FEA
-            fea_mic_num *= 0.99  # decay factor could also be passed as input instead of hardcoded, its a detail tho i guess
-            fea_mic_den *= 0.99
-
+           
             if decision == y_gt:
                 fea_mic_num += 1 
 
@@ -1063,8 +1067,6 @@ class MiC(BRIDGET):
             # also to benchmark we needed the overall system FEA based on the decision too since its a global measure
 
             if provider == 'M':
-                fea_net_num*= 0.99
-                fea_net_den*= 0.99
 
                 if net_output == y_gt:
                     fea_net_num += 1 
@@ -1117,7 +1119,7 @@ class MiC(BRIDGET):
 
             mic_drift= exit_MiC(self.fea_mic,
                                 self.performance_thresh,
-                                self.warm_up
+                                self.undeferred_decisions
             )
             
 
@@ -1148,10 +1150,18 @@ class MiC(BRIDGET):
                 dir = os.path.join("MIC_res", 
                                    f"{self.dataset_name}", 
                                    f"iter_{self.training_iter}", 
-                                   f"{self.name}_{strat}",
-                                   f"beta_{self.human_deferral_cost}")
+                                   f"{self.name}_{strat}"
+                                   )
                 
-                mic_pref= f"MIC_DRIFT_{self.mic_model_name}_"
+                
+                if two_step_deferral:
+                    dir= os.path.join(dir,
+                                           f"beta_{self.human_deferral_cost}"
+                                           )
+                    mic_pref= f"MIC_DRIFT_{self.mic_model_name}_"
+
+                else:
+                    mic_pref= f"MIC_DRIFT_{self.mic_model_name}_"
 
                 metrics_gs = {
                             "time_steps": times_GS,
@@ -1206,10 +1216,16 @@ class MiC(BRIDGET):
         dir = os.path.join("MIC_res", 
                                    f"{self.dataset_name}", 
                                    f"iter_{self.training_iter}", 
-                                   f"{self.name}_{strat}",
-                                   f"beta_{self.human_deferral_cost}") 
-
-        mic_pref= f"{self.mic_model_name}_"
+                                   f"{self.name}_{strat}"
+                                   ) 
+      
+        if two_step_deferral:
+            dir= os.path.join(dir,
+                            f"beta_{self.human_deferral_cost}"
+                            )
+            mic_pref= f"{self.mic_model_name}_"
+        else:
+            mic_pref= f"{self.mic_model_name}_"
 
         metrics_gs = {
                         "time_steps": times_GS,
@@ -1221,7 +1237,7 @@ class MiC(BRIDGET):
                     }
                 
         mic_res = { "model.pkl": self.mic_model,
-                    "Performances.txt": self.mic_results,
+                    "Performances.txt": self.mic_results, #this basically being the processed log in the mic phase
                     "Model_Confidence.txt": mach_confidence,
                     "MiC_stats.txt": self.stats,
                     "System_FEA.txt": self.fea_mic,

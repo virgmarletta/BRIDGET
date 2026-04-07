@@ -1,0 +1,24 @@
+2026-03-27 23:30:27,059 | INFO | Entered Net Calibration | USER inaccurate_trusting | iter None
+2026-03-27 23:30:27,604 | INFO | Calibrating TAU thresholds
+2026-03-27 23:30:27,607 | INFO | Entering Evaluate Threshold
+2026-03-27 23:30:27,613 | INFO | All tau calibration results saved to .\nets\compas\iter_None\inaccurate_trusting_models\16_8\tau_calibration_results.parquet
+2026-03-27 23:30:27,613 | INFO | Best tau: 0.5, Best accuracy: 0.40812557710064634, Best cov: 0.0
+2026-03-27 23:30:27,614 | INFO |  Best tau for compas, Iter None: 0.5 (Acc: 0.40812557710064634)
+2026-03-27 23:30:27,615 | INFO | Entered Net Calibration | USER inaccurate_trusting | iter None
+2026-03-27 23:30:28,830 | INFO | Calibrating TAU thresholds
+2026-03-27 23:30:28,833 | INFO | Entering Evaluate Threshold
+2026-03-27 23:30:28,838 | INFO | All tau calibration results saved to .\nets\compas\iter_None\inaccurate_trusting_models\32_16\tau_calibration_results.parquet
+2026-03-27 23:30:28,838 | INFO | Best tau: 0.5700000000000001, Best accuracy: 0.6968390804597702, Best cov: 0.0
+2026-03-27 23:30:28,838 | INFO |  Best tau for compas, Iter None: 0.5700000000000001 (Acc: 0.6968390804597702)
+2026-03-27 23:30:28,839 | INFO | Entered Net Calibration | USER inaccurate_trusting | iter None
+2026-03-27 23:30:29,794 | INFO | Calibrating TAU thresholds
+2026-03-27 23:30:29,798 | INFO | Entering Evaluate Threshold
+2026-03-27 23:30:29,803 | INFO | All tau calibration results saved to .\nets\compas\iter_None\inaccurate_trusting_models\64_32\tau_calibration_results.parquet
+2026-03-27 23:30:29,803 | INFO | Best tau: 0.58, Best accuracy: 0.6996951219512195, Best cov: 0.0
+2026-03-27 23:30:29,803 | INFO |  Best tau for compas, Iter None: 0.58 (Acc: 0.6996951219512195)
+2026-03-27 23:30:29,804 | INFO | Entered Net Calibration | USER inaccurate_trusting | iter None
+2026-03-27 23:30:30,527 | INFO | Calibrating TAU thresholds
+2026-03-27 23:30:30,533 | INFO | Entering Evaluate Threshold
+2026-03-27 23:30:30,539 | INFO | All tau calibration results saved to .\nets\compas\iter_None\inaccurate_trusting_models\128_64\tau_calibration_results.parquet
+2026-03-27 23:30:30,539 | INFO | Best tau: 0.58, Best accuracy: 0.6984848484848485, Best cov: 0.0
+2026-03-27 23:30:30,539 | INFO |  Best tau for compas, Iter None: 0.58 (Acc: 0.6984848484848485)

@@ -1,0 +1,8 @@
+{
+    "model_key": "64_32_inacc_nt_model",
+    "tau_threshold": 0.52,
+    "best_val_acc": 0.4491279069767442,
+    "net_path": ".\\nets\\compas\\iter_1\\inacc_nt_models\\64_32\\64_32_model_4.pt",
+    "ds_name": "compas",
+    "iteration": 1
+}

@@ -1,0 +1,8 @@
+{
+    "model_key": "64_32_inacc_nt_model",
+    "tau_threshold": 0.64,
+    "best_val_acc": 0.7637075718015666,
+    "net_path": "./nets/dutch/iter_2/inacc_nt_models/64_32/64_32_model_7.pt",
+    "ds_name": "dutch",
+    "iteration": 2
+}

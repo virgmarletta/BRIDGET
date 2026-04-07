@@ -1,6 +1,0 @@
-{
-    "16_8_inacc_t_model": {
-        "tau_threshold": 0.59,
-        "net_path": ".\\nets\\dutch\\iter_2\\inacc_t_models\\16_8_inacc_t_model_11.pt"
-    }
-}

@@ -12,8 +12,6 @@
 
 # ### Libraries, Retrieving data
 
-
-
 # In[ ]:
 
 
@@ -85,7 +83,7 @@ ds_name= 'dutch'
 # In[ ]:
 
 
-data= pd.read_csv(fr".\datasets\{ds_name}.csv")
+data= pd.read_csv(fr"./datasets/{ds_name}.csv")
 data.info()
 
 
@@ -251,6 +249,8 @@ test_batch_1[target]= y_hic_test
 
 expert= 'accurate_trusting'
 
+set_all_seeds(42)
+
 base = tree.HoeffdingTreeClassifier(grace_period=100)
 
 htree= tree.HoeffdingAdaptiveTreeClassifier(grace_period= 100, seed= 42)
@@ -260,48 +260,63 @@ adwin= ensemble.ADWINBaggingClassifier(model= base, n_models= 15, seed= 42)
 srp= ensemble.SRPClassifier(model= base, n_models=15, seed= 42)
 arf= forest.ARFClassifier(n_models= 15, grace_period= 100, max_features='sqrt', seed=42)
 
-models= [htree, efdt, ada, adwin, srp, arf]
+models= {
+    'HoeffdingATC': htree, 
+    "EFDT": efdt, 
+    "AdaBoostCl":ada, 
+    "ADWINBAGGING": adwin, 
+    "SRPCL": srp, 
+    "ARF":arf   
+    }
 
+prepr_dir= DATASETS[ds_name]['base_obj_paths']['preprocessors']
+os.makedirs(prepr_dir, exist_ok=True)
 
-for model in models:
+model_dir= DATASETS[ds_name]['base_obj_paths']['incremental_learners']
+os.makedirs(model_dir, exist_ok=True)
 
-    bridget_inst= HiC(RULE= FRANK_RULES['RULE'], 
-                      PAST=FRANK_RULES['PAST'], 
-                      SKEPT= FRANK_RULES['SKEPT'], 
-                      GROUP= FRANK_RULES['GROUP'],
-                      EVA=FRANK_RULES['EVA'], 
-                      N_BINS=FRANK_RULES['N_BINS'], 
-                      N_VAR=FRANK_RULES['N_VAR'], 
-                      MAX=FRANK_RULES['MAX'], 
-                    rule_att= DATASETS[ds_name]['rule_att'], 
-                    rule_value= DATASETS[ds_name]['rule_value'],  
-                    hic_model_name= 'placeholder', 
-                    hic_model= model,
-                    start_performance= DATASETS[ds_name]['start_performance'],
-                    allocated_budget= DATASETS[ds_name]['allocated_budget'],
-                    skepticism_threshold= DATASETS[ds_name]['skepticism_threshold'],
-                    performance_delta= DATASETS[ds_name]['performance_delta'],
-                    dataset_name= ds_name,
-                    user_name= 'placeholder',
-                    batch1=df_batch_1, batch3=mic_data, batch1_test=test_batch_1, 
-                    target=DATASETS[ds_name]['target'], 
-                    user_model='placeholder', 
-                    protected=DATASETS[ds_name]['protected'], cats=categoricals, num=numericals,
-                    preprocessor=prepr_transf,
-                    training_iter= 0 
+for model_name, model_obj in models.items():
+
+    bridget_inst= HiC(RULE= FRANK_RULES['RULE'],
+                PAST= FRANK_RULES['PAST'], 
+                SKEPT=FRANK_RULES['SKEPT'], 
+                GROUP= FRANK_RULES['GROUP'], 
+                EVA=FRANK_RULES['EVA'], 
+                n_bins=FRANK_RULES['N_BINS'], 
+                n_var=FRANK_RULES['N_VAR'], 
+                maxc=FRANK_RULES['MAXC'], 
+                rule_att=DATASETS[ds_name]['rule_att'], 
+                rule_value=DATASETS[ds_name]['rule_value'], 
+                hic_model_name='placeholder', 
+                hic_model=model_obj,
+                start_performance= DATASETS[ds_name]['start_performance'],
+                allocated_budget= DATASETS[ds_name]['allocated_budget'][0],
+                skepticism_threshold= DATASETS[ds_name]['skepticism_threshold'],
+                performance_delta= DATASETS[ds_name]['performance_delta'],
+                dataset_name= ds_name,
+                user_name= 'placeholder',
+                batch1=df_batch_1, batch3=mic_data, batch1_test=test_batch_1, 
+                target=target, 
+                user_model='placeholder', 
+                protected=DATASETS[ds_name]['protected'], cats=categoricals, num=numericals,
+                preprocessor=prepr_transf,
+                training_iter= 0 
                 )
 
     bridget_inst.train(X_avv_dict, y_avv_train, X_avv_dict_test, y_avv_test)
 
-trained_arf= arf
-model_name= "ARF"
-save_dir= fr".\incr_learner\{ds_name}"
-os.makedirs(save_dir, exist_ok= True)
-file_path = os.path.join(save_dir, f"{model_name}.pkl")
+    base_preprocessor = bridget_inst.preprocessor
+    base_model = bridget_inst.hic_model
 
-with open(file_path, 'wb') as f:
-    pickle.dump(trained_arf, f)
-print(f"Incremental Model saved in: {file_path}")
+
+    prepr_filename = f"{model_name}_preprocessor.pkl"
+    model_filename = f"{model_name}_model.pkl"
+
+    joblib.dump(base_preprocessor, os.path.join(prepr_dir, prepr_filename))
+    joblib.dump(base_model, os.path.join(model_dir, model_filename))
+
+
+trained_arf= arf
 
 
 # ### Calibrating Experts
@@ -310,7 +325,7 @@ print(f"Incremental Model saved in: {file_path}")
 # In[ ]:
 
 
-with open(fr".\experts_{ds_name}.yaml", "r") as f:
+with open(fr"./experts_{ds_name}.yaml", "r") as f:
     config= yaml.safe_load(f)
 
 
@@ -355,7 +370,7 @@ for name in expert_names:
         )
     res = experts_obj[name].fit(X_exp_final, y_hic_train, tol= 0.001)
 
-    save_dir= fr".\trained_experts\{ds_name}"
+    save_dir= fr"./trained_experts/{ds_name}"
     os.makedirs(save_dir, exist_ok= True)
     file_path = os.path.join(save_dir, f"{name}.pkl")
 
@@ -429,8 +444,8 @@ base_objects = {
       "scaler": None
 } 
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+#device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device= torch.device("cpu")
 #add these once you get to mic phase: "run_confidence": True, "run_mao": True
 
 
@@ -446,7 +461,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 current_user_name= "accurate_trusting"
 user_suffix= 'acc_t'
 
-exp_path= fr".\trained_experts\{ds_name}\{name}.pkl"
+exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
 current_expert= joblib.load(exp_path)
 
 
@@ -473,8 +488,8 @@ run_hic(ds_name, params, objects)
 # In[ ]:
 
 
-#chosen net: "large", 32/16
-"""
+#chosen nets: "large", 32/16
+
 net_layers= [32,16]
 hic_df_general_path= DATASETS[ds_name]['paths']['hic_df_save_path']
 net_general_path= DATASETS[ds_name]['paths']['def_net_save_path']
@@ -511,7 +526,6 @@ for i in range (1, 4):
                         iteration=i,
                         def_net_layers=net_layers
                         ) #default had batch seize 128, epochs = 20 
-"""
 
 
 # #### MIC
@@ -519,11 +533,10 @@ for i in range (1, 4):
 # In[ ]:
 
 
-"""
 current_user_name= "accurate_trusting"
 user_suffix= 'acc_t'
 
-exp_path= fr".\trained_experts\{ds_name}\{name}.pkl"
+exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
 current_expert= joblib.load(exp_path)
 
 
@@ -555,11 +568,11 @@ for i in range(1,4):
                             objects=objects,
                             iteration=i,
                             strat_1_res=strat_1,
-                            strat_2_res=strat_2,
-                            min_coverage=0.6)
+                            strat_2_res=strat_2
+                            )
 
 
-"""
+
 
 
 
@@ -575,7 +588,7 @@ for i in range(1,4):
 current_user_name= "inaccurate_trusting"
 user_suffix= 'inacc_t'
 
-exp_path= fr".\trained_experts\{ds_name}\{name}.pkl"
+exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
 current_expert= joblib.load(exp_path)
 
 
@@ -597,13 +610,14 @@ objects.update({
 run_hic(ds_name, params, objects)
 
 
+
 # #### Calib
 
 # In[ ]:
 
 
 #chosen nets: "large", 32/16
-"""
+
 layers= [32,16]
 hic_df_general_path= DATASETS[ds_name]['paths']['hic_df_save_path']
 net_general_path= DATASETS[ds_name]['paths']['def_net_save_path']
@@ -641,19 +655,16 @@ for i in range (1, 4):
                         def_net_layers=net_layers
                         ) #default had batch seize 128, epochs = 20 
 
-"""
-
 
 # #### MIC
 
 # In[ ]:
 
 
-"""
 current_user_name= "inaccurate_trusting"
 user_suffix= 'inacc_t'
 
-exp_path= fr".\trained_experts\{ds_name}\{name}.pkl"
+exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
 current_expert= joblib.load(exp_path)
 
 
@@ -685,10 +696,9 @@ for i in range(1,4):
                             objects=objects,
                             iteration=i,
                             strat_1_res=strat_1,
-                            strat_2_res=strat_2,
-                            min_coverage=0.6)
+                            strat_2_res=strat_2)
 
-"""
+
 
 
 # ### Expert: Accurate, Not Trusting 
@@ -703,7 +713,7 @@ for i in range(1,4):
 current_user_name= "accurate_not_trusting"
 user_suffix= 'acc_nt'
 
-exp_path= fr".\trained_experts\{ds_name}\{name}.pkl"
+exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
 current_expert= joblib.load(exp_path)
 
 
@@ -731,7 +741,7 @@ run_hic(ds_name, params, objects)
 
 
 #chosen nets: "large", 32/16
-"""
+
 layers= [32,16]
 hic_df_general_path= DATASETS[ds_name]['paths']['hic_df_save_path']
 net_general_path= DATASETS[ds_name]['paths']['def_net_save_path']
@@ -767,7 +777,6 @@ for i in range (1, 4):
                         iteration=i,
                         def_net_layers=net_layers
                         ) #default had batch seize 128, epochs = 20 
-"""
 
 
 # #### MIC
@@ -775,11 +784,10 @@ for i in range (1, 4):
 # In[ ]:
 
 
-"""
 current_user_name= "accurate_not_trusting"
 user_suffix= 'acc_nt'
 
-exp_path= fr".\trained_experts\{ds_name}\{name}.pkl"
+exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
 current_expert= joblib.load(exp_path)
 
 
@@ -811,9 +819,8 @@ for i in range(1,4):
                             objects=objects,
                             iteration=i,
                             strat_1_res=strat_1,
-                            strat_2_res=strat_2,
-                            min_coverage=0.6)
-"""
+                            strat_2_res=strat_2)
+
 
 
 
@@ -829,7 +836,7 @@ for i in range(1,4):
 current_user_name= "inaccurate_not_trusting"
 user_suffix= 'inacc_nt'
 
-exp_path= fr".\trained_experts\{ds_name}\{name}.pkl"
+exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
 current_expert= joblib.load(exp_path)
 
 
@@ -857,7 +864,7 @@ run_hic(ds_name, params, objects)
 
 
 #chosen nets: "large", 32/16
-"""
+
 layers= [32,16]
 hic_df_general_path= DATASETS[ds_name]['paths']['hic_df_save_path']
 net_general_path= DATASETS[ds_name]['paths']['def_net_save_path']
@@ -894,7 +901,6 @@ for i in range (1, 4):
                         iteration=i,
                         def_net_layers=net_layers
                         ) #default had batch seize 128, epochs = 20 
-"""
 
 
 # #### MIC
@@ -902,11 +908,10 @@ for i in range (1, 4):
 # In[ ]:
 
 
-"""
 current_user_name= "inaccurate_not_trusting"
 user_suffix= 'inacc_nt'
 
-exp_path= fr".\trained_experts\{ds_name}\{name}.pkl"
+exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
 current_expert= joblib.load(exp_path)
 
 
@@ -938,10 +943,9 @@ for i in range(1,4):
                             objects=objects,
                             iteration=i,
                             strat_1_res=strat_1,
-                            strat_2_res=strat_2,
-                            min_coverage=0.6)
+                            strat_2_res=strat_2)
 
 
-"""
+
 
 

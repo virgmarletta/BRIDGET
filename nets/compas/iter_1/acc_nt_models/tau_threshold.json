@@ -1,8 +1,0 @@
-{
-    "model_key": "32_16_acc_nt_model",
-    "tau_threshold": 0.99,
-    "best_val_acc": 0.6275565123789021,
-    "net_path": ".\\nets\\compas\\iter_1\\acc_nt_models\\32_16\\32_16_model_12.pt",
-    "ds_name": "compas",
-    "iteration": 1
-}

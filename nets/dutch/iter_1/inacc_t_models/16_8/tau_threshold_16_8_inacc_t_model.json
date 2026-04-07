@@ -1,0 +1,8 @@
+{
+    "model_key": "16_8_inacc_t_model",
+    "tau_threshold": 0.6,
+    "best_val_acc": 0.7745936698032506,
+    "net_path": "./nets/dutch/iter_1/inacc_t_models/16_8/16_8_model_18.pt",
+    "ds_name": "dutch",
+    "iteration": 1
+}

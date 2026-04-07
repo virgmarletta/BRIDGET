@@ -57,6 +57,7 @@ def net_calibration(ds_name,
                     step_size,
                     gamma,
                     device,
+                    log,
                     baseline= False):
 
 
@@ -71,6 +72,7 @@ def net_calibration(ds_name,
     net_params: dict containing the training configuration (eg dropout_coeff, lr, weight_decay, smoothing)
 
     """
+    log.info(f"Entered Net Calibration | USER {user_suffix} | iter {iter}")
     # 1. creating the tensors ds
     X_cal, y_cal, train_loader = create_loader(train_set, feature_order, target)
 
@@ -149,33 +151,28 @@ def net_calibration(ds_name,
 
     report_df = pd.DataFrame(cm_report).transpose()
     report_save_path = os.path.join(save_dir, f"report_{model_name}.parquet")
-    report_df.to_csv(report_save_path)
+    report_df.to_parquet(report_save_path)
 
-    
+    log.info("Calibrating TAU thresholds")
 
+    choose_optimal_tau(ds_name=ds_name,
+                       user_suffix=user_suffix, # da fuori
+                       net=net,
+                       model_path=save_dir, #viene dall'alto
+                       device=device, #probabilmente viene dall'alto 
+                       layers=net_layers,#vengono dall'alto, always a lst btw
+                       validation_set=val_set,
+                       feat_order= feature_order,
+                       target=target,
+                       iteration= iter,
+                       log=log,
+                       min_coverage= 0.6
+                        )
 
-
-
-
-
-def plot(vals):
-
-    plt.plot(vals, linestyle='-', color='royalblue')
-
-    avg_fea= np.mean(vals)
-    plt.axhline(y=avg_fea, color='red', linestyle='--', label=f'Avg: {avg_fea:.4f}')
-    plt.title('Evolution of FEA values (MiC phase)', fontsize=10)
-    plt.xlabel('Records', fontsize=10)
-    plt.ylabel('FEA values', fontsize=10)
-    plt.ylim(0.0, 1.0)
-    plt.legend(loc= 'lower right')
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-
-    plt.show()
 
 
 
+    
 
 def hic_session(warm_up_set, # PARAMS
                 hic_df_save_path, #main config 
@@ -253,7 +250,7 @@ def hic_session(warm_up_set, # PARAMS
     eval_path = os.path.join(iter_dir,  f"hic_{hic_inst.name}_evaluation.parquet")
     evaluation_results.to_parquet(eval_path, index=False)
 
-    log.info(f"HiC evaluation res saved to: {evaluation_results}")
+    log.info(f"HiC evaluation res saved to: {eval_path}")
     
     
     return hic_df, hic_inst, evaluation_results, train_acc, train_f1
@@ -297,6 +294,7 @@ def run_hic(ds_name, params, objects):
     budgets=DATASETS[ds_name]['allocated_budget'] #since this is a list you'll need to get the proper one
     performance_delta=DATASETS[ds_name]['performance_delta']
     skept_thresholds=DATASETS[ds_name]['skepticism_threshold']
+    batches_offsets= DATASETS[ds_name]['batches_offset']
 
     feature_order= params['feature_order']
     net_params=DATASETS[ds_name]['net_params']
@@ -306,6 +304,7 @@ def run_hic(ds_name, params, objects):
     rule_att= DATASETS[ds_name]['rule_att']
     rule_value= DATASETS[ds_name]['rule_value']
     rules=FRANK_RULES
+
     
     # instantiating results dict
     hic_res= {
@@ -321,6 +320,11 @@ def run_hic(ds_name, params, objects):
         log.info(f"---  ITERATION {iteration}/3 ---")
         log.info(f"Current performance benchmark: {current_perf:.2f}")
 
+        start_idx = batches_offsets[iteration-1]
+        end_idx = batches_offsets[iteration]
+
+        current_batch = batch1.iloc[start_idx:end_idx]
+
         hic_df, hic_inst, _, train_acc, train_f1 = hic_session(
             ds_name=ds_name,
             preprocessor=current_preprocessor,
@@ -332,7 +336,7 @@ def run_hic(ds_name, params, objects):
             user_name=user_name,
             hic_iter=iteration,
             hic_model_name=hic_model_name,
-            batch1=batch1,
+            batch1=current_batch,
             batch3=batch3,
             batch1_test=batch1_test,
         
@@ -357,7 +361,7 @@ def run_hic(ds_name, params, objects):
 
         # after receiving the dataset from the Human in Command phase, its time to calibrate the nets
 
-        for arch_name in ["small", "medium"]:
+        for arch_name in ["small", "medium", "large", "xl"]:
             layers = NET_CONFIGS[arch_name]['layers']
             step_size= NET_CONFIGS[arch_name]['step_size']
             gamma= NET_CONFIGS[arch_name]['gamma']
@@ -374,7 +378,10 @@ def run_hic(ds_name, params, objects):
                             net_params=net_params,
                             step_size= step_size,
                             gamma=gamma, 
-                            device= torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+                            log= log,
+                            device= torch.device("cpu"))
+
+    
             
             log.info(f"Plots and conf matrix saved | ITER {iteration} | ARCHITECTURE {arch_name}")
 
@@ -519,33 +526,51 @@ def choose_optimal_tau(ds_name,
                        target,
                        iteration,
                        log,
-                         #viene da su
                        min_coverage= 0.6
                         ):
     
    
     
     X_val, y_val, _= create_loader(validation_set, feat_order, target)
-
-    best_tau, best_acc= calibrate_tau(net, device, X_val, y_val, min_coverage= min_coverage)
+    #print(f"DEBUG: Raw first 5: {validation_set[target].values[:5]}")
+    #print(f"DEBUG: y_val first 5: {y_val[:5]}")
+    
+    best_tau, best_acc= calibrate_tau(ds_name=ds_name, 
+                                      user_suffix=user_suffix,
+                                      iteration=iteration,
+                                      layers=layers,
+                                      net= net, device=device, X_val= X_val, y_val=y_val, log=log, min_coverage= min_coverage)
+   
     log.info(f" Best tau for {ds_name}, Iter {iteration}: {best_tau} (Acc: {best_acc})")
 
-    tau_dir= fr'.\nets\{ds_name}\iter_{iteration}\{user_suffix}_models'
-    os.makedirs(tau_dir, exist_ok=True)
-    
-    tau_path = os.path.join(tau_dir, 'tau_threshold.json')
+   #tau_dir= fr'.\nets\{ds_name}\iter_{iteration}\{user_suffix}_models'
+    #os.makedirs(tau_dir, exist_ok=True)
     model_key = f"{layers[0]}_{layers[1]}_{user_suffix}_model"
+    #tau_path = os.path.join(tau_dir, f'tau_threshold_{model_key}.json')
+
+    model_key = f"{layers[0]}_{layers[1]}_{user_suffix}_model"
+    if os.path.isfile(model_path):
+        save_folder = os.path.dirname(model_path)
+        net_path = model_path
+    else:
+        save_folder = model_path
+        pattern = f"{layers[0]}_{layers[1]}_model_*.pt"
+        search_query = os.path.join(model_path, pattern)
+        matches = glob.glob(search_query)
+        net_path = max(matches, key=os.path.getctime) if matches else model_path
+        
+    tau_json_path = os.path.join(save_folder, f'tau_threshold_{model_key}.json')
 
     tau_report = {
         "model_key": model_key,
         "tau_threshold": float(best_tau),
         "best_val_acc": float(best_acc),
-        "net_path": model_path,
+        "net_path": net_path,
         "ds_name": ds_name,
         "iteration": iteration
     }
 
-    with open(tau_path, 'w') as f:
+    with open(tau_json_path, 'w') as f:
         json.dump(tau_report, f, indent=4)
 
     return best_tau
@@ -598,7 +623,6 @@ def run_mic(ds_name,
             params,# da fuori
             objects, # OBJECTS
             iteration,
-            min_coverage,
             strat_1_res=None,
             strat_2_res=None,
             baseline= False
@@ -629,8 +653,7 @@ def run_mic(ds_name,
     
     user_suff= params['user_suffix']
     i_learner_name= params['incremental_learner_name']
-    validation_set= params['validation_set']
-    feat_order= params['feature_order']
+    #feat_order= params['feature_order']
     cats=params['cats']
     num=params['num']
     strat_1_name= params['strat_1_name']
@@ -736,7 +759,7 @@ def run_mic(ds_name,
     
     df_switch= pd.read_parquet(ds_path)
 
-    # 4. Retrieving corresponding scaled batch3
+    # 4. Retrieving corresponding scaled batch3 
 
     batch3_base_path= DATASETS[ds_name]['paths']['scaled_mic_batch']
     batch3_path= os.path.join(batch3_base_path,
@@ -746,8 +769,22 @@ def run_mic(ds_name,
 
     batch3= pd.read_parquet(batch3_path)
 
+    # 5. loading corresponding tau threshold
 
-    # 5. building dir for saving the res at each iteration
+    tau_coeff_base= DATASETS[ds_name]['paths']['tau_calibration_res']
+    tau_path= os.path.join(tau_coeff_base,
+                           f"iter_{iteration}",
+                           f"{user_suff}_models",
+                           f"{layers[0]}_{layers[1]}",
+                           f"tau_threshold_{layers[0]}_{layers[1]}_{user_suff}_model.json"
+                           )
+    with open(tau_path, 'r') as f:
+        tau_data = json.load(f)
+
+    current_tau = tau_data['tau_threshold']
+    log.info(f"Loaded Tau: {current_tau}, iter {iteration}")
+    
+    # 6. building dir for saving the res at each iteration
 
     mic_save_dir = DATASETS[ds_name]['paths']['mic_df_save_path']
 
@@ -763,7 +800,7 @@ def run_mic(ds_name,
     if run_confidence:
         log.info(f"STARTING STRAT {strat_1_name} | USER {user_name} | Iter {iteration}")
 
-    
+        """
         # computing tau threshold
         tau_thresh= choose_optimal_tau(ds_name=ds_name,
                     user_suffix=user_suff, # da fuori
@@ -778,7 +815,7 @@ def run_mic(ds_name,
                     min_coverage= min_coverage,
                     log=log
                         )
-
+        """
         initial_state = strat_1_res['initial_state']
         start_perf_conf = initial_state["benchmark"]
         start_delta = initial_state['delta']
@@ -808,8 +845,8 @@ def run_mic(ds_name,
                                 num=num,
                                 log=log,
                                 protected=protected,
-                                tau_threshold=tau_thresh,
-                                anqi_mao_thresh= None,
+                                tau_threshold=current_tau,
+                                #anqi_mao_thresh= None,
                                 r_net= None,
                                 human_defer_cost= None #anqi mao's beta
                             )
@@ -832,9 +869,11 @@ def run_mic(ds_name,
         log.info(f"Finished Iteration {iteration}, strat {strat_1_name} | System FEA: {strat_1_res[iteration]['benchmark']:.2f} | Delta: {new_delta}")
         
         # saving res
-        s1_path = os.path.join(mic_save_path, f"{strat_1_name}.parquet")
+        s1_path = os.path.join(mic_save_path, f"{strat_1_name}.parquet") #metrics
+        mic_df_path = os.path.join(mic_save_path, f"{strat_1_name}_data.parquet") # df
         
         pd.DataFrame([strat_1_res[iteration]]).to_parquet(s1_path, index=False)
+        mic_df.to_parquet(mic_df_path, index=True)
 
         log.info(f"Saved Strat 1 results to: {s1_path}")
 
@@ -897,12 +936,13 @@ def run_mic(ds_name,
             log.debug(f"RETRIEVING R-NET | PATH {r_net_path}")
 
             # 2. retrieving anqi mao report to get thresh
+            """"
             report_dir= DATASETS[ds_name]['paths']["anqi_mao_thresholds"]
             report_path= os.path.join(report_dir,
                             f"{user_name}",
                             f"iter_{iteration}",
                             f"beta_{beta_str}",
-                            "mao_thresh_report.parquet"
+                            f"report_{user_name}.parquet"
                             )
             report= pd.read_parquet(report_path)
             
@@ -914,7 +954,7 @@ def run_mic(ds_name,
             anqi_mao_thresh= anqi_mao_thresh_row[0]
             
             log.debug(f"CURRENT ANQI MAO THRESH: {anqi_mao_thresh} | USER {user_name} | ITER {iteration}")
-            
+            """
             # 3. starting MIC SESSION
             mic_df, mic_inst= mic_session(
                                 ds_name=ds_name, 
@@ -940,7 +980,7 @@ def run_mic(ds_name,
                                 log=log,
                                 protected=protected,
                                 tau_threshold=None,
-                                anqi_mao_thresh= anqi_mao_thresh,
+                                #anqi_mao_thresh= anqi_mao_thresh,
                                 r_net= r_net,
                                 human_defer_cost=beta
                             )
@@ -960,8 +1000,11 @@ def run_mic(ds_name,
             # saving res
             s2_path = os.path.join(mic_save_path, f"{strat_2_name}_beta_{beta_str}.parquet")
             current_beta_data = strat_2_res[beta_key][iteration]
+
+            mic_df_s2_path = os.path.join(mic_save_path, f"{strat_2_name}_beta_{beta_str}_data.parquet")#df
             
             pd.DataFrame([current_beta_data]).to_parquet(s2_path, index=False)
+            mic_df.to_parquet(mic_df_s2_path, index=True)
 
             log.info(f"Saved Strat 2, Beta {beta} results to: {s2_path}")
 
@@ -1004,7 +1047,7 @@ def mic_session(ds_name,
                 num,
                 protected,
                 tau_threshold= None,
-                anqi_mao_thresh= None,
+                #anqi_mao_thresh= None,
                 r_net= None,
                 human_defer_cost= None #anqi mao's beta
                 ):
@@ -1044,7 +1087,7 @@ def mic_session(ds_name,
                             device= device,
                             protected=protected,
                             tau_threshold=tau_threshold,
-                            anqi_mao_thresh= anqi_mao_thresh,
+                            #anqi_mao_thresh= anqi_mao_thresh,
                             human_deferral_cost=human_defer_cost)
         
     

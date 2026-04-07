@@ -1,0 +1,8 @@
+{
+    "model_key": "128_64_inaccurate_trusting_model",
+    "tau_threshold": 0.58,
+    "best_val_acc": 0.6984848484848485,
+    "net_path": ".\\baseline\\mic\\nets\\compas\\inaccurate_trusting_models\\128_64\\128_64_model_7.pt",
+    "ds_name": "compas",
+    "iteration": null
+}

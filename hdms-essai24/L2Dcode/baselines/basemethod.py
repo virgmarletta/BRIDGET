@@ -141,6 +141,7 @@ class BaseSurrogateMethod(BaseMethod):
             self.fit_epoch(dataloader_train, optimizer, verbose, epoch)
             if epoch % test_interval == 0 and epoch > 1 :
                 if self.learnable_threshold_rej:
+                    print("fitting rejection threshold")
                     self.fit_treshold_rej(dataloader_val)
                 data_test = self.test(dataloader_val)
                 val_metrics = compute_deferral_metrics(data_test)
@@ -206,7 +207,11 @@ class BaseSurrogateMethod(BaseMethod):
                 predictions_all.extend(predicted_class.cpu().numpy())
                 
                 defer_scores = [ outputs.data[i][-1].item() - outputs.data[i][predicted_class[i]].item() for i in range(len(outputs.data))]
+                # TEMPORARY DEBUG PRINT
+                print(f"DEBUG: Max Defer Score: {max(defer_scores)}")
+                print(f"DEBUG: Threshold being used: {self.threshold_rej}")
                 defer_binary = [int(defer_score >= self.threshold_rej) for defer_score in defer_scores]
+                print(f"DEBUG: Defer binary: {defer_binary}")
                 defers_all.extend(defer_binary)
                 truths_all.extend(data_y.cpu().numpy())
                 hum_preds_all.extend(hum_preds.cpu().numpy())
@@ -232,5 +237,8 @@ class BaseSurrogateMethod(BaseMethod):
             "rej_score": rej_score_all,
             "class_probs": class_probs_all,
         }
+
+        print(f"DEBUG: Final Data 'defers' shape: {data['defers'].shape}")
+        print(f"DEBUG: Final Data 'defers' sum: {data['defers'].sum()}")
         return data
         

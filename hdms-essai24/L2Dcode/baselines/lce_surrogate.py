@@ -25,6 +25,7 @@ eps_cst = 1e-8
 
 
 class LceSurrogate(BaseSurrogateMethod):
+    
     def surrogate_loss_function(self, outputs, hum_preds, data_y):
         """
         Implmentation of L_{CE}^{\alpha}
@@ -59,6 +60,7 @@ class LceSurrogate(BaseSurrogateMethod):
         best_alpha = 0
         best_acc = 0
         model_dict = copy.deepcopy(self.model.state_dict())
+        print("loaded mode_dict (fit_hyperparam)")
         for alpha in tqdm(alpha_grid):
             self.alpha = alpha
             self.model.load_state_dict(model_dict)
@@ -78,6 +80,7 @@ class LceSurrogate(BaseSurrogateMethod):
             if accuracy > best_acc:
                 best_acc = accuracy
                 best_alpha = alpha
+        
         self.alpha = best_alpha
         self.model.load_state_dict(model_dict)
         fit = self.fit(

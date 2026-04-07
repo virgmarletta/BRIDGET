@@ -5,7 +5,7 @@ import dice_ml
 from xailib.models.sklearn_classifier_wrapper import sklearn_classifier_wrapper
 import time
 import pandas as pd
-from xailib.explainers.lore_explainer import LoreTabularExplainer
+#from xailib.explainers.lore_explainer import LoreTabularExplainer
 from sklearn.metrics import accuracy_score,f1_score, classification_report, confusion_matrix
 import fatf.fairness.data.measures as fatf_dfm
 from sklearn.metrics import confusion_matrix
@@ -366,9 +366,13 @@ def exit_MiC(fea_vals, user_patience, low_belief_count, desired_performance):
 
 def exit_MiC(fea_vals, desired_performance, warm_up):
 
+
+    # EDIT: WARM UP AS OF NOW is a threshold of 20% of the original test set size, to be compared w the number of undeferred decisions
+    # TLDR find stability in the empirical acc wrt undeferred decisions 
+    
     # new variant of exit_MiC disregarding any user patience budget as a exit condition, 
     # thus also invalidating the low belief count condition
-    # filosofia è facciamolo andare a briglia sciolta
+   
 
     if not fea_vals:
         return False
@@ -497,18 +501,25 @@ def save_data(directory, prefix, data_dict):
                 else:
                     f.write(f"{data}\n")
 
-def create_loader(df, features, target, batch_size=128, shuffle=False):
+def create_loader(df, features, target, human_preds= None, batch_size=128, shuffle=False):
     # features = features order
     #establish external order, pass target col
     # then pass df acc t or whatever
+
+    # pass a string with the human preds name col for benchmarking
     df= df.copy()
     set_all_seeds(42)
 
     X = torch.tensor(df[features].values, dtype=torch.float32)
     y = torch.tensor(df[target].values, dtype=torch.long)
+    if human_preds is not None:
+        h=torch.tensor(df[human_preds].values, dtype=torch.long)
+        dataset = TensorDataset(X, y, h)
+        loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
 
-    dataset = TensorDataset(X, y)
-    loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
+    else: 
+        dataset = TensorDataset(X, y)
+        loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
     
     return X, y, loader
 
@@ -565,132 +576,7 @@ def scale_data(ds_name, iteration, params):
         return validation_data, batch_3
 
 
-def get_hic_data(ds_name, iteration, user_name, metrics):
-    """
-    the idea here is to join every txt file containing the metrics relative to a user
-    """
-    base_path = Path(f"./HIC_res/{ds_name}/iter_{iteration}/results_{user_name}")
-    
-    main_df = None
-    
-    for metric in metrics:
-        # careful here because there might be some other DefNet/ARF shenanigans
-        file_name = f"User_{user_name}_{metric}.txt"
-        path = base_path / file_name
-        
-        if path.exists():
-            
-            df = pd.read_parquet(path, sep=" ", header=None, names=['idx', metric])
-            df.set_index('idx', inplace=True)
-            
-            if main_df is None:
-                main_df = df
-            else:
-                main_df = main_df.join(df, how='inner')
-        else:
-            print(f"file not found in {path}")
-            
-    return main_df
 
-
-def get_mic_data(ds_name, iteration, user_name, strategy, beta, metrics):
-    """
-    the idea here is to join every txt file containing the metrics relative to a user
-    """
-    base_path = Path(fr"./MIC_res/{ds_name}/iter_{iteration}/{user_name}_{strategy}\beta_{beta}")
-    
-    main_df = None
-    
-    for metric in metrics:
-        # careful here because there might be some other DefNet/ARF shenanigans
-
-        prefix = "MIC_DRIFT_" if iteration != 3 else ""
-
-        file_name = f"{prefix}User_{user_name}_Def_Net{metric}.txt"
-
-        path = base_path / file_name
-        
-        if path.exists():
-            
-            df = pd.read_parquet(path, sep=" ", header=None, names=['idx', metric])
-            df.set_index('idx', inplace=True)
-            
-            if main_df is None:
-                main_df = df
-            else:
-                main_df = main_df.join(df, how='inner')
-        else:
-            print(f"file not found in {path}")
-            
-    return main_df
-
-def retrieve_metric(path, col_names):
-
-    data= pd.read_parquet(path, sep=" ", header=None, names=col_names)
-
-    return data 
-
-
-def plot_sns(df, metrics, color='royalblue', alpha= 0.8, mean_required=None):
-
-    sns.set_theme(style="whitegrid")
-
-    if metrics is None:
-        metrics = df.columns
-
-    for metric in metrics:
-        plt.figure(figsize=(10, 5))
-
-        ax = sns.lineplot(data=df, x=df.index, y=metric, color=color, linewidth=2, alpha=alpha)
-
-        if mean_required: 
-            avg= df[metric].mean().round(4)
-
-            plt.axhline(y=avg, color='#e74c3c', linestyle='-', 
-                        label=f'Avg {metric.replace("_", " ")}: {avg}', linewidth=1.5)
-        
-        plt.title(f'Evolution of {metric.replace("_", " ")}', fontsize=12, fontweight='bold', pad=15)
-        plt.xlabel('Records', fontsize=10)
-        plt.ylabel('Value', fontsize=10)
-
-        plt.legend(loc='lower right', frameon=True, shadow=True)
-        plt.tight_layout()
-        plt.show()
-
-
-def custom_log(name, log_file, custom_format=None):
-    
-    log_dir = os.path.dirname(log_file)
-    
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir, exist_ok=True)
-
-    logger = logging.getLogger(log_file) 
-    logger.setLevel(logging.DEBUG)
-    logger.propagate = False
-    
-    for handler in logger.handlers[:]:
-        handler.close() # Close the file connection!
-        logger.removeHandler(handler)
-
-    if custom_format is None:
-        custom_format = '%(asctime)s | %(levelname)s | %(message)s'
-
-    formatter = logging.Formatter(custom_format)
-
-    # setup handlers
-    s_handler = logging.StreamHandler(sys.stdout)
-    s_handler.setFormatter(formatter)
-    s_handler.setLevel(logging.WARNING) 
-
-    f_handler = logging.FileHandler(log_file)
-    f_handler.setFormatter(formatter)
-    f_handler.setLevel(logging.DEBUG) # Store EVERY detail (even math debugs)
-
-    logger.addHandler(s_handler)
-    logger.addHandler(f_handler)
-
-    return logger
 
 
 ###########
@@ -800,13 +686,18 @@ def compute_class_weights(labels):
 # -- CALIBRAZIONE THRESHOLD STRAT 1 E 2
 
 def evaluate_threshold(tau, max_conf, y_gt, y_preds):
-   mask = max_conf >= tau
-   if mask.sum() == 0:
-      return 0.0, 0.0, 1.0 # acc=0, coverage=0, defer_rate=1
-   acc_sel = (y_preds[mask] == np.array(y_gt)[mask]).astype(float).mean()
-   coverage = mask.mean()
-   defer_rate = 1.0 - coverage
-   return acc_sel, coverage, defer_rate
+
+    y_val_pred = np.array(y_preds).flatten()
+    y_gt = np.array(y_gt).flatten()
+    max_conf = np.array(max_conf).flatten()
+    
+    mask = max_conf >= tau
+    if mask.sum() == 0:
+        return 0.0, 0.0, 1.0 # acc=0, coverage=0, defer_rate=1
+    acc_sel = (y_val_pred[mask] == np.array(y_gt)[mask]).astype(float).mean()
+    coverage = mask.mean()
+    defer_rate = 1.0 - coverage
+    return acc_sel, coverage, defer_rate
 
 
 
@@ -846,27 +737,56 @@ def plot_confusion_matrix(model, dataloader, device,save_path):
     report = classification_report(all_labels, all_preds, output_dict=True)
     return report
 
-def calibrate_tau(net, device, X_val, y_val, min_coverage= 0.6):
+def calibrate_tau(ds_name, user_suffix, layers, iteration, net, device, X_val, y_val, log, min_coverage= 0.6):
+    
+    with torch.no_grad():
+            probas= net.predict_proba_nn(X_val, device)
+            y_val_pred= net.predict(X_val,device)
 
-   with torch.no_grad():
-      probas= net.predict_proba_nn(X_val, device)
-      y_pred= net.predict(X_val,device)
+            # DEBUG
+            """
+            y_val_np = y_val.cpu().numpy() if torch.is_tensor(y_val) else np.array(y_val)
+            
+            # Check shape equality
+            print(f"DEBUG: y_pred shape: {y_val_pred.shape}, y_val_np shape: {y_val_np.shape}")
+            
+            # Check actual accuracy right here
+            manual_acc = (y_val_pred.flatten() == y_val_np.flatten()).mean()
+            print(f"DEBUG: Manual Accuracy in loop: {manual_acc:.4f}")
+            """
 
-   max_conf= probas.max(axis=1)
+    max_conf= probas.max(axis=1)
 
-   taus= np.linspace(0.50, 0.99, 50)
-   y_val_np= y_val.cpu().numpy() if torch.is_tensor(y_val) else np.array(y_val)
+    taus= np.linspace(0.50, 0.99, 50)
+    y_val_np= y_val.cpu().numpy() if torch.is_tensor(y_val) else np.array(y_val)
 
-   res= [evaluate_threshold(t, max_conf, y_pred, y_val_np) for t in taus]
+    log.info("Entering Evaluate Threshold")
+    res= [evaluate_threshold(t, max_conf, y_preds=y_val_pred, y_gt=y_val_np) for t in taus]
 
-   best_tau = None
-   best_acc = -1
-   for tau, (acc_sel, cov, _) in zip(taus, res):
-      if cov >= min_coverage and acc_sel > best_acc:
-         best_acc = acc_sel 
-         best_tau = tau
+    df_res = pd.DataFrame(res, columns=['acc_sel', 'coverage', 'defer_rate'])
+    df_res['tau'] = taus
 
-   return best_tau, best_acc
+    save_base_dir = os.path.join(
+                    DATASETS[ds_name]['paths']['tau_calibration_res'],
+                    f"iter_{iteration}",
+                    f"{user_suffix}_models",
+                    f"{layers[0]}_{layers[1]}"
+                )
+    os.makedirs(save_base_dir, exist_ok=True)
+    save_path = os.path.join(save_base_dir, "tau_calibration_results.parquet")
+
+    df_res.to_parquet(save_path)
+    log.info(f"All tau calibration results saved to {save_path}")
+
+    best_tau = None
+    best_acc = -1
+    for tau, (acc_sel, cov, _) in zip(taus, res):
+        if cov >= min_coverage and acc_sel > best_acc:
+            best_acc = acc_sel 
+            best_tau = tau
+
+    log.info(f"Best tau: {best_tau}, Best accuracy: {best_acc}, Best cov: {cov}")
+    return best_tau, best_acc
 
 
 def train_r_net(df, 
@@ -1042,6 +962,7 @@ def generate_thresh_report(X_cal,
     else:
         save_dir= DATASETS[ds_name]['paths']['anqi_mao_thresholds']
         save_dir= os.path.join(save_dir,
+                           f"{user_name}",
                            f"iter_{iter}")
         
         #fr'.\r_nets_results\{ds_name}\{user_name}\iter_{iter}\beta_{beta_str}'
@@ -1067,22 +988,39 @@ def deferral_loss(r, pred_correct, C):
     """
 
     # r: tensor (batch,)
+    # zeros_like returns a tensor filled with zeros of the same shape as r
+
     s0 = torch.zeros_like(r) # score per usare il modello
     s1 = -r # score per deferire all'umano
+
+
+    # we use the -r just like the paper advocates to maintain consistency with the definition 
+    # in the Deferral Loss and the surrogate loss formulations
+
     stacked = torch.stack([s0, s1], dim=0)
 
-    Z = torch.logsumexp(stacked, dim=0)
+    Z = torch.logsumexp(stacked, dim=0) #to obtain the probs in log space
     log_p0 = s0 - Z # log P(use model)
     log_p1 = s1 - Z # log P(defer)
 
-    term_model = pred_correct * (-log_p0)
-    term_expert = C * (-log_p1)
+    term_model = pred_correct * (-log_p0) 
+    # first term of the surrogate loss: its an indicator function times negative log (tab 3, formula l log)
+
+     # yeah this was the issue, i just need to adapt this tbh
+    # term_expert = C * (-log_p1)
+    # should be 1 - C * rest
+
+    term_expert = (1 -C) * (-log_p1)
+    # second term of the surrogate loss function: cost of deferral times log of P(defer) (tab 3, formula l log)
+    #thus, the term is the summation of the cost of deferral (c with the -) of (x,y), which is
+    # computed as 1 - cj, with cj being alpha*indicator function (predictor is incorrect) + beta (inference cost of the human, also called bases cost)
 
     return (term_model + term_expert).mean()
-
+    
 
 def p_defer(x_tensor, net):
 
+    # NOTE: NET here is the r-net
     net.eval()
 
     with torch.no_grad():
@@ -1825,3 +1763,179 @@ def get_GS_cfe(log, curr_rec, torch_model, cats, target):
 
 
 
+
+
+
+###########
+# -- UTILS FOR GRAPHS
+
+def get_hic_data(ds_name, iteration, user_name, metrics):
+    """
+    the idea here is to join every txt file containing the metrics relative to a user
+    """
+    base_path = Path(f"./HIC_res/{ds_name}/iter_{iteration}/results_{user_name}")
+    
+    main_df = None
+    
+    for metric in metrics:
+        # careful here because there might be some other DefNet/ARF shenanigans
+        file_name = f"User_{user_name}_{metric}.txt"
+        path = base_path / file_name
+        
+        if path.exists():
+            
+            df = pd.read_csv(path, header=None, sep='\s+', names=['idx', metric])
+            df.set_index('idx', inplace=True)
+            
+            if main_df is None:
+                main_df = df
+            else:
+                main_df = main_df.join(df, how='inner')
+        else:
+            print(f"file not found in {path}")
+            
+    return main_df
+
+
+def get_mic_data(ds_name, iteration, user_name, strategy, beta, metrics):
+    """
+    the idea here is to join every txt file containing the metrics relative to a user
+    """
+    #
+    if strategy== 'Confidence':
+        base_path= Path(fr"./MIC_res/{ds_name}/iter_{iteration}/{user_name}_{strategy}")
+    else:
+        base_path = Path(fr"./MIC_res/{ds_name}/iter_{iteration}/{user_name}_{strategy}\beta_{beta}")
+    
+    main_df = None
+    
+    for metric in metrics:
+        # careful here because there might be some other DefNet/ARF shenanigans
+        
+        matches = list(base_path.glob(f"*{metric}.txt"))
+
+        if matches:
+            target_path = matches[0] 
+
+            df = pd.read_csv(target_path, header=None, sep='\s+', names=['idx', metric])
+            df.set_index('idx', inplace=True)
+            
+            if main_df is None:
+                main_df = df
+            else:
+                main_df = main_df.join(df, how='inner')
+        
+        else:
+            print(f"file not found in {path}")
+        
+        """
+        path = base_path / f"{metric}.txt"
+
+        if not path.exists():
+            if strategy== 'Confidence':
+                path = base_path / f"MIC_DRIFT_Def_Net_{metric}.txt"
+            else:
+                path = base_path / f"MIC_DRIFT_Def_Net_beta{beta}{metric}.txt"
+        
+        if path.exists():
+            
+            df = pd.read_csv(path, header=None, sep='\s+', names=['idx', metric])
+            df.set_index('idx', inplace=True)
+            
+            if main_df is None:
+                main_df = df
+            else:
+                main_df = main_df.join(df, how='inner')
+        else:
+            print(f"file not found in {path}")
+        """
+
+
+
+    return main_df
+
+def retrieve_metric(path, col_names):
+
+    data= pd.read_parquet(path, sep=" ", header=None, names=col_names)
+
+    return data 
+
+
+
+def plot(vals):
+
+    plt.plot(vals, linestyle='-', color='royalblue')
+
+    avg_fea= np.mean(vals)
+    plt.axhline(y=avg_fea, color='red', linestyle='--', label=f'Avg: {avg_fea:.4f}')
+    plt.title('Evolution of FEA values (MiC phase)', fontsize=10)
+    plt.xlabel('Records', fontsize=10)
+    plt.ylabel('FEA values', fontsize=10)
+    plt.ylim(0.0, 1.0)
+    plt.legend(loc= 'lower right')
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+
+    plt.show()
+
+
+def plot_sns(df, metrics, color='royalblue', alpha= 0.8, mean_required=None):
+
+    sns.set_theme(style="whitegrid")
+
+    if metrics is None:
+        metrics = df.columns
+
+    for metric in metrics:
+        plt.figure(figsize=(10, 5))
+
+        ax = sns.lineplot(data=df, x=df.index, y=metric, color=color, linewidth=2, alpha=alpha)
+
+        if mean_required: 
+            avg= df[metric].mean().round(4)
+
+            plt.axhline(y=avg, color='#e74c3c', linestyle='-', 
+                        label=f'Avg {metric.replace("_", " ")}: {avg}', linewidth=1.5)
+        
+        plt.title(f'Evolution of {metric.replace("_", " ")}', fontsize=12, fontweight='bold', pad=15)
+        plt.xlabel('Records', fontsize=10)
+        plt.ylabel('Value', fontsize=10)
+
+        plt.legend(loc='lower right', frameon=True, shadow=True)
+        plt.tight_layout()
+        plt.show()
+
+
+def custom_log(name, log_file, custom_format=None):
+    
+    log_dir = os.path.dirname(log_file)
+    
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir, exist_ok=True)
+
+    logger = logging.getLogger(log_file) 
+    logger.setLevel(logging.DEBUG)
+    logger.propagate = False
+    
+    for handler in logger.handlers[:]:
+        handler.close() # Close the file connection!
+        logger.removeHandler(handler)
+
+    if custom_format is None:
+        custom_format = '%(asctime)s | %(levelname)s | %(message)s'
+
+    formatter = logging.Formatter(custom_format)
+
+    # setup handlers
+    s_handler = logging.StreamHandler(sys.stdout)
+    s_handler.setFormatter(formatter)
+    s_handler.setLevel(logging.WARNING) 
+
+    f_handler = logging.FileHandler(log_file)
+    f_handler.setFormatter(formatter)
+    f_handler.setLevel(logging.DEBUG) # Store EVERY detail (even math debugs)
+
+    logger.addHandler(s_handler)
+    logger.addHandler(f_handler)
+
+    return logger
