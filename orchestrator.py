@@ -43,7 +43,7 @@ import logging
 import sys
 
 
-
+set_all_seeds(42)
 
 def net_calibration(ds_name,  
                     user_suffix, 
@@ -72,11 +72,12 @@ def net_calibration(ds_name,
     net_params: dict containing the training configuration (eg dropout_coeff, lr, weight_decay, smoothing)
 
     """
+    set_all_seeds(42)
     log.info(f"Entered Net Calibration | USER {user_suffix} | iter {iter}")
     # 1. creating the tensors ds
-    X_cal, y_cal, train_loader = create_loader(train_set, feature_order, target)
+    X_cal, y_cal, train_loader = create_loader(train_set, feature_order, target, shuffle=False)
 
-    _, _, val_loader = create_loader(val_set, feature_order, target) #default size= 128, shuffle= False
+    _, _, val_loader = create_loader(val_set, feature_order, target, shuffle=False) #default size= 128, shuffle= False
 
     # 2. instantiate net and its necessary components + getting the class weights
     
@@ -199,7 +200,7 @@ def hic_session(warm_up_set, # PARAMS
                  rule_value,
                  log): #main config 
     
-    set_all_seeds(42)
+    #set_all_seeds(42)
 
     hic_inst= HiC(
                     cats=categoricals,
@@ -464,7 +465,7 @@ def run_calibration(def_net_path, # DA PATH
     feat_order= params.get('feature_order')
 
     #2. creating loader for the training data
-    X_cal, y_cal, _ = create_loader(df_switch, feat_order, target)
+    X_cal, y_cal, _ = create_loader(df_switch, feat_order, target, shuffle= False)
 
     if baseline:
         log.info(f"--- Benchmark run calibration ---")
@@ -531,7 +532,7 @@ def choose_optimal_tau(ds_name,
     
    
     
-    X_val, y_val, _= create_loader(validation_set, feat_order, target)
+    X_val, y_val, _= create_loader(validation_set, feat_order, target, shuffle=False)
     #print(f"DEBUG: Raw first 5: {validation_set[target].values[:5]}")
     #print(f"DEBUG: y_val first 5: {y_val[:5]}")
     
@@ -1065,7 +1066,7 @@ def mic_session(ds_name,
         mic_net.load_state_dict(torch.load(def_net_path, map_location=device))
         mic_net.eval()
 
-        set_all_seeds(42)
+        #set_all_seeds(42)
 
         mic_inst= MiC(mic_model=mic_net, mic_model_name= def_net_name, 
                             dataset_name = ds_name , 

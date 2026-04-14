@@ -41,11 +41,13 @@ class User:
             self.fairness= fairness
 
         
-        def believe(self):
+        def believe(self, seed=None):
+            rng= random.Random(seed) if seed is not None else random
             if self.belief_level > 1:
                 return None
+
             else:
-                return random.choices(population=[True, False], 
+                return rng.choices(population=[True, False], 
                               weights=[self.belief_level, 1-self.belief_level], k=1)[0]
         
 

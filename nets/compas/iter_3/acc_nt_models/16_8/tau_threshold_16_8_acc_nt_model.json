@@ -1,8 +1,8 @@
 {
     "model_key": "16_8_acc_nt_model",
-    "tau_threshold": 0.56,
-    "best_val_acc": 0.41578947368421054,
-    "net_path": ".\\nets\\compas\\iter_3\\acc_nt_models\\16_8\\16_8_model_4.pt",
+    "tau_threshold": 0.55,
+    "best_val_acc": 0.41170825335892514,
+    "net_path": "./nets/compas\\iter_3\\acc_nt_models\\16_8\\16_8_model_4.pt",
     "ds_name": "compas",
     "iteration": 3
 }

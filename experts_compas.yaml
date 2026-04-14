@@ -36,27 +36,27 @@ experts:
         
 
       juv_fel_count:  
-        - 0.4
-        - 0.1
+        - 0.25
+        - 0.2
         
 
       juv_misd_count: # less severe than a felony i guess
-        - 0.3
-        - 0.08
+        - 0.15
+        - 0.15
 
 
       juv_other_count: # minor offence 
-        - 0.1 
-        - 0.08
+        - 0.05
+        - 0.1
 
 
       priors_count: 
-        - 0.5
-        - 0.1
+        - 0.35
+        - 0.25
 
       c_charge_degree: 
-        - 0.3
-        - 0.08 # somewhat strict
+        - 0.25
+        - 0.15 # somewhat strict
       
      
   

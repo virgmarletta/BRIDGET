@@ -1,8 +1,8 @@
 {
     "model_key": "32_16_inacc_t_model",
-    "tau_threshold": 0.58,
-    "best_val_acc": 0.6091445427728613,
-    "net_path": ".\\nets\\compas\\iter_3\\inacc_t_models\\32_16\\32_16_model_20.pt",
+    "tau_threshold": 0.56,
+    "best_val_acc": 0.6038575667655787,
+    "net_path": "./nets/compas\\iter_3\\inacc_t_models\\32_16\\32_16_model_20.pt",
     "ds_name": "compas",
     "iteration": 3
 }

@@ -76,7 +76,7 @@ DATASETS = {
         "benchmark_performance": 65,
         'performance_delta': 0.05,
         'stricter_delta': 0.03,
-        'warm_up': 922, #25% of 3688
+        'warm_up': 738, #20% of 3688
         'belief_threshold':0.7,
         
     
@@ -160,7 +160,7 @@ DATASETS = {
         "benchmark_performance": 63,
         'performance_delta': 0.05,
         'stricter_delta': 0.03,
-        'warm_up': 271,
+        'warm_up': 217, # 20% of 1085
         'belief_threshold':0.7,
     },
 
@@ -241,7 +241,7 @@ DATASETS = {
         "benchmark_performance": 63,
         'performance_delta': 0.05,
         'stricter_delta': 0.03,
-        'warm_up': 1344, #warm up given for the MiC portion, obtained as 25% of the test set (thus 25% of 5376)
+        'warm_up': 1075, #warm up given for the MiC portion, obtained as 20% of the test set (thus 25% of 5376)
         'belief_threshold':0.7,
     }
 }
@@ -287,7 +287,8 @@ R_NET_CONFIGS = {
     "lr": 1e-3,
     "dropout": 0.2,
     "alpha": 1.0,
-    "betas": [0.1, 0.3, 0.5, 0.7, 0.9],
+    #"betas": [0.1, 0.3, 0.5, 0.7, 0.9],
+    "betas": [0.1, 0.15, 0.2, 0.25, 0.3],
     "linspace_dimension": 300,
     "lower_thresh":0.0,
     "upper_thresh": 0.8,

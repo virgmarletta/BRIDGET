@@ -364,7 +364,7 @@ def exit_MiC(fea_vals, user_patience, low_belief_count, desired_performance):
     return False
 """
 
-def exit_MiC(fea_vals, desired_performance, warm_up):
+def exit_MiC(fea_vals, desired_performance, undeferred_decisions, warm_up):
 
 
     # EDIT: WARM UP AS OF NOW is a threshold of 20% of the original test set size, to be compared w the number of undeferred decisions
@@ -377,7 +377,7 @@ def exit_MiC(fea_vals, desired_performance, warm_up):
     if not fea_vals:
         return False
     
-    if len(fea_vals)< warm_up:
+    if undeferred_decisions < warm_up:
         return False
     
     avg_fea= np.mean(fea_vals)
@@ -508,7 +508,6 @@ def create_loader(df, features, target, human_preds= None, batch_size=128, shuff
 
     # pass a string with the human preds name col for benchmarking
     df= df.copy()
-    set_all_seeds(42)
 
     X = torch.tensor(df[features].values, dtype=torch.float32)
     y = torch.tensor(df[target].values, dtype=torch.long)
@@ -525,7 +524,6 @@ def create_loader(df, features, target, human_preds= None, batch_size=128, shuff
 
 def scale_data(ds_name, iteration, params):
 
-        set_all_seeds(42)
         user_name= params['user_name']
         user_suffix= params['user_suffix']
         incr_learner_name= params['incremental_learner_name']
@@ -597,8 +595,8 @@ def scale_data(ds_name, iteration, params):
 def net_trainer(net, optimizer, criterion, device, train_loader, val_loader, scheduler, iter, model_prefix, directory_name,
                 log_interval=100, patience=5, max_epochs=20):
 
-    # first set the structures
     set_all_seeds(42)
+    # first set the structures
     training_history = {'accuracy':[],'loss':[]}
     validation_history = {'accuracy':[],'loss':[]}
     val_metrics = {"accuracy": Accuracy(), "loss": Loss(criterion)}
@@ -836,8 +834,6 @@ def train_r_net(df,
     C = torch.tensor(C, dtype=torch.float32)
 
     log.debug(f"Input Tensor Shape: {X_def.shape}")
-
-    set_all_seeds(42)
 
     from classes import DeferralNet
     r_net= DeferralNet(input_size=X_def.shape[1], 

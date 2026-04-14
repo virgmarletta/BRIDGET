@@ -185,7 +185,7 @@ class HiC(BRIDGET):
         self.hic_model_name= hic_model_name
         self.machine_fea= []
         self.user_fea= []
-
+        self.hic_fea= []
         self.initial_model = pickle.loads(pickle.dumps(self.hic_model))
 
         self.hic_evaluation_results = []
@@ -209,7 +209,7 @@ class HiC(BRIDGET):
             self.fairness_records.append(percentage(i, len(self.X)))
 
         self.retrain_count= 0
-       
+        #self.rec_order= []
 
 
     def train(self, x_warm_up, y_warm_up, x_test_warm_up, y_test_warm_up):
@@ -292,6 +292,9 @@ class HiC(BRIDGET):
             fea_den_machine= 0.0
             fea_den_user= 0.0
 
+            fea_system_num =0.0
+            fea_system_den =0.0
+
 
             # XAI Structures
 
@@ -339,8 +342,10 @@ class HiC(BRIDGET):
                     
                     else:
                 
-                        self.log.info(f"Inconsistent, record {i}. You previously said: {old_decision}, Want to change old decision?")
-                        confirm = random.choices(population=[False, True], weights=[0.8, 0.2], k=1)[0]
+                        self.log.info(f"Inconsistent, record {i}. You previously said: {old_decision}, Want to change old decision?")                        
+                        
+                        rng = random.Random(42 + i) 
+                        confirm= rng.choices(population=[False, True], weights=[0.8, 0.2], k=1)[0]
 
                         if confirm == False:
                             decision = old_decision
@@ -361,7 +366,7 @@ class HiC(BRIDGET):
                     
                 
                 else:  # LOGIC FOR UNSEEN RECORDS
-
+                    #self.rec_order.append(record)
                     try:
                         pred_proba = self.hic_model.predict_proba_one(x)[machine_prediction]
 
@@ -380,7 +385,7 @@ class HiC(BRIDGET):
                                         
                     machine_conf_lvls.append(pred_proba)
                     
-                    # FEA COMPUTATION (con la nuova formula il for loop ammazza tutto
+                    # FEA COMPUTATION 
 
                     if machine_prediction == y:
                         fea_num_machine += 1 
@@ -393,6 +398,8 @@ class HiC(BRIDGET):
 
                     mach_fea= fea_num_machine / fea_den_machine if fea_den_machine > 0 else 0.5
                     user_fea= fea_num_user/ fea_den_user if fea_den_user > 0 else 1.0
+
+    
 
                     self.user_fea.append(user_fea)
                     self.machine_fea.append(mach_fea)
@@ -451,12 +458,15 @@ class HiC(BRIDGET):
 
 
                     elif vs_decision is not None and user_truth != vs_decision and self.PAST: #IRC not triggered. User not consistent w.r.t. Individual Fairnesss
-                        self.log.info(f"Record {i}, user not consistend w Individual Fairness")
+                        self.log.info(f"Record {i}, user not consistent w Individual Fairness")
                         self.processed[record]['vs'] = True
                         self.past_count += 1
                         for rec in vs_records:
                             self.processed[rec]['vs'] = True
-                        confirm = random.choices(population=[False, True], weights=[0.8, 0.2], k=1)[0]
+
+                        rng = random.Random(42 + i) 
+                        confirm = rng.choices(population=[False, True], weights=[0.8, 0.2], k=1)[0]
+                        
                         if confirm in [0, "0", False]:
                             decision = vs_decision
                             if machine_prediction == vs_decision:
@@ -493,7 +503,7 @@ class HiC(BRIDGET):
                                 #print("High skepticism, asking for XAI...")
                                 self.skept_count += 1
                                 self.xai_check = 0
-                                confirm = self.user_model.believe() 
+                                confirm = self.user_model.believe(seed=i) 
                                 #print(f"User belief: {confirm}")
                                 #confirm = None
                                 
@@ -606,6 +616,14 @@ class HiC(BRIDGET):
                             
                             
 
+                    if decision == y:
+                        fea_system_num += 1
+
+                    fea_system_den += 1
+
+                    hic_fea= fea_system_num / fea_system_den if fea_system_den > 0 else 0.5
+                    self.hic_fea.append(hic_fea)
+
                     #Once the final decision has been taken, the model is updated. Internal data structure is also updated
                     
                     self.processed[record]['decision'] = int(decision) # sometimes AdwinBagging and Adaboost provide bool, so cast to int
@@ -628,7 +646,8 @@ class HiC(BRIDGET):
                             #self.hic_model.learn_one(x_train_sample, y_train_sample)
 
                         for data in self.processed.values():
-                        
+                        #for idx in self.rec_order:
+                            #data= self.processed[idx]
                             #x_relabel = self.processed[proc]['dict_form']
                             #y_relabel = self.processed[proc]['decision']
                             self.retrain_count += 1
@@ -653,13 +672,14 @@ class HiC(BRIDGET):
 
                 if relabel == True:
 
-                    self.hic_model = deepcopy(self.initial_model)
+                    self.hic_model = pickle.loads(pickle.dumps(self.initial_model))
 
                     #for x_train_sample, y_train_sample in zip(x_avv, y_avv):
                      #   self.hic_model.learn_one(x_train_sample, y_train_sample)
                     self.log.info(f"Retraining HiC model at record {i}")
                     for proc in (self.processed.keys()):
                     
+                                   
                         x_relabel = self.processed[proc]['dict_form']
                         y_relabel = self.processed[proc]['decision']
                         self.retrain_count += 1
@@ -680,7 +700,8 @@ class HiC(BRIDGET):
                      #   self.hic_model.learn_one(x_train_sample, y_train_sample)
                     
                     for proc in (self.processed.keys()):
-                        
+                    #for idx in self.rec_order:
+                    
                         x_relabel = self.processed[proc]['dict_form']
                         y_relabel = self.processed[proc]['decision']
                         self.retrain_count += 1
@@ -740,6 +761,7 @@ class HiC(BRIDGET):
                     "skept.json": skept,
                     "HiC_FEA_machine.txt": self.machine_fea,
                     "HiC_FEA_user.txt": self.user_fea,
+                    "HiC_FEA_system.txt": self.hic_fea,
                     "HiC_stats.txt": self.stats
                    
                     }
@@ -791,6 +813,7 @@ class HiC(BRIDGET):
                     "skept.json": skept,
                     "HiC_FEA_machine.txt": self.machine_fea,
                     "HiC_FEA_user.txt": self.user_fea,
+                    "HiC_FEA_system.txt": self.hic_fea,
                     "HiC_stats.txt": self.stats
                     
                     }
@@ -903,6 +926,9 @@ class MiC(BRIDGET):
            
             y_gt= int(y_gt.item())
 
+            if record < 5:
+                print(f"DEBUG Record {record}: GT from Stream: {y_gt}, GT from DF: {self.df_batch3[self.target].iloc[record]}")
+
             self.processed[record]['dict_form'] = x
             self.processed[record]['ground_truth'] = y_gt
             
@@ -920,6 +946,13 @@ class MiC(BRIDGET):
                 ## quindi qui ora da outputs dobbiamo ricavare la classe con output in logit maggiore
 
                 net_output= torch.argmax(outputs, dim=1).item()
+                
+                """""
+                if record < 20: # sanity check
+                    correct = (net_output == y_gt)
+                    print(f" DEBUG REC {record} | Pred: {net_output} | GT: {y_gt} | Match: {correct}")
+                """
+
                 mach_predictions.append(net_output)
 
             ## - PREDICT PROBA, LOGGING
@@ -942,6 +975,11 @@ class MiC(BRIDGET):
                 deferral_proba= p_defer(x_rec, r_net)
                 p_val = deferral_proba.item()
                 #print(p_val)
+
+
+                #if net_output != y_gt:
+                #    print(f" MACHINE ERROR | p_defer: {p_val:.4f} | Will Defer? {p_val >= 0.5}")
+
                 if p_val >= 0.5: # prova con 0.5
                     
                     x_input_user = x_rec.squeeze().cpu().numpy()    
@@ -1114,12 +1152,10 @@ class MiC(BRIDGET):
             if belief <= self.belief_threshold:
                 self.low_belief_count += 1
 
-
-
-
-            mic_drift= exit_MiC(self.fea_mic,
-                                self.performance_thresh,
-                                self.undeferred_decisions
+            mic_drift= exit_MiC(fea_vals=self.fea_mic,
+                                desired_performance=self.performance_thresh,
+                                undeferred_decisions=self.undeferred_decisions,
+                                warm_up= self.warm_up
             )
             
 
