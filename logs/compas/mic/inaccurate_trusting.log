@@ -86,3 +86,25 @@
 2026-04-14 15:33:13,573 | INFO |  Current Beta 0.1 | Start Perf: 66.96
 2026-04-14 15:33:13,573 | DEBUG | RETRIEVING NET | User inaccurate_trusting | Iter 3
 2026-04-14 15:33:13,575 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/compas\iter_3\beta_01\r_net_inaccurate_trusting.pth
+2026-04-14 15:34:43,840 | INFO | Beta 01 | Iteration 3 | System FEA: 66.88
+2026-04-14 15:34:43,847 | INFO | Saved Strat 2, Beta 0.1 results to: ./processed_data/compas/mic_result_ds\iter_3\results_inacc_t\strats\Mao_beta_01.parquet
+2026-04-14 15:34:43,847 | INFO |  Current Beta 0.15 | Start Perf: 66.96
+2026-04-14 15:34:43,847 | DEBUG | RETRIEVING NET | User inaccurate_trusting | Iter 3
+2026-04-14 15:34:43,848 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/compas\iter_3\beta_015\r_net_inaccurate_trusting.pth
+2026-04-14 15:36:19,637 | INFO | Beta 015 | Iteration 3 | System FEA: 66.88
+2026-04-14 15:36:19,645 | INFO | Saved Strat 2, Beta 0.15 results to: ./processed_data/compas/mic_result_ds\iter_3\results_inacc_t\strats\Mao_beta_015.parquet
+2026-04-14 15:36:19,645 | INFO |  Current Beta 0.2 | Start Perf: 66.96
+2026-04-14 15:36:19,646 | DEBUG | RETRIEVING NET | User inaccurate_trusting | Iter 3
+2026-04-14 15:36:19,648 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/compas\iter_3\beta_02\r_net_inaccurate_trusting.pth
+2026-04-14 15:38:15,430 | INFO | Beta 02 | Iteration 3 | System FEA: 66.88
+2026-04-14 15:38:15,439 | INFO | Saved Strat 2, Beta 0.2 results to: ./processed_data/compas/mic_result_ds\iter_3\results_inacc_t\strats\Mao_beta_02.parquet
+2026-04-14 15:38:15,439 | INFO |  Current Beta 0.25 | Start Perf: 66.96
+2026-04-14 15:38:15,439 | DEBUG | RETRIEVING NET | User inaccurate_trusting | Iter 3
+2026-04-14 15:38:15,441 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/compas\iter_3\beta_025\r_net_inaccurate_trusting.pth
+2026-04-14 15:40:01,750 | INFO | Beta 025 | Iteration 3 | System FEA: 66.88
+2026-04-14 15:40:01,759 | INFO | Saved Strat 2, Beta 0.25 results to: ./processed_data/compas/mic_result_ds\iter_3\results_inacc_t\strats\Mao_beta_025.parquet
+2026-04-14 15:40:01,759 | INFO |  Current Beta 0.3 | Start Perf: 66.96
+2026-04-14 15:40:01,759 | DEBUG | RETRIEVING NET | User inaccurate_trusting | Iter 3
+2026-04-14 15:40:01,761 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/compas\iter_3\beta_03\r_net_inaccurate_trusting.pth
+2026-04-14 15:41:57,513 | INFO | Beta 03 | Iteration 3 | System FEA: 69.10
+2026-04-14 15:41:57,521 | INFO | Saved Strat 2, Beta 0.3 results to: ./processed_data/compas/mic_result_ds\iter_3\results_inacc_t\strats\Mao_beta_03.parquet
