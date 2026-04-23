@@ -43,6 +43,7 @@ class User:
         
         def believe(self, seed=None):
             rng= random.Random(seed) if seed is not None else random
+            
             if self.belief_level > 1:
                 return None
 

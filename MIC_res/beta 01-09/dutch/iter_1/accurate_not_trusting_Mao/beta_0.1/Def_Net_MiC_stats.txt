@@ -1,0 +1,1 @@
+{False: {'user': {'tried': 1986, 'got': 1986, 'conf': 1.0}, 'machine': {'tried': 2018, 'got': 32, 'conf': 0.015857284440039643}}, True: {'user': {'tried': 1665, 'got': 1665, 'conf': 1.0}, 'machine': {'tried': 1670, 'got': 5, 'conf': 0.0029940119760479044}}}

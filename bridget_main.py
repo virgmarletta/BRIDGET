@@ -116,10 +116,10 @@ class BRIDGET:
             self.log.warning(f"DRIFT DETECTED | Phase: {current_phase} | Strat: {strat}")           
 
             if current_phase == 'HiC':
-                phase_info = f"Current desired performance: {self.desired_performance:.4f} | Last 5 FEA: {self.machine_fea[-5:]}"
+                phase_info = f"Current desired performance: {self.desired_performance:.4f} | Last 5 Machine EA: {self.machine_fea[-5:]}"
         
             else: 
-                phase_info = f"Current  belief_threshold: {self.belief_threshold} | Last 5 FEA: {self.fea_mic[-5:]}"
+                phase_info = f"Current  belief_threshold: {self.belief_threshold} | Last 5 Machine EA: {self.fea_mic[-5:]}"
 
             self.log.info(f"DRIFT METRICS: {phase_info}")
             dir = os.path.join(f"processed_data", 
@@ -129,6 +129,7 @@ class BRIDGET:
                                f"iter_{self.training_iter}")
             
             os.makedirs(dir, exist_ok=True)
+
             if current_phase == 'MiC' and self.human_deferral_cost is not None:
                 file_path = os.path.join(dir, f"{current_phase}_{self.name}_{strat}_{self.human_deferral_cost}.parquet")
             else:
@@ -189,6 +190,8 @@ class HiC(BRIDGET):
         self.initial_model = pickle.loads(pickle.dumps(self.hic_model))
 
         self.hic_evaluation_results = []
+        self.hic_acc = metrics.Accuracy()
+        self.hic_F1 = metrics.F1()
 
         #various counters for testing/debugging purposes
 
@@ -202,8 +205,6 @@ class HiC(BRIDGET):
         self.skept_count = 0
         self.agree_count = 0
         self.disagree_count = 0
-        self.hic_acc = metrics.Accuracy()
-        self.hic_F1 = metrics.F1()
         self.fairness_records = [len(self.X) - 1]
         for i in range(0, 100, 10)[1:]: #was 5 before
             self.fairness_records.append(percentage(i, len(self.X)))
@@ -274,8 +275,9 @@ class HiC(BRIDGET):
         return report
 
     def start_HiC(self, warm_up_set):
-            
             self.processed= dict()
+            
+
             machine_predictions = []
             machine_conf_lvls= []
             accuracy_score = []#Lista usata per salvare i vari punteggi di accuracy
@@ -344,8 +346,8 @@ class HiC(BRIDGET):
                 
                         self.log.info(f"Inconsistent, record {i}. You previously said: {old_decision}, Want to change old decision?")                        
                         
-                        rng = random.Random(42 + i) 
-                        confirm= rng.choices(population=[False, True], weights=[0.8, 0.2], k=1)[0]
+                        #rng = random.Random(42 + i) 
+                        confirm= random.choices(population=[False, True], weights=[0.8, 0.2], k=1)[0]
 
                         if confirm == False:
                             decision = old_decision
@@ -367,6 +369,14 @@ class HiC(BRIDGET):
                 
                 else:  # LOGIC FOR UNSEEN RECORDS
                     #self.rec_order.append(record)
+
+
+                    self.processed[record] = dict()
+                    self.processed[record]['notes'] = []
+                    self.processed[record]['vs'] = None
+                    self.processed[record]['ideal'] = None
+                    self.processed[record]['times'] = 1
+
                     try:
                         pred_proba = self.hic_model.predict_proba_one(x)[machine_prediction]
 
@@ -378,7 +388,11 @@ class HiC(BRIDGET):
                     except:
 
                         self.log.info("Still unlearned...")
-                        user_proba = 0.8
+                        user_proba = 1
+                    
+
+                    user_confidence = self.stats[user_truth]['user']['conf']
+                    mach_confidence = self.stats[machine_prediction]['machine']['conf']
 
                     self.stats[machine_prediction]['machine']['tried'] += 1
                     self.stats[user_truth]['user']['tried'] += 1
@@ -386,7 +400,8 @@ class HiC(BRIDGET):
                     machine_conf_lvls.append(pred_proba)
                     
                     # FEA COMPUTATION 
-
+                    
+                    
                     if machine_prediction == y:
                         fea_num_machine += 1 
 
@@ -399,20 +414,11 @@ class HiC(BRIDGET):
                     mach_fea= fea_num_machine / fea_den_machine if fea_den_machine > 0 else 0.5
                     user_fea= fea_num_user/ fea_den_user if fea_den_user > 0 else 1.0
 
-    
-
                     self.user_fea.append(user_fea)
                     self.machine_fea.append(mach_fea)
-                    
-                    
+                            
 
-                    # - UPDATING LOG
-                    self.processed[record] = dict()
-                    self.processed[record]['notes'] = []
-                    self.processed[record]['vs'] = None
-                    self.processed[record]['ideal'] = None
-                    self.processed[record]['times'] = 1
-
+                    # - UPDATING LOG - meglio alla fine 
                     
                     self.processed[record]['dict_form'] = x
                     self.processed[record]['user'] = user_truth
@@ -430,11 +436,17 @@ class HiC(BRIDGET):
 
                     vs_records, vs_decision = get_value_swap_records(x, self.processed,
                                                                     self.protected, self.attr_list) #Is record covered by Individual Fairness Check?
-
+                    """
                     if user_truth == machine_prediction:
                         skepticism = 0
                     else:
                         skepticism = mach_fea * pred_proba - user_fea * user_proba
+                    """
+
+                    if user_truth == machine_prediction:
+                        skepticism = 0
+                    else:
+                        skepticism = mach_confidence * pred_proba - user_confidence * user_proba
                     skepticisms.append({str(i):skepticism})
                     #print(f"Current skepticism: {skepticism}")
 
@@ -464,8 +476,8 @@ class HiC(BRIDGET):
                         for rec in vs_records:
                             self.processed[rec]['vs'] = True
 
-                        rng = random.Random(42 + i) 
-                        confirm = rng.choices(population=[False, True], weights=[0.8, 0.2], k=1)[0]
+                        #rng = random.Random(42 + i) 
+                        confirm = random.choices(population=[False, True], weights=[0.8, 0.2], k=1)[0]
                         
                         if confirm in [0, "0", False]:
                             decision = vs_decision
@@ -503,7 +515,7 @@ class HiC(BRIDGET):
                                 #print("High skepticism, asking for XAI...")
                                 self.skept_count += 1
                                 self.xai_check = 0
-                                confirm = self.user_model.believe(seed=i) 
+                                confirm = self.user_model.believe() 
                                 #print(f"User belief: {confirm}")
                                 #confirm = None
                                 
@@ -624,6 +636,8 @@ class HiC(BRIDGET):
                     hic_fea= fea_system_num / fea_system_den if fea_system_den > 0 else 0.5
                     self.hic_fea.append(hic_fea)
 
+                    
+                    
                     #Once the final decision has been taken, the model is updated. Internal data structure is also updated
                     
                     self.processed[record]['decision'] = int(decision) # sometimes AdwinBagging and Adaboost provide bool, so cast to int
@@ -636,8 +650,7 @@ class HiC(BRIDGET):
                     try:
                         self.hic_acc.update(decision,machine_prediction)
                         self.hic_F1.update(decision,machine_prediction)
-                        
-
+                    
                     except:
                         print('err', x, decision)
                         self.hic_model = pickle.loads(pickle.dumps(self.initial_model))
@@ -678,8 +691,7 @@ class HiC(BRIDGET):
                      #   self.hic_model.learn_one(x_train_sample, y_train_sample)
                     self.log.info(f"Retraining HiC model at record {i}")
                     for proc in (self.processed.keys()):
-                    
-                                   
+                                               
                         x_relabel = self.processed[proc]['dict_form']
                         y_relabel = self.processed[proc]['decision']
                         self.retrain_count += 1
@@ -759,9 +771,9 @@ class HiC(BRIDGET):
                     "Machine_Confidence.txt": machine_conf_lvls,
                     "KNN_metrics.json": metrics_knn,
                     "skept.json": skept,
-                    "HiC_FEA_machine.txt": self.machine_fea,
-                    "HiC_FEA_user.txt": self.user_fea,
-                    "HiC_FEA_system.txt": self.hic_fea,
+                    "HiC_Acc_machine.txt": self.machine_fea,
+                    "HiC_Acc_user.txt": self.user_fea,
+                    "HiC_System_ACC.txt": self.hic_fea,
                     "HiC_stats.txt": self.stats
                    
                     }
@@ -771,7 +783,7 @@ class HiC(BRIDGET):
                     _, df_drift_log = get_percentage_and_df(None, self.processed,self.target, self.feature_names) 
 
                     super().switch_phase(hic_drift, current_phase= 'HiC', current_log=df_drift_log)
-                    return df_drift_log, self.hic_acc, self.hic_F1
+                    return df_drift_log, accuracy_score, f1_score
                 
 
                     
@@ -811,9 +823,9 @@ class HiC(BRIDGET):
                     "Machine_Confidence.txt": machine_conf_lvls,
                     "KNN_metrics.json": metrics_knn,
                     "skept.json": skept,
-                    "HiC_FEA_machine.txt": self.machine_fea,
-                    "HiC_FEA_user.txt": self.user_fea,
-                    "HiC_FEA_system.txt": self.hic_fea,
+                    "HiC_EA_machine.txt": self.machine_fea,
+                    "HiC_EA_user.txt": self.user_fea,
+                    "HiC_System_ACC.txt": self.hic_fea,
                     "HiC_stats.txt": self.stats
                     
                     }
@@ -824,7 +836,7 @@ class HiC(BRIDGET):
 
             _, df_final_hic = get_percentage_and_df(None, self.processed,self.target, self.feature_names) 
             
-            return df_final_hic, self.hic_acc, self.hic_F1
+            return df_final_hic, accuracy_score, f1_score
 
 class MiC(BRIDGET):
 
@@ -837,7 +849,7 @@ class MiC(BRIDGET):
                  performance_delta= 0.05,
                  belief_threshold= 0.6,
                  tau_threshold= None,
-                 anqi_mao_thresh=None,
+                 #anqi_mao_thresh=None,
                  human_deferral_cost= None,  #input as str so it can save
                  **kwargs
                  ):
@@ -873,6 +885,7 @@ class MiC(BRIDGET):
 
         self.fea_mic= []
         self.fea_net= []
+        self.mic_user_fea= []
 
         
 
@@ -898,6 +911,9 @@ class MiC(BRIDGET):
 
         fea_net_num= 0
         fea_net_den= 0
+
+        fea_user_num= 0
+        fea_user_den= 0
 
         # counter for accuracy measures
 
@@ -1086,9 +1102,10 @@ class MiC(BRIDGET):
             plausabilities_GS.append({str(record): plausability_GS})
             
 
-            ## - FEA COMPUTATION
+            ## - EMPIRICAL ACC COMPUTATION + AGENT-BASED ACCURACY
 
-            # MiC System FEA
+            
+            # MiC System Accuracy
            
             if decision == y_gt:
                 fea_mic_num += 1 
@@ -1100,28 +1117,33 @@ class MiC(BRIDGET):
             self.fea_mic.append(fea_mic_model)
             
 
-            # Deferral Net FEA
+            # Deferral Net Acc
             # there was an issue before because the FEA was computed regardless of the provider, hence it was polluted
             # also to benchmark we needed the overall system FEA based on the decision too since its a global measure
 
-            if provider == 'M':
+            if net_output == y_gt:
+                fea_net_num += 1 
 
-                if net_output == y_gt:
-                    fea_net_num += 1 
+            fea_net_den += 1
 
-                fea_net_den += 1
-
-                fea_net= fea_net_num / fea_net_den if fea_net_den > 0 else 0.5
+            fea_net= fea_net_num / fea_net_den if fea_net_den > 0 else 0.5
                 
-                self.fea_net.append(fea_net)
+            self.fea_net.append(fea_net)
 
-            else:
-                if len(self.fea_net) > 0:
-                    self.fea_net.append(self.fea_net[-1])
-                else:
-                    self.fea_net.append(0.5)
+    
+            # User Accuracy
 
-
+            
+            if user_pred == y_gt:
+                fea_user_num += 1
+            
+            fea_user_den += 1
+            fea_user= fea_user_num / fea_user_den if fea_user_den > 0 else 0.5
+                
+            self.mic_user_fea.append(fea_user)
+            
+            
+            # Emp Accuracy (measuring EA values for all classes)
             try:
                 self.stats[user_pred]['user']['conf'] = self.stats[user_pred]['user']['got'] / self.stats[user_pred]['user']['tried']
             except:
@@ -1132,7 +1154,7 @@ class MiC(BRIDGET):
             except:
                 self.stats[net_output]['machine']['conf'] = 0
                         
-
+        
             ## - UPDATING LOG
            
             self.processed[record]['user'] = user_pred
@@ -1178,7 +1200,10 @@ class MiC(BRIDGET):
                 self.mic_results[record]['machine_overall_accuracy']= self.model_acc_all
                 self.mic_results[record]['machine_acc_on_undeferred']= self.model_acc_undeferred
                 self.mic_results[record]['machine_acc_on_deferred']= self.model_acc_deferred
-
+            
+                res_df= pd.DataFrame(self.mic_results).transpose()
+                
+                
                 # performance of the model on deferred instances
 
 
@@ -1190,6 +1215,7 @@ class MiC(BRIDGET):
                                    )
                 
                 
+                
                 if two_step_deferral:
                     dir= os.path.join(dir,
                                            f"beta_{self.human_deferral_cost}"
@@ -1198,6 +1224,9 @@ class MiC(BRIDGET):
 
                 else:
                     mic_pref= f"MIC_DRIFT_{self.mic_model_name}_"
+                
+                os.makedirs(dir, exist_ok=True)
+                res_df.to_parquet(os.path.join(dir, f"{mic_pref}Perfomances.parquet"))
 
                 metrics_gs = {
                             "time_steps": times_GS,
@@ -1210,11 +1239,12 @@ class MiC(BRIDGET):
                 
                 mic_res = {
                     "model.pkl": self.mic_model,
-                    "Performances.txt": self.mic_results,
+                    #"Performances.txt": self.mic_results,
                     "Model_Confidence.txt": mach_confidence,
                     "MiC_stats.txt": self.stats,
-                    "System_FEA.txt": self.fea_mic,
-                    "Model_FEA.txt": self.fea_net,
+                    "System_Accuracy.txt": self.fea_mic,
+                    "Model_Accuracy.txt": self.fea_net,
+                    "User_Accuracy.txt": self.mic_user_fea,
                     "GS_metrics.json": metrics_gs                
                     }
                 
@@ -1245,6 +1275,8 @@ class MiC(BRIDGET):
             self.mic_results[record]['machine_acc_on_undeferred']= self.model_acc_undeferred
             self.mic_results[record]['machine_acc_on_deferred']= self.model_acc_deferred
 
+            
+
         ## - UPDATING SAVE STRUCTURES
         
 
@@ -1262,6 +1294,10 @@ class MiC(BRIDGET):
             mic_pref= f"{self.mic_model_name}_"
         else:
             mic_pref= f"{self.mic_model_name}_"
+        
+        os.makedirs(dir, exist_ok=True)
+        res_df= pd.DataFrame(self.mic_results).transpose()
+        res_df.to_parquet(os.path.join(dir, f"{mic_pref}Perfomances.parquet"))
 
         metrics_gs = {
                         "time_steps": times_GS,
@@ -1276,11 +1312,12 @@ class MiC(BRIDGET):
                     "Performances.txt": self.mic_results, #this basically being the processed log in the mic phase
                     "Model_Confidence.txt": mach_confidence,
                     "MiC_stats.txt": self.stats,
-                    "System_FEA.txt": self.fea_mic,
-                    "Model_FEA.txt": self.fea_net,
+                    "System_Accuracy.txt": self.fea_mic,
+                    "Model_Accuracy.txt": self.fea_net,
+                    "User_Accuracy.txt": self.mic_user_fea,
                     "GS_metrics.json": metrics_gs
                     }
-                
+        
         save_data(dir, mic_pref, mic_res)
 
 

@@ -326,7 +326,7 @@ def run_hic(ds_name, params, objects):
 
         current_batch = batch1.iloc[start_idx:end_idx]
 
-        hic_df, hic_inst, _, train_acc, train_f1 = hic_session(
+        hic_df, hic_inst, _, test_acc, test_f1 = hic_session(
             ds_name=ds_name,
             preprocessor=current_preprocessor,
             hic_model=current_incremental_learner,
@@ -355,7 +355,7 @@ def run_hic(ds_name, params, objects):
             
         )
 
-        log.info(f" HiC Session completed. Training Acc: {train_acc.get():.4f}, F1 Acc: {train_f1.get():.4f}")
+        log.info(f" HiC Session completed. Acc on Test set: {np.mean(test_acc):.4f}, F1 Acc: {np.mean(test_f1):.4f}")
         
         log.info(" Scaling validation and MIC sets...")
         val_set, _ = scale_data(ds_name, iteration, params) #with this f we save the val set and df 3 scaled using the scaler trained in hic
@@ -415,7 +415,7 @@ def run_hic(ds_name, params, objects):
         #3. FEA (STARTING PERFORMANCE)
 
         current_perf= (np.mean(hic_inst.machine_fea))*100
-        log.info(f"Iteration {iteration} res | Machine FEA: {current_perf:.2f}")
+        log.info(f"Iteration {iteration} res | Machine EA: {current_perf:.2f}")
 
         # 4. UPDATE for the next iteration
         # Usually, you'd update this based on the 'train_acc' or 'eval_results' 
@@ -867,7 +867,7 @@ def run_mic(ds_name,
 
         strat_1_res['initial_state'] = strat_1_res[iteration]
 
-        log.info(f"Finished Iteration {iteration}, strat {strat_1_name} | System FEA: {strat_1_res[iteration]['benchmark']:.2f} | Delta: {new_delta}")
+        log.info(f"Finished Iteration {iteration}, strat {strat_1_name} | Machine EA: {strat_1_res[iteration]['benchmark']:.2f} | Delta: {new_delta}")
         
         # saving res
         s1_path = os.path.join(mic_save_path, f"{strat_1_name}.parquet") #metrics
@@ -996,7 +996,7 @@ def run_mic(ds_name,
             strat_2_res[beta_key]['initial_state'] = strat_2_res[beta_key][iteration]
 
 
-            log.info(f"Beta {beta_str} | Iteration {iteration} | System FEA: {strat_2_res[beta_key][iteration]['benchmark']:.2f}")
+            log.info(f"Beta {beta_str} | Iteration {iteration} | Machine EA: {strat_2_res[beta_key][iteration]['benchmark']:.2f}")
 
             # saving res
             s2_path = os.path.join(mic_save_path, f"{strat_2_name}_beta_{beta_str}.parquet")

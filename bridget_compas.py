@@ -318,11 +318,11 @@ if __name__ == "__main__":
         base_model = bridget_inst.hic_model
 
 
-        prepr_filename = f"{model_name}_preprocessor.pkl"
-        model_filename = f"{model_name}_model.pkl"
+        #prepr_filename = f"{model_name}_preprocessor.pkl"
+        #model_filename = f"{model_name}_model.pkl"
 
-        joblib.dump(base_preprocessor, os.path.join(prepr_dir, prepr_filename))
-        joblib.dump(base_model, os.path.join(model_dir, model_filename))
+        #joblib.dump(base_preprocessor, os.path.join(prepr_dir, prepr_filename))
+        #joblib.dump(base_model, os.path.join(model_dir, model_filename))
 
 
     trained_arf= arf
@@ -470,7 +470,7 @@ if __name__ == "__main__":
     current_user_name= "accurate_trusting"
     user_suffix= 'acc_t'
 
-    exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
+    exp_path= fr"./trained_experts/{ds_name}/{current_user_name}.pkl"
     current_expert= joblib.load(exp_path)
 
 
@@ -491,7 +491,7 @@ if __name__ == "__main__":
 
     #run_hic(ds_name, params, objects)
 
-
+    
     # #### CALIB
 
     # In[ ]:
@@ -545,7 +545,7 @@ if __name__ == "__main__":
     current_user_name= "accurate_trusting"
     user_suffix= 'acc_t'
 
-    exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
+    exp_path= fr"./trained_experts/{ds_name}/{current_user_name}.pkl"
     current_expert= joblib.load(exp_path)
 
 
@@ -584,7 +584,6 @@ if __name__ == "__main__":
 
 
     
-
     # ### Expert: Inaccurate, Trusting 
 
     # #### HIC
@@ -597,7 +596,7 @@ if __name__ == "__main__":
     current_user_name= "inaccurate_trusting"
     user_suffix= 'inacc_t'
 
-    exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
+    exp_path= fr"./trained_experts/{ds_name}/{current_user_name}.pkl"
     current_expert= joblib.load(exp_path)
 
 
@@ -673,7 +672,7 @@ if __name__ == "__main__":
     current_user_name= "inaccurate_trusting"
     user_suffix= 'inacc_t'
 
-    exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
+    exp_path= fr"./trained_experts/{ds_name}/{current_user_name}.pkl"
     current_expert= joblib.load(exp_path)
 
 
@@ -722,7 +721,7 @@ if __name__ == "__main__":
     current_user_name= "accurate_not_trusting"
     user_suffix= 'acc_nt'
 
-    exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
+    exp_path= fr"./trained_experts/{ds_name}/{current_user_name}.pkl"
     current_expert= joblib.load(exp_path)
 
 
@@ -796,7 +795,7 @@ if __name__ == "__main__":
     current_user_name= "accurate_not_trusting"
     user_suffix= 'acc_nt'
 
-    exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
+    exp_path= fr"./trained_experts/{ds_name}/{current_user_name}.pkl"
     current_expert= joblib.load(exp_path)
 
 
@@ -845,7 +844,7 @@ if __name__ == "__main__":
     current_user_name= "inaccurate_not_trusting"
     user_suffix= 'inacc_nt'
 
-    exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
+    exp_path= fr"./trained_experts/{ds_name}/{current_user_name}.pkl"
     current_expert= joblib.load(exp_path)
 
 
@@ -920,7 +919,7 @@ if __name__ == "__main__":
     current_user_name= "inaccurate_not_trusting"
     user_suffix= 'inacc_nt'
 
-    exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
+    exp_path= fr"./trained_experts/{ds_name}/{current_user_name}.pkl"
     current_expert= joblib.load(exp_path)
 
 

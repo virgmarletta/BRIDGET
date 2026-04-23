@@ -461,7 +461,7 @@ device= torch.device("cpu")
 current_user_name= "accurate_trusting"
 user_suffix= 'acc_t'
 
-exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
+exp_path= fr"./trained_experts/{ds_name}/{current_user_name}.pkl"
 current_expert= joblib.load(exp_path)
 
 
@@ -536,7 +536,7 @@ for i in range (1, 4):
 current_user_name= "accurate_trusting"
 user_suffix= 'acc_t'
 
-exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
+exp_path= fr"./trained_experts/{ds_name}/{current_user_name}.pkl"
 current_expert= joblib.load(exp_path)
 
 
@@ -588,7 +588,7 @@ for i in range(1,4):
 current_user_name= "inaccurate_trusting"
 user_suffix= 'inacc_t'
 
-exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
+exp_path= fr"./trained_experts/{ds_name}/{current_user_name}.pkl"
 current_expert= joblib.load(exp_path)
 
 
@@ -664,7 +664,7 @@ for i in range (1, 4):
 current_user_name= "inaccurate_trusting"
 user_suffix= 'inacc_t'
 
-exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
+exp_path= fr"./trained_experts/{ds_name}/{current_user_name}.pkl"
 current_expert= joblib.load(exp_path)
 
 
@@ -713,7 +713,7 @@ for i in range(1,4):
 current_user_name= "accurate_not_trusting"
 user_suffix= 'acc_nt'
 
-exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
+exp_path= fr"./trained_experts/{ds_name}/{current_user_name}.pkl"
 current_expert= joblib.load(exp_path)
 
 
@@ -787,7 +787,7 @@ for i in range (1, 4):
 current_user_name= "accurate_not_trusting"
 user_suffix= 'acc_nt'
 
-exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
+exp_path= fr"./trained_experts/{ds_name}/{current_user_name}.pkl"
 current_expert= joblib.load(exp_path)
 
 
@@ -836,7 +836,7 @@ for i in range(1,4):
 current_user_name= "inaccurate_not_trusting"
 user_suffix= 'inacc_nt'
 
-exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
+exp_path= fr"./trained_experts/{ds_name}/{current_user_name}.pkl"
 current_expert= joblib.load(exp_path)
 
 
@@ -911,7 +911,7 @@ for i in range (1, 4):
 current_user_name= "inaccurate_not_trusting"
 user_suffix= 'inacc_nt'
 
-exp_path= fr"./trained_experts/{ds_name}/{name}.pkl"
+exp_path= fr"./trained_experts/{ds_name}/{current_user_name}.pkl"
 current_expert= joblib.load(exp_path)
 
 

@@ -1,8 +1,8 @@
 {
     "model_key": "32_16_acc_nt_model",
-    "tau_threshold": 0.59,
-    "best_val_acc": 0.7615417196103346,
-    "net_path": "./nets/dutch/iter_2/acc_nt_models/32_16/32_16_model_8.pt",
+    "tau_threshold": 0.67,
+    "best_val_acc": 0.7837837837837838,
+    "net_path": "./nets/dutch/iter_2/acc_nt_models/32_16/32_16_model_10.pt",
     "ds_name": "dutch",
     "iteration": 2
 }

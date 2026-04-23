@@ -14,6 +14,7 @@ import os
 import pickle
 import orjson
 import random
+import json
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
@@ -1822,7 +1823,7 @@ def get_mic_data(ds_name, iteration, user_name, strategy, beta, metrics):
                 main_df = main_df.join(df, how='inner')
         
         else:
-            print(f"file not found in {path}")
+            print(f"file not found in {base_path}")
         
         """
         path = base_path / f"{metric}.txt"
@@ -1935,3 +1936,18 @@ def custom_log(name, log_file, custom_format=None):
     logger.addHandler(f_handler)
 
     return logger
+
+
+def load_json(path):
+    with open(path, 'r') as f:
+        data= json.load(f)
+
+        flattened= []
+        for item in data['skept']:
+            for row_idx, val in item.items():
+                flattened.append((int(row_idx), val))
+    
+        df = pd.DataFrame(flattened, columns=["row", "skept_value"])
+
+    return df.sort_values("row").reset_index(drop=True)
+    

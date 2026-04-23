@@ -1,0 +1,102 @@
+2026-04-19 19:06:41,912 | INFO | STARTING MIC RUN | User: accurate_trusting | DS: adult
+2026-04-19 19:06:41,912 | INFO | ---  ITERATION 1/3 ---
+2026-04-19 19:06:41,913 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 1 | NET 16_8_model_*.pt
+2026-04-19 19:06:41,920 | INFO | Loaded Tau: 0.79, iter 1
+2026-04-19 19:06:41,920 | INFO | STARTING STRAT Confidence | USER accurate_trusting | Iter 1
+2026-04-19 19:06:41,920 | INFO | Iteration 1 starting with benchmark: 63.00, delta: 0.05
+2026-04-19 19:41:41,673 | INFO | Finished Iteration 1, strat Confidence | System EA: 90.67 | Delta: 0.05
+2026-04-19 19:41:41,682 | INFO | Saved Strat 1 results to: ./processed_data/adult/mic_result_ds/iter_1/results_acc_t/strats/Confidence.parquet
+2026-04-19 19:41:41,682 | INFO | STARTING STRAT Mao | USER accurate_trusting | Iter 1
+2026-04-19 19:41:41,682 | INFO |  Current Beta 0.1 | Start Perf: 63.00
+2026-04-19 19:41:41,683 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 1
+2026-04-19 19:41:41,685 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/adult/iter_1/beta_01/r_net_accurate_trusting.pth
+2026-04-19 20:13:45,139 | INFO | Beta 01 | Iteration 1 | System EA: 91.81
+2026-04-19 20:13:45,148 | INFO | Saved Strat 2, Beta 0.1 results to: ./processed_data/adult/mic_result_ds/iter_1/results_acc_t/strats/Mao_beta_01.parquet
+2026-04-19 20:13:45,148 | INFO |  Current Beta 0.3 | Start Perf: 63.00
+2026-04-19 20:13:45,148 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 1
+2026-04-19 20:13:45,150 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/adult/iter_1/beta_03/r_net_accurate_trusting.pth
+2026-04-19 20:46:39,871 | INFO | Beta 03 | Iteration 1 | System EA: 81.39
+2026-04-19 20:46:39,880 | INFO | Saved Strat 2, Beta 0.3 results to: ./processed_data/adult/mic_result_ds/iter_1/results_acc_t/strats/Mao_beta_03.parquet
+2026-04-19 20:46:39,880 | INFO |  Current Beta 0.5 | Start Perf: 63.00
+2026-04-19 20:46:39,880 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 1
+2026-04-19 20:46:39,882 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/adult/iter_1/beta_05/r_net_accurate_trusting.pth
+2026-04-19 21:19:56,309 | INFO | Beta 05 | Iteration 1 | System EA: 78.26
+2026-04-19 21:19:56,318 | INFO | Saved Strat 2, Beta 0.5 results to: ./processed_data/adult/mic_result_ds/iter_1/results_acc_t/strats/Mao_beta_05.parquet
+2026-04-19 21:19:56,318 | INFO |  Current Beta 0.7 | Start Perf: 63.00
+2026-04-19 21:19:56,318 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 1
+2026-04-19 21:19:56,320 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/adult/iter_1/beta_07/r_net_accurate_trusting.pth
+2026-04-19 21:51:55,380 | INFO | Beta 07 | Iteration 1 | System EA: 78.26
+2026-04-19 21:51:55,390 | INFO | Saved Strat 2, Beta 0.7 results to: ./processed_data/adult/mic_result_ds/iter_1/results_acc_t/strats/Mao_beta_07.parquet
+2026-04-19 21:51:55,390 | INFO |  Current Beta 0.9 | Start Perf: 63.00
+2026-04-19 21:51:55,390 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 1
+2026-04-19 21:51:55,392 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/adult/iter_1/beta_09/r_net_accurate_trusting.pth
+2026-04-19 22:07:06,224 | INFO | Beta 09 | Iteration 1 | System EA: 78.26
+2026-04-19 22:07:06,234 | INFO | Saved Strat 2, Beta 0.9 results to: ./processed_data/adult/mic_result_ds/iter_1/results_acc_t/strats/Mao_beta_09.parquet
+2026-04-19 22:07:06,246 | INFO | STARTING MIC RUN | User: accurate_trusting | DS: adult
+2026-04-19 22:07:06,246 | INFO | ---  ITERATION 2/3 ---
+2026-04-19 22:07:06,247 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 2 | NET 16_8_model_*.pt
+2026-04-19 22:07:06,255 | INFO | Loaded Tau: 0.81, iter 2
+2026-04-19 22:07:06,255 | INFO | STARTING STRAT Confidence | USER accurate_trusting | Iter 2
+2026-04-19 22:07:06,255 | INFO | Iteration 2 starting with benchmark: 90.67, delta: 0.05
+2026-04-19 22:21:42,295 | INFO | Finished Iteration 2, strat Confidence | System EA: 91.46 | Delta: 0.05
+2026-04-19 22:21:42,303 | INFO | Saved Strat 1 results to: ./processed_data/adult/mic_result_ds/iter_2/results_acc_t/strats/Confidence.parquet
+2026-04-19 22:21:42,303 | INFO | STARTING STRAT Mao | USER accurate_trusting | Iter 2
+2026-04-19 22:21:42,303 | INFO |  Current Beta 0.1 | Start Perf: 91.81
+2026-04-19 22:21:42,303 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 2
+2026-04-19 22:21:42,305 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/adult/iter_2/beta_01/r_net_accurate_trusting.pth
+2026-04-19 22:36:06,225 | INFO | Beta 01 | Iteration 2 | System EA: 90.46
+2026-04-19 22:36:06,235 | INFO | Saved Strat 2, Beta 0.1 results to: ./processed_data/adult/mic_result_ds/iter_2/results_acc_t/strats/Mao_beta_01.parquet
+2026-04-19 22:36:06,235 | INFO |  Current Beta 0.3 | Start Perf: 81.39
+2026-04-19 22:36:06,235 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 2
+2026-04-19 22:36:06,237 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/adult/iter_2/beta_03/r_net_accurate_trusting.pth
+2026-04-19 22:50:56,739 | INFO | Beta 03 | Iteration 2 | System EA: 80.37
+2026-04-19 22:50:56,748 | INFO | Saved Strat 2, Beta 0.3 results to: ./processed_data/adult/mic_result_ds/iter_2/results_acc_t/strats/Mao_beta_03.parquet
+2026-04-19 22:50:56,748 | INFO |  Current Beta 0.5 | Start Perf: 78.26
+2026-04-19 22:50:56,749 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 2
+2026-04-19 22:50:56,751 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/adult/iter_2/beta_05/r_net_accurate_trusting.pth
+2026-04-19 23:11:01,111 | INFO | Beta 05 | Iteration 2 | System EA: 80.37
+2026-04-19 23:11:01,121 | INFO | Saved Strat 2, Beta 0.5 results to: ./processed_data/adult/mic_result_ds/iter_2/results_acc_t/strats/Mao_beta_05.parquet
+2026-04-19 23:11:01,121 | INFO |  Current Beta 0.7 | Start Perf: 78.26
+2026-04-19 23:11:01,121 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 2
+2026-04-19 23:11:01,124 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/adult/iter_2/beta_07/r_net_accurate_trusting.pth
+2026-04-19 23:42:21,168 | INFO | Beta 07 | Iteration 2 | System EA: 80.37
+2026-04-19 23:42:21,178 | INFO | Saved Strat 2, Beta 0.7 results to: ./processed_data/adult/mic_result_ds/iter_2/results_acc_t/strats/Mao_beta_07.parquet
+2026-04-19 23:42:21,178 | INFO |  Current Beta 0.9 | Start Perf: 78.26
+2026-04-19 23:42:21,179 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 2
+2026-04-19 23:42:21,181 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/adult/iter_2/beta_09/r_net_accurate_trusting.pth
+2026-04-20 00:11:28,018 | INFO | Beta 09 | Iteration 2 | System EA: 80.37
+2026-04-20 00:11:28,027 | INFO | Saved Strat 2, Beta 0.9 results to: ./processed_data/adult/mic_result_ds/iter_2/results_acc_t/strats/Mao_beta_09.parquet
+2026-04-20 00:11:28,041 | INFO | STARTING MIC RUN | User: accurate_trusting | DS: adult
+2026-04-20 00:11:28,041 | INFO | ---  ITERATION 3/3 ---
+2026-04-20 00:11:28,041 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 3 | NET 16_8_model_*.pt
+2026-04-20 00:11:28,051 | INFO | Loaded Tau: 0.8, iter 3
+2026-04-20 00:11:28,051 | INFO | STARTING STRAT Confidence | USER accurate_trusting | Iter 3
+2026-04-20 00:11:28,051 | INFO | Iteration 3 starting with benchmark: 91.46, delta: 0.05
+2026-04-20 00:42:38,565 | INFO | Finished Iteration 3, strat Confidence | System EA: 91.30 | Delta: 0.05
+2026-04-20 00:42:38,574 | INFO | Saved Strat 1 results to: ./processed_data/adult/mic_result_ds/iter_3/results_acc_t/strats/Confidence.parquet
+2026-04-20 00:42:38,574 | INFO | STARTING STRAT Mao | USER accurate_trusting | Iter 3
+2026-04-20 00:42:38,574 | INFO |  Current Beta 0.1 | Start Perf: 90.46
+2026-04-20 00:42:38,574 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 3
+2026-04-20 00:42:38,577 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/adult/iter_3/beta_01/r_net_accurate_trusting.pth
+2026-04-20 01:14:13,770 | INFO | Beta 01 | Iteration 3 | System EA: 90.70
+2026-04-20 01:14:13,779 | INFO | Saved Strat 2, Beta 0.1 results to: ./processed_data/adult/mic_result_ds/iter_3/results_acc_t/strats/Mao_beta_01.parquet
+2026-04-20 01:14:13,779 | INFO |  Current Beta 0.3 | Start Perf: 80.37
+2026-04-20 01:14:13,780 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 3
+2026-04-20 01:14:13,782 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/adult/iter_3/beta_03/r_net_accurate_trusting.pth
+2026-04-20 01:45:20,603 | INFO | Beta 03 | Iteration 3 | System EA: 81.39
+2026-04-20 01:45:20,611 | INFO | Saved Strat 2, Beta 0.3 results to: ./processed_data/adult/mic_result_ds/iter_3/results_acc_t/strats/Mao_beta_03.parquet
+2026-04-20 01:45:20,611 | INFO |  Current Beta 0.5 | Start Perf: 80.37
+2026-04-20 01:45:20,611 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 3
+2026-04-20 01:45:20,613 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/adult/iter_3/beta_05/r_net_accurate_trusting.pth
+2026-04-20 02:14:08,910 | INFO | Beta 05 | Iteration 3 | System EA: 81.39
+2026-04-20 02:14:08,919 | INFO | Saved Strat 2, Beta 0.5 results to: ./processed_data/adult/mic_result_ds/iter_3/results_acc_t/strats/Mao_beta_05.parquet
+2026-04-20 02:14:08,919 | INFO |  Current Beta 0.7 | Start Perf: 80.37
+2026-04-20 02:14:08,919 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 3
+2026-04-20 02:14:08,921 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/adult/iter_3/beta_07/r_net_accurate_trusting.pth
+2026-04-20 02:44:36,220 | INFO | Beta 07 | Iteration 3 | System EA: 81.39
+2026-04-20 02:44:36,230 | INFO | Saved Strat 2, Beta 0.7 results to: ./processed_data/adult/mic_result_ds/iter_3/results_acc_t/strats/Mao_beta_07.parquet
+2026-04-20 02:44:36,230 | INFO |  Current Beta 0.9 | Start Perf: 80.37
+2026-04-20 02:44:36,230 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 3
+2026-04-20 02:44:36,233 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/adult/iter_3/beta_09/r_net_accurate_trusting.pth
+2026-04-20 03:13:15,776 | INFO | Beta 09 | Iteration 3 | System EA: 81.39
+2026-04-20 03:13:15,788 | INFO | Saved Strat 2, Beta 0.9 results to: ./processed_data/adult/mic_result_ds/iter_3/results_acc_t/strats/Mao_beta_09.parquet

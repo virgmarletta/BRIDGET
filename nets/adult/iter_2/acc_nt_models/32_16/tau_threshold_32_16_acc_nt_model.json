@@ -1,8 +1,8 @@
 {
     "model_key": "32_16_acc_nt_model",
-    "tau_threshold": 0.74,
-    "best_val_acc": 0.839313094142901,
-    "net_path": "./nets/adult/iter_2/acc_nt_models/32_16/32_16_model_8.pt",
+    "tau_threshold": 0.81,
+    "best_val_acc": 0.9093655589123867,
+    "net_path": "./nets/adult/iter_2/acc_nt_models/32_16/32_16_model_20.pt",
     "ds_name": "adult",
     "iteration": 2
 }

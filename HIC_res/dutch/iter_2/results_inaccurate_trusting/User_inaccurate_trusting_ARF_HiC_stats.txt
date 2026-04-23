@@ -1,1 +1,1 @@
-{False: {'user': {'tried': 1260, 'got': 1209, 'conf': 0.9595238095238096}, 'machine': {'tried': 1550, 'got': 940, 'conf': 0.6064516129032258}}, True: {'user': {'tried': 1199, 'got': 1162, 'conf': 0.969140950792327}, 'machine': {'tried': 909, 'got': 594, 'conf': 0.6534653465346535}}}
+{False: {'user': {'tried': 1341, 'got': 1335, 'conf': 0.9955257270693513}, 'machine': {'tried': 1646, 'got': 1021, 'conf': 0.6202916160388822}}, True: {'user': {'tried': 1118, 'got': 1106, 'conf': 0.9892665474060823}, 'machine': {'tried': 813, 'got': 487, 'conf': 0.5990159901599016}}}

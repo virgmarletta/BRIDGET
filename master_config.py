@@ -137,14 +137,19 @@ DATASETS = {
             "benchmark_res": r"./baseline/mic/compas",        
             "logs": r"./baseline/logs/compas"
         },
-        
-        
+
+        "user_test": {
+            "trained_experts": r'./user_test/experts/compas',
+            "train_df_labeled_by_experts": r"./user_test/compas/train", #this one is universal across all baseline strats
+            "test_df_for_mic": r"./user_test/compas/test",  #this one is universal across all baseline strats
+            "validation_set_labeled": r"./user_test/compas/val",
+        },
 
 
         # hic phase config
         "allocated_budget": [722, 722, 723],
         "batches_offset": [0, 722, 1444, 2167],
-        "skepticism_threshold": 0.2,
+        "skepticism_threshold": 0.35,
         "start_performance": 63,  #just a default value for the first iteration
         
 
@@ -288,7 +293,9 @@ R_NET_CONFIGS = {
     "dropout": 0.2,
     "alpha": 1.0,
     #"betas": [0.1, 0.3, 0.5, 0.7, 0.9],
-    "betas": [0.1, 0.15, 0.2, 0.25, 0.3],
+    #"betas": [0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8],
+    #"betas": [0.1, 0.2, 0.3, 0.4, 0.5],
+    "betas": [0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5],
     "linspace_dimension": 300,
     "lower_thresh":0.0,
     "upper_thresh": 0.8,
@@ -300,7 +307,7 @@ R_NET_CONFIGS = {
 
 FRANK_RULES= {
         "RULE" : False,
-        "PAST" : True,
+        "PAST" : False,
         "SKEPT" : True,
         "GROUP" : True,
         "EVA":  True,

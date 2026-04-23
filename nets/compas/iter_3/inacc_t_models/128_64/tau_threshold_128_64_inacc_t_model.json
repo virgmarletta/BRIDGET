@@ -1,8 +1,8 @@
 {
     "model_key": "128_64_inacc_t_model",
-    "tau_threshold": 0.65,
-    "best_val_acc": 0.6446153846153846,
-    "net_path": "./nets/compas\\iter_3\\inacc_t_models\\128_64\\128_64_model_20.pt",
+    "tau_threshold": 0.64,
+    "best_val_acc": 0.6545189504373178,
+    "net_path": "./nets/compas\\iter_3\\inacc_t_models\\128_64\\128_64_model_14.pt",
     "ds_name": "compas",
     "iteration": 3
 }
