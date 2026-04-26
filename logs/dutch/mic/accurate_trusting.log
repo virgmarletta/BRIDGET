@@ -1,0 +1,144 @@
+2026-04-21 19:32:32,483 | INFO | STARTING MIC RUN | User: accurate_trusting | DS: dutch
+2026-04-21 19:32:32,483 | INFO | ---  ITERATION 1/3 ---
+2026-04-21 19:32:32,483 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 1 | NET 32_16_model_*.pt
+2026-04-21 19:32:32,489 | INFO | Loaded Tau: 0.6799999999999999, iter 1
+2026-04-21 19:32:32,489 | INFO | STARTING STRAT Confidence | USER accurate_trusting | Iter 1
+2026-04-21 19:32:32,489 | INFO | Iteration 1 starting with benchmark: 65.00, delta: 0.05
+2026-04-21 19:41:16,523 | INFO | Finished Iteration 1, strat Confidence | System EA: 83.66 | Delta: 0.05
+2026-04-21 19:41:16,531 | INFO | Saved Strat 1 results to: ./processed_data/dutch/mic_result_ds/iter_1/results_acc_t/strats/Confidence.parquet
+2026-04-21 19:41:16,531 | INFO | STARTING STRAT Mao | USER accurate_trusting | Iter 1
+2026-04-21 19:41:16,531 | INFO |  Current Beta 0.2 | Start Perf: 65.00
+2026-04-21 19:41:16,531 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 1
+2026-04-21 19:41:16,533 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_1/beta_02/r_net_accurate_trusting.pth
+2026-04-21 19:50:04,357 | INFO | Beta 02 | Iteration 1 | System EA: 89.05
+2026-04-21 19:50:04,366 | INFO | Saved Strat 2, Beta 0.2 results to: ./processed_data/dutch/mic_result_ds/iter_1/results_acc_t/strats/Mao_beta_02.parquet
+2026-04-21 19:50:04,366 | INFO |  Current Beta 0.25 | Start Perf: 65.00
+2026-04-21 19:50:04,366 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 1
+2026-04-21 19:50:04,368 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_1/beta_025/r_net_accurate_trusting.pth
+2026-04-21 20:01:34,790 | INFO | Beta 025 | Iteration 1 | System EA: 84.29
+2026-04-21 20:01:34,796 | INFO | Saved Strat 2, Beta 0.25 results to: ./processed_data/dutch/mic_result_ds/iter_1/results_acc_t/strats/Mao_beta_025.parquet
+2026-04-21 20:01:34,796 | INFO |  Current Beta 0.3 | Start Perf: 65.00
+2026-04-21 20:01:34,797 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 1
+2026-04-21 20:01:34,799 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_1/beta_03/r_net_accurate_trusting.pth
+2026-04-21 20:12:52,766 | INFO | Beta 03 | Iteration 1 | System EA: 78.95
+2026-04-21 20:12:52,774 | INFO | Saved Strat 2, Beta 0.3 results to: ./processed_data/dutch/mic_result_ds/iter_1/results_acc_t/strats/Mao_beta_03.parquet
+2026-04-21 20:12:52,774 | INFO |  Current Beta 0.35 | Start Perf: 65.00
+2026-04-21 20:12:52,774 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 1
+2026-04-21 20:12:52,777 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_1/beta_035/r_net_accurate_trusting.pth
+2026-04-21 20:24:41,587 | INFO | Beta 035 | Iteration 1 | System EA: 74.37
+2026-04-21 20:24:41,595 | INFO | Saved Strat 2, Beta 0.35 results to: ./processed_data/dutch/mic_result_ds/iter_1/results_acc_t/strats/Mao_beta_035.parquet
+2026-04-21 20:24:41,595 | INFO |  Current Beta 0.4 | Start Perf: 65.00
+2026-04-21 20:24:41,595 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 1
+2026-04-21 20:24:41,597 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_1/beta_04/r_net_accurate_trusting.pth
+2026-04-21 20:36:42,304 | INFO | Beta 04 | Iteration 1 | System EA: 70.58
+2026-04-21 20:36:42,311 | INFO | Saved Strat 2, Beta 0.4 results to: ./processed_data/dutch/mic_result_ds/iter_1/results_acc_t/strats/Mao_beta_04.parquet
+2026-04-21 20:36:42,311 | INFO |  Current Beta 0.45 | Start Perf: 65.00
+2026-04-21 20:36:42,311 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 1
+2026-04-21 20:36:42,314 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_1/beta_045/r_net_accurate_trusting.pth
+2026-04-21 20:48:24,683 | INFO | Beta 045 | Iteration 1 | System EA: 70.58
+2026-04-21 20:48:24,691 | INFO | Saved Strat 2, Beta 0.45 results to: ./processed_data/dutch/mic_result_ds/iter_1/results_acc_t/strats/Mao_beta_045.parquet
+2026-04-21 20:48:24,691 | INFO |  Current Beta 0.5 | Start Perf: 65.00
+2026-04-21 20:48:24,691 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 1
+2026-04-21 20:48:24,693 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_1/beta_05/r_net_accurate_trusting.pth
+2026-04-21 21:00:25,551 | INFO | Beta 05 | Iteration 1 | System EA: 70.58
+2026-04-21 21:00:25,559 | INFO | Saved Strat 2, Beta 0.5 results to: ./processed_data/dutch/mic_result_ds/iter_1/results_acc_t/strats/Mao_beta_05.parquet
+2026-04-21 21:00:25,568 | INFO | STARTING MIC RUN | User: accurate_trusting | DS: dutch
+2026-04-21 21:00:25,568 | INFO | ---  ITERATION 2/3 ---
+2026-04-21 21:00:25,568 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 2 | NET 32_16_model_*.pt
+2026-04-21 21:00:25,575 | INFO | Loaded Tau: 0.67, iter 2
+2026-04-21 21:00:25,576 | INFO | STARTING STRAT Confidence | USER accurate_trusting | Iter 2
+2026-04-21 21:00:25,576 | INFO | Iteration 2 starting with benchmark: 83.66, delta: 0.05
+2026-04-21 21:11:34,251 | INFO | Finished Iteration 2, strat Confidence | System EA: 84.41 | Delta: 0.05
+2026-04-21 21:11:34,259 | INFO | Saved Strat 1 results to: ./processed_data/dutch/mic_result_ds/iter_2/results_acc_t/strats/Confidence.parquet
+2026-04-21 21:11:34,259 | INFO | STARTING STRAT Mao | USER accurate_trusting | Iter 2
+2026-04-21 21:11:34,259 | INFO |  Current Beta 0.2 | Start Perf: 89.05
+2026-04-21 21:11:34,259 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 2
+2026-04-21 21:11:34,261 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_2/beta_02/r_net_accurate_trusting.pth
+2026-04-21 21:23:08,087 | INFO | Beta 02 | Iteration 2 | System EA: 86.36
+2026-04-21 21:23:08,094 | INFO | Saved Strat 2, Beta 0.2 results to: ./processed_data/dutch/mic_result_ds/iter_2/results_acc_t/strats/Mao_beta_02.parquet
+2026-04-21 21:23:08,094 | INFO |  Current Beta 0.25 | Start Perf: 84.29
+2026-04-21 21:23:08,095 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 2
+2026-04-21 21:23:08,097 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_2/beta_025/r_net_accurate_trusting.pth
+2026-04-21 21:26:20,114 | WARNING | Drift here! Record index 1111
+2026-04-21 21:26:20,145 | WARNING | DRIFT DETECTED | Phase: MiC | Strat: Mao
+2026-04-21 21:26:20,145 | INFO | DRIFT METRICS: Current  belief_threshold: 0.7 | Last 5 Machine EA: [0.7933212996389891, 0.7935076645626691, 0.7936936936936937, 0.7929792979297929, 0.7931654676258992]
+2026-04-21 21:26:20,148 | INFO | Drift df saved to: processed_data/dutch/drift_checkpoints/MiC/iter_2/MiC_accurate_trusting_Mao_0.25.parquet
+2026-04-21 21:26:20,164 | INFO | Beta 025 | Iteration 2 | System EA: 79.09
+2026-04-21 21:26:20,167 | INFO | Saved Strat 2, Beta 0.25 results to: ./processed_data/dutch/mic_result_ds/iter_2/results_acc_t/strats/Mao_beta_025.parquet
+2026-04-21 21:26:20,167 | INFO |  Current Beta 0.3 | Start Perf: 78.95
+2026-04-21 21:26:20,168 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 2
+2026-04-21 21:26:20,170 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_2/beta_03/r_net_accurate_trusting.pth
+2026-04-21 21:28:34,940 | WARNING | Drift here! Record index 827
+2026-04-21 21:28:34,963 | WARNING | DRIFT DETECTED | Phase: MiC | Strat: Mao
+2026-04-21 21:28:34,963 | INFO | DRIFT METRICS: Current  belief_threshold: 0.7 | Last 5 Machine EA: [0.7427184466019418, 0.743030303030303, 0.7433414043583535, 0.7424425634824667, 0.7427536231884058]
+2026-04-21 21:28:34,965 | INFO | Drift df saved to: processed_data/dutch/drift_checkpoints/MiC/iter_2/MiC_accurate_trusting_Mao_0.3.parquet
+2026-04-21 21:28:34,975 | INFO | Beta 03 | Iteration 2 | System EA: 72.97
+2026-04-21 21:28:34,977 | INFO | Saved Strat 2, Beta 0.3 results to: ./processed_data/dutch/mic_result_ds/iter_2/results_acc_t/strats/Mao_beta_03.parquet
+2026-04-21 21:28:34,978 | INFO |  Current Beta 0.35 | Start Perf: 74.37
+2026-04-21 21:28:34,978 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 2
+2026-04-21 21:28:34,980 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_2/beta_035/r_net_accurate_trusting.pth
+2026-04-21 21:30:34,319 | WARNING | Drift here! Record index 737
+2026-04-21 21:30:34,343 | WARNING | DRIFT DETECTED | Phase: MiC | Strat: Mao
+2026-04-21 21:30:34,343 | INFO | DRIFT METRICS: Current  belief_threshold: 0.7 | Last 5 Machine EA: [0.726158038147139, 0.7251700680272108, 0.7255434782608695, 0.7259158751696065, 0.7262872628726287]
+2026-04-21 21:30:34,345 | INFO | Drift df saved to: processed_data/dutch/drift_checkpoints/MiC/iter_2/MiC_accurate_trusting_Mao_0.35.parquet
+2026-04-21 21:30:34,355 | INFO | Beta 035 | Iteration 2 | System EA: 69.79
+2026-04-21 21:30:34,358 | INFO | Saved Strat 2, Beta 0.35 results to: ./processed_data/dutch/mic_result_ds/iter_2/results_acc_t/strats/Mao_beta_035.parquet
+2026-04-21 21:30:34,358 | INFO |  Current Beta 0.4 | Start Perf: 70.58
+2026-04-21 21:30:34,358 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 2
+2026-04-21 21:30:34,360 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_2/beta_04/r_net_accurate_trusting.pth
+2026-04-21 21:41:45,931 | INFO | Beta 04 | Iteration 2 | System EA: 71.01
+2026-04-21 21:41:45,938 | INFO | Saved Strat 2, Beta 0.4 results to: ./processed_data/dutch/mic_result_ds/iter_2/results_acc_t/strats/Mao_beta_04.parquet
+2026-04-21 21:41:45,938 | INFO |  Current Beta 0.45 | Start Perf: 70.58
+2026-04-21 21:41:45,938 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 2
+2026-04-21 21:41:45,940 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_2/beta_045/r_net_accurate_trusting.pth
+2026-04-21 21:52:52,845 | INFO | Beta 045 | Iteration 2 | System EA: 71.01
+2026-04-21 21:52:52,854 | INFO | Saved Strat 2, Beta 0.45 results to: ./processed_data/dutch/mic_result_ds/iter_2/results_acc_t/strats/Mao_beta_045.parquet
+2026-04-21 21:52:52,854 | INFO |  Current Beta 0.5 | Start Perf: 70.58
+2026-04-21 21:52:52,854 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 2
+2026-04-21 21:52:52,856 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_2/beta_05/r_net_accurate_trusting.pth
+2026-04-21 22:04:19,833 | INFO | Beta 05 | Iteration 2 | System EA: 71.01
+2026-04-21 22:04:19,841 | INFO | Saved Strat 2, Beta 0.5 results to: ./processed_data/dutch/mic_result_ds/iter_2/results_acc_t/strats/Mao_beta_05.parquet
+2026-04-21 22:04:19,849 | INFO | STARTING MIC RUN | User: accurate_trusting | DS: dutch
+2026-04-21 22:04:19,849 | INFO | ---  ITERATION 3/3 ---
+2026-04-21 22:04:19,850 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 3 | NET 32_16_model_*.pt
+2026-04-21 22:04:19,856 | INFO | Loaded Tau: 0.75, iter 3
+2026-04-21 22:04:19,857 | INFO | STARTING STRAT Confidence | USER accurate_trusting | Iter 3
+2026-04-21 22:04:19,857 | INFO | Iteration 3 starting with benchmark: 84.41, delta: 0.05
+2026-04-21 22:15:19,692 | INFO | Finished Iteration 3, strat Confidence | System EA: 84.44 | Delta: 0.05
+2026-04-21 22:15:19,700 | INFO | Saved Strat 1 results to: ./processed_data/dutch/mic_result_ds/iter_3/results_acc_t/strats/Confidence.parquet
+2026-04-21 22:15:19,700 | INFO | STARTING STRAT Mao | USER accurate_trusting | Iter 3
+2026-04-21 22:15:19,700 | INFO |  Current Beta 0.2 | Start Perf: 86.36
+2026-04-21 22:15:19,700 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 3
+2026-04-21 22:15:19,703 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_3/beta_02/r_net_accurate_trusting.pth
+2026-04-21 22:26:43,566 | INFO | Beta 02 | Iteration 3 | System EA: 84.97
+2026-04-21 22:26:43,574 | INFO | Saved Strat 2, Beta 0.2 results to: ./processed_data/dutch/mic_result_ds/iter_3/results_acc_t/strats/Mao_beta_02.parquet
+2026-04-21 22:26:43,574 | INFO |  Current Beta 0.25 | Start Perf: 79.09
+2026-04-21 22:26:43,575 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 3
+2026-04-21 22:26:43,577 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_3/beta_025/r_net_accurate_trusting.pth
+2026-04-21 22:37:52,521 | INFO | Beta 025 | Iteration 3 | System EA: 83.17
+2026-04-21 22:37:52,529 | INFO | Saved Strat 2, Beta 0.25 results to: ./processed_data/dutch/mic_result_ds/iter_3/results_acc_t/strats/Mao_beta_025.parquet
+2026-04-21 22:37:52,529 | INFO |  Current Beta 0.3 | Start Perf: 72.97
+2026-04-21 22:37:52,530 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 3
+2026-04-21 22:37:52,532 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_3/beta_03/r_net_accurate_trusting.pth
+2026-04-21 22:49:07,099 | INFO | Beta 03 | Iteration 3 | System EA: 74.82
+2026-04-21 22:49:07,107 | INFO | Saved Strat 2, Beta 0.3 results to: ./processed_data/dutch/mic_result_ds/iter_3/results_acc_t/strats/Mao_beta_03.parquet
+2026-04-21 22:49:07,107 | INFO |  Current Beta 0.35 | Start Perf: 69.79
+2026-04-21 22:49:07,107 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 3
+2026-04-21 22:49:07,110 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_3/beta_035/r_net_accurate_trusting.pth
+2026-04-21 22:59:48,690 | INFO | Beta 035 | Iteration 3 | System EA: 72.91
+2026-04-21 22:59:48,698 | INFO | Saved Strat 2, Beta 0.35 results to: ./processed_data/dutch/mic_result_ds/iter_3/results_acc_t/strats/Mao_beta_035.parquet
+2026-04-21 22:59:48,698 | INFO |  Current Beta 0.4 | Start Perf: 71.01
+2026-04-21 22:59:48,698 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 3
+2026-04-21 22:59:48,700 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_3/beta_04/r_net_accurate_trusting.pth
+2026-04-21 23:11:14,361 | INFO | Beta 04 | Iteration 3 | System EA: 72.91
+2026-04-21 23:11:14,369 | INFO | Saved Strat 2, Beta 0.4 results to: ./processed_data/dutch/mic_result_ds/iter_3/results_acc_t/strats/Mao_beta_04.parquet
+2026-04-21 23:11:14,369 | INFO |  Current Beta 0.45 | Start Perf: 71.01
+2026-04-21 23:11:14,369 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 3
+2026-04-21 23:11:14,371 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_3/beta_045/r_net_accurate_trusting.pth
+2026-04-21 23:22:17,007 | INFO | Beta 045 | Iteration 3 | System EA: 72.91
+2026-04-21 23:22:17,015 | INFO | Saved Strat 2, Beta 0.45 results to: ./processed_data/dutch/mic_result_ds/iter_3/results_acc_t/strats/Mao_beta_045.parquet
+2026-04-21 23:22:17,015 | INFO |  Current Beta 0.5 | Start Perf: 71.01
+2026-04-21 23:22:17,015 | DEBUG | RETRIEVING NET | User accurate_trusting | Iter 3
+2026-04-21 23:22:17,017 | DEBUG | RETRIEVING R-NET | PATH ./r_nets/dutch/iter_3/beta_05/r_net_accurate_trusting.pth
+2026-04-21 23:34:40,959 | INFO | Beta 05 | Iteration 3 | System EA: 72.91
+2026-04-21 23:34:40,966 | INFO | Saved Strat 2, Beta 0.5 results to: ./processed_data/dutch/mic_result_ds/iter_3/results_acc_t/strats/Mao_beta_05.parquet

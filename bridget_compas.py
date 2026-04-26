@@ -378,7 +378,7 @@ if __name__ == "__main__":
             seed= expert_type['group_seed']
             )
         res = experts_obj[name].fit(X_exp_final, y_hic_train, tol= 0.001)
-
+        """
         save_dir= fr"./trained_experts/{ds_name}"
         os.makedirs(save_dir, exist_ok= True)
         file_path = os.path.join(save_dir, f"{name}.pkl")
@@ -386,7 +386,7 @@ if __name__ == "__main__":
         with open(file_path, 'wb') as f:
             pickle.dump(experts_obj[name], f)
         print(f"Expert saved in: {file_path}")
-
+        """
 
         print(f"{'='*30}")
         print(f" EXPERT CALIBRATION REPORT ")

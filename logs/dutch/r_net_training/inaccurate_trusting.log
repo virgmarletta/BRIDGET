@@ -1,0 +1,513 @@
+2026-04-21 23:34:40,977 | INFO | STARTING R-NETS TRAINING | User: inaccurate_trusting | DS: dutch
+2026-04-21 23:34:40,978 | INFO | --- Calibrating for iteration 1 ---
+2026-04-21 23:34:40,978 | INFO | --- Training r-net for Beta: 0.2
+2026-04-21 23:34:40,978 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.2 | Iter: 1
+2026-04-21 23:34:41,511 | DEBUG | Input Tensor Shape: torch.Size([2406, 11])
+2026-04-21 23:34:41,889 | INFO | Epoch 1/20 - Loss: 1.0666
+2026-04-21 23:34:42,038 | INFO | Epoch 2/20 - Loss: 1.0601
+2026-04-21 23:34:42,282 | INFO | Epoch 3/20 - Loss: 1.0592
+2026-04-21 23:34:42,319 | INFO | Epoch 4/20 - Loss: 1.0586
+2026-04-21 23:34:42,355 | INFO | Epoch 5/20 - Loss: 1.0581
+2026-04-21 23:34:42,392 | INFO | Epoch 6/20 - Loss: 1.0579
+2026-04-21 23:34:42,428 | INFO | Epoch 7/20 - Loss: 1.0577
+2026-04-21 23:34:42,464 | INFO | Epoch 8/20 - Loss: 1.0571
+2026-04-21 23:34:42,501 | INFO | Epoch 9/20 - Loss: 1.0573
+2026-04-21 23:34:42,537 | INFO | Epoch 10/20 - Loss: 1.0569
+2026-04-21 23:34:42,574 | INFO | Epoch 11/20 - Loss: 1.0568
+2026-04-21 23:34:42,610 | INFO | Epoch 12/20 - Loss: 1.0561
+2026-04-21 23:34:42,647 | INFO | Epoch 13/20 - Loss: 1.0561
+2026-04-21 23:34:42,683 | INFO | Epoch 14/20 - Loss: 1.0557
+2026-04-21 23:34:42,720 | INFO | Epoch 15/20 - Loss: 1.0562
+2026-04-21 23:34:42,757 | INFO | Epoch 16/20 - Loss: 1.0555
+2026-04-21 23:34:42,793 | INFO | Epoch 17/20 - Loss: 1.0558
+2026-04-21 23:34:42,887 | INFO | Epoch 18/20 - Loss: 1.0557
+2026-04-21 23:34:42,924 | INFO | Epoch 19/20 - Loss: 1.0555
+2026-04-21 23:34:42,961 | INFO | Epoch 20/20 - Loss: 1.0552
+2026-04-21 23:34:42,962 | INFO | r-net saved to: ./r_nets/dutch/iter_1/beta_02/r_net_inaccurate_trusting.pth
+2026-04-21 23:34:42,977 | INFO | --- Training r-net for Beta: 0.25
+2026-04-21 23:34:42,977 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.25 | Iter: 1
+2026-04-21 23:34:43,509 | DEBUG | Input Tensor Shape: torch.Size([2406, 11])
+2026-04-21 23:34:43,819 | INFO | Epoch 1/20 - Loss: 1.0458
+2026-04-21 23:34:44,074 | INFO | Epoch 2/20 - Loss: 1.0368
+2026-04-21 23:34:44,111 | INFO | Epoch 3/20 - Loss: 1.0324
+2026-04-21 23:34:44,148 | INFO | Epoch 4/20 - Loss: 1.0293
+2026-04-21 23:34:44,184 | INFO | Epoch 5/20 - Loss: 1.0266
+2026-04-21 23:34:44,221 | INFO | Epoch 6/20 - Loss: 1.0252
+2026-04-21 23:34:44,257 | INFO | Epoch 7/20 - Loss: 1.0255
+2026-04-21 23:34:44,294 | INFO | Epoch 8/20 - Loss: 1.0249
+2026-04-21 23:34:44,331 | INFO | Epoch 9/20 - Loss: 1.0246
+2026-04-21 23:34:44,368 | INFO | Epoch 10/20 - Loss: 1.0254
+2026-04-21 23:34:44,405 | INFO | Epoch 11/20 - Loss: 1.0245
+2026-04-21 23:34:44,441 | INFO | Epoch 12/20 - Loss: 1.0242
+2026-04-21 23:34:44,478 | INFO | Epoch 13/20 - Loss: 1.0238
+2026-04-21 23:34:44,515 | INFO | Epoch 14/20 - Loss: 1.0242
+2026-04-21 23:34:44,552 | INFO | Epoch 15/20 - Loss: 1.0238
+2026-04-21 23:34:44,595 | INFO | Epoch 16/20 - Loss: 1.0232
+2026-04-21 23:34:44,653 | INFO | Epoch 17/20 - Loss: 1.0232
+2026-04-21 23:34:44,700 | INFO | Epoch 18/20 - Loss: 1.0227
+2026-04-21 23:34:44,741 | INFO | Epoch 19/20 - Loss: 1.0234
+2026-04-21 23:34:44,947 | INFO | Epoch 20/20 - Loss: 1.0226
+2026-04-21 23:34:44,948 | INFO | r-net saved to: ./r_nets/dutch/iter_1/beta_025/r_net_inaccurate_trusting.pth
+2026-04-21 23:34:44,962 | INFO | --- Training r-net for Beta: 0.3
+2026-04-21 23:34:44,962 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.3 | Iter: 1
+2026-04-21 23:34:45,486 | DEBUG | Input Tensor Shape: torch.Size([2406, 11])
+2026-04-21 23:34:45,871 | INFO | Epoch 1/20 - Loss: 0.9921
+2026-04-21 23:34:45,993 | INFO | Epoch 2/20 - Loss: 0.9915
+2026-04-21 23:34:46,030 | INFO | Epoch 3/20 - Loss: 0.9909
+2026-04-21 23:34:46,067 | INFO | Epoch 4/20 - Loss: 0.9902
+2026-04-21 23:34:46,103 | INFO | Epoch 5/20 - Loss: 0.9893
+2026-04-21 23:34:46,140 | INFO | Epoch 6/20 - Loss: 0.9898
+2026-04-21 23:34:46,239 | INFO | Epoch 7/20 - Loss: 0.9897
+2026-04-21 23:34:46,289 | INFO | Epoch 8/20 - Loss: 0.9893
+2026-04-21 23:34:46,327 | INFO | Epoch 9/20 - Loss: 0.9893
+2026-04-21 23:34:46,364 | INFO | Epoch 10/20 - Loss: 0.9887
+2026-04-21 23:34:46,400 | INFO | Epoch 11/20 - Loss: 0.9896
+2026-04-21 23:34:46,440 | INFO | Epoch 12/20 - Loss: 0.9887
+2026-04-21 23:34:46,476 | INFO | Epoch 13/20 - Loss: 0.9888
+2026-04-21 23:34:46,513 | INFO | Epoch 14/20 - Loss: 0.9877
+2026-04-21 23:34:46,549 | INFO | Epoch 15/20 - Loss: 0.9882
+2026-04-21 23:34:46,690 | INFO | Epoch 16/20 - Loss: 0.9882
+2026-04-21 23:34:46,726 | INFO | Epoch 17/20 - Loss: 0.9879
+2026-04-21 23:34:46,762 | INFO | Epoch 18/20 - Loss: 0.9882
+2026-04-21 23:34:46,797 | INFO | Epoch 19/20 - Loss: 0.9879
+2026-04-21 23:34:46,832 | INFO | Epoch 20/20 - Loss: 0.9873
+2026-04-21 23:34:46,833 | INFO | r-net saved to: ./r_nets/dutch/iter_1/beta_03/r_net_inaccurate_trusting.pth
+2026-04-21 23:34:46,846 | INFO | --- Training r-net for Beta: 0.35
+2026-04-21 23:34:46,847 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.35 | Iter: 1
+2026-04-21 23:34:47,378 | DEBUG | Input Tensor Shape: torch.Size([2406, 11])
+2026-04-21 23:34:47,924 | INFO | Epoch 1/20 - Loss: 0.9535
+2026-04-21 23:34:48,373 | INFO | Epoch 2/20 - Loss: 0.9536
+2026-04-21 23:34:48,409 | INFO | Epoch 3/20 - Loss: 0.9533
+2026-04-21 23:34:48,446 | INFO | Epoch 4/20 - Loss: 0.9530
+2026-04-21 23:34:48,482 | INFO | Epoch 5/20 - Loss: 0.9530
+2026-04-21 23:34:48,519 | INFO | Epoch 6/20 - Loss: 0.9529
+2026-04-21 23:34:48,555 | INFO | Epoch 7/20 - Loss: 0.9532
+2026-04-21 23:34:48,592 | INFO | Epoch 8/20 - Loss: 0.9528
+2026-04-21 23:34:48,629 | INFO | Epoch 9/20 - Loss: 0.9530
+2026-04-21 23:34:48,665 | INFO | Epoch 10/20 - Loss: 0.9520
+2026-04-21 23:34:48,701 | INFO | Epoch 11/20 - Loss: 0.9521
+2026-04-21 23:34:48,738 | INFO | Epoch 12/20 - Loss: 0.9518
+2026-04-21 23:34:48,774 | INFO | Epoch 13/20 - Loss: 0.9514
+2026-04-21 23:34:48,810 | INFO | Epoch 14/20 - Loss: 0.9516
+2026-04-21 23:34:48,846 | INFO | Epoch 15/20 - Loss: 0.9513
+2026-04-21 23:34:48,882 | INFO | Epoch 16/20 - Loss: 0.9512
+2026-04-21 23:34:48,918 | INFO | Epoch 17/20 - Loss: 0.9512
+2026-04-21 23:34:48,954 | INFO | Epoch 18/20 - Loss: 0.9514
+2026-04-21 23:34:48,990 | INFO | Epoch 19/20 - Loss: 0.9511
+2026-04-21 23:34:49,026 | INFO | Epoch 20/20 - Loss: 0.9509
+2026-04-21 23:34:49,028 | INFO | r-net saved to: ./r_nets/dutch/iter_1/beta_035/r_net_inaccurate_trusting.pth
+2026-04-21 23:34:49,042 | INFO | --- Training r-net for Beta: 0.4
+2026-04-21 23:34:49,042 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.4 | Iter: 1
+2026-04-21 23:34:49,575 | DEBUG | Input Tensor Shape: torch.Size([2406, 11])
+2026-04-21 23:34:49,619 | INFO | Epoch 1/20 - Loss: 0.9159
+2026-04-21 23:34:49,655 | INFO | Epoch 2/20 - Loss: 0.9146
+2026-04-21 23:34:49,696 | INFO | Epoch 3/20 - Loss: 0.9142
+2026-04-21 23:34:49,732 | INFO | Epoch 4/20 - Loss: 0.9141
+2026-04-21 23:34:49,769 | INFO | Epoch 5/20 - Loss: 0.9141
+2026-04-21 23:34:49,807 | INFO | Epoch 6/20 - Loss: 0.9139
+2026-04-21 23:34:49,843 | INFO | Epoch 7/20 - Loss: 0.9133
+2026-04-21 23:34:49,880 | INFO | Epoch 8/20 - Loss: 0.9132
+2026-04-21 23:34:49,916 | INFO | Epoch 9/20 - Loss: 0.9135
+2026-04-21 23:34:49,952 | INFO | Epoch 10/20 - Loss: 0.9128
+2026-04-21 23:34:49,989 | INFO | Epoch 11/20 - Loss: 0.9129
+2026-04-21 23:34:50,025 | INFO | Epoch 12/20 - Loss: 0.9130
+2026-04-21 23:34:50,201 | INFO | Epoch 13/20 - Loss: 0.9129
+2026-04-21 23:34:50,237 | INFO | Epoch 14/20 - Loss: 0.9130
+2026-04-21 23:34:50,274 | INFO | Epoch 15/20 - Loss: 0.9129
+2026-04-21 23:34:50,310 | INFO | Epoch 16/20 - Loss: 0.9124
+2026-04-21 23:34:50,347 | INFO | Epoch 17/20 - Loss: 0.9130
+2026-04-21 23:34:50,384 | INFO | Epoch 18/20 - Loss: 0.9124
+2026-04-21 23:34:50,421 | INFO | Epoch 19/20 - Loss: 0.9118
+2026-04-21 23:34:50,457 | INFO | Epoch 20/20 - Loss: 0.9120
+2026-04-21 23:34:50,458 | INFO | r-net saved to: ./r_nets/dutch/iter_1/beta_04/r_net_inaccurate_trusting.pth
+2026-04-21 23:34:50,470 | INFO | --- Training r-net for Beta: 0.45
+2026-04-21 23:34:50,470 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.45 | Iter: 1
+2026-04-21 23:34:51,011 | DEBUG | Input Tensor Shape: torch.Size([2406, 11])
+2026-04-21 23:34:51,241 | INFO | Epoch 1/20 - Loss: 0.9257
+2026-04-21 23:34:51,699 | INFO | Epoch 2/20 - Loss: 0.9079
+2026-04-21 23:34:51,826 | INFO | Epoch 3/20 - Loss: 0.8879
+2026-04-21 23:34:51,863 | INFO | Epoch 4/20 - Loss: 0.8802
+2026-04-21 23:34:51,900 | INFO | Epoch 5/20 - Loss: 0.8787
+2026-04-21 23:34:51,937 | INFO | Epoch 6/20 - Loss: 0.8783
+2026-04-21 23:34:51,974 | INFO | Epoch 7/20 - Loss: 0.8765
+2026-04-21 23:34:52,011 | INFO | Epoch 8/20 - Loss: 0.8763
+2026-04-21 23:34:52,048 | INFO | Epoch 9/20 - Loss: 0.8779
+2026-04-21 23:34:52,086 | INFO | Epoch 10/20 - Loss: 0.8772
+2026-04-21 23:34:52,138 | INFO | Epoch 11/20 - Loss: 0.8767
+2026-04-21 23:34:52,175 | INFO | Epoch 12/20 - Loss: 0.8768
+2026-04-21 23:34:52,212 | INFO | Epoch 13/20 - Loss: 0.8766
+2026-04-21 23:34:52,249 | INFO | Epoch 14/20 - Loss: 0.8748
+2026-04-21 23:34:52,482 | INFO | Epoch 15/20 - Loss: 0.8754
+2026-04-21 23:34:52,519 | INFO | Epoch 16/20 - Loss: 0.8750
+2026-04-21 23:34:52,556 | INFO | Epoch 17/20 - Loss: 0.8741
+2026-04-21 23:34:52,594 | INFO | Epoch 18/20 - Loss: 0.8745
+2026-04-21 23:34:52,631 | INFO | Epoch 19/20 - Loss: 0.8747
+2026-04-21 23:34:52,668 | INFO | Epoch 20/20 - Loss: 0.8750
+2026-04-21 23:34:52,669 | INFO | r-net saved to: ./r_nets/dutch/iter_1/beta_045/r_net_inaccurate_trusting.pth
+2026-04-21 23:34:52,683 | INFO | --- Training r-net for Beta: 0.5
+2026-04-21 23:34:52,683 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.5 | Iter: 1
+2026-04-21 23:34:53,255 | DEBUG | Input Tensor Shape: torch.Size([2406, 11])
+2026-04-21 23:34:53,296 | INFO | Epoch 1/20 - Loss: 0.8739
+2026-04-21 23:34:53,332 | INFO | Epoch 2/20 - Loss: 0.8560
+2026-04-21 23:34:53,367 | INFO | Epoch 3/20 - Loss: 0.8414
+2026-04-21 23:34:53,403 | INFO | Epoch 4/20 - Loss: 0.8361
+2026-04-21 23:34:53,440 | INFO | Epoch 5/20 - Loss: 0.8352
+2026-04-21 23:34:53,476 | INFO | Epoch 6/20 - Loss: 0.8339
+2026-04-21 23:34:53,512 | INFO | Epoch 7/20 - Loss: 0.8343
+2026-04-21 23:34:53,547 | INFO | Epoch 8/20 - Loss: 0.8326
+2026-04-21 23:34:53,583 | INFO | Epoch 9/20 - Loss: 0.8334
+2026-04-21 23:34:53,621 | INFO | Epoch 10/20 - Loss: 0.8333
+2026-04-21 23:34:53,657 | INFO | Epoch 11/20 - Loss: 0.8320
+2026-04-21 23:34:53,693 | INFO | Epoch 12/20 - Loss: 0.8326
+2026-04-21 23:34:53,728 | INFO | Epoch 13/20 - Loss: 0.8332
+2026-04-21 23:34:53,764 | INFO | Epoch 14/20 - Loss: 0.8319
+2026-04-21 23:34:53,800 | INFO | Epoch 15/20 - Loss: 0.8310
+2026-04-21 23:34:53,841 | INFO | Epoch 16/20 - Loss: 0.8316
+2026-04-21 23:34:53,877 | INFO | Epoch 17/20 - Loss: 0.8315
+2026-04-21 23:34:53,913 | INFO | Epoch 18/20 - Loss: 0.8311
+2026-04-21 23:34:53,950 | INFO | Epoch 19/20 - Loss: 0.8308
+2026-04-21 23:34:53,987 | INFO | Epoch 20/20 - Loss: 0.8303
+2026-04-21 23:34:53,988 | INFO | r-net saved to: ./r_nets/dutch/iter_1/beta_05/r_net_inaccurate_trusting.pth
+2026-04-21 23:34:54,002 | INFO | --- R-NET TRAINING FINISHED | User: inaccurate_trusting | DS: dutch
+2026-04-21 23:34:54,007 | INFO | STARTING R-NETS TRAINING | User: inaccurate_trusting | DS: dutch
+2026-04-21 23:34:54,008 | INFO | --- Calibrating for iteration 2 ---
+2026-04-21 23:34:54,008 | INFO | --- Training r-net for Beta: 0.2
+2026-04-21 23:34:54,008 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.2 | Iter: 2
+2026-04-21 23:34:54,537 | DEBUG | Input Tensor Shape: torch.Size([2418, 11])
+2026-04-21 23:34:54,750 | INFO | Epoch 1/20 - Loss: 1.0562
+2026-04-21 23:34:54,789 | INFO | Epoch 2/20 - Loss: 1.0521
+2026-04-21 23:34:54,826 | INFO | Epoch 3/20 - Loss: 1.0492
+2026-04-21 23:34:54,864 | INFO | Epoch 4/20 - Loss: 1.0473
+2026-04-21 23:34:54,901 | INFO | Epoch 5/20 - Loss: 1.0466
+2026-04-21 23:34:54,939 | INFO | Epoch 6/20 - Loss: 1.0468
+2026-04-21 23:34:54,976 | INFO | Epoch 7/20 - Loss: 1.0459
+2026-04-21 23:34:55,013 | INFO | Epoch 8/20 - Loss: 1.0456
+2026-04-21 23:34:55,050 | INFO | Epoch 9/20 - Loss: 1.0452
+2026-04-21 23:34:55,088 | INFO | Epoch 10/20 - Loss: 1.0447
+2026-04-21 23:34:55,125 | INFO | Epoch 11/20 - Loss: 1.0447
+2026-04-21 23:34:55,163 | INFO | Epoch 12/20 - Loss: 1.0443
+2026-04-21 23:34:55,201 | INFO | Epoch 13/20 - Loss: 1.0442
+2026-04-21 23:34:55,238 | INFO | Epoch 14/20 - Loss: 1.0431
+2026-04-21 23:34:55,275 | INFO | Epoch 15/20 - Loss: 1.0435
+2026-04-21 23:34:55,312 | INFO | Epoch 16/20 - Loss: 1.0432
+2026-04-21 23:34:55,350 | INFO | Epoch 17/20 - Loss: 1.0430
+2026-04-21 23:34:55,387 | INFO | Epoch 18/20 - Loss: 1.0434
+2026-04-21 23:34:55,426 | INFO | Epoch 19/20 - Loss: 1.0420
+2026-04-21 23:34:55,465 | INFO | Epoch 20/20 - Loss: 1.0421
+2026-04-21 23:34:55,466 | INFO | r-net saved to: ./r_nets/dutch/iter_2/beta_02/r_net_inaccurate_trusting.pth
+2026-04-21 23:34:55,478 | INFO | --- Training r-net for Beta: 0.25
+2026-04-21 23:34:55,478 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.25 | Iter: 2
+2026-04-21 23:34:56,018 | DEBUG | Input Tensor Shape: torch.Size([2418, 11])
+2026-04-21 23:34:56,316 | INFO | Epoch 1/20 - Loss: 1.0152
+2026-04-21 23:34:56,717 | INFO | Epoch 2/20 - Loss: 1.0137
+2026-04-21 23:34:56,831 | INFO | Epoch 3/20 - Loss: 1.0134
+2026-04-21 23:34:57,090 | INFO | Epoch 4/20 - Loss: 1.0128
+2026-04-21 23:34:57,189 | INFO | Epoch 5/20 - Loss: 1.0132
+2026-04-21 23:34:57,227 | INFO | Epoch 6/20 - Loss: 1.0120
+2026-04-21 23:34:57,264 | INFO | Epoch 7/20 - Loss: 1.0122
+2026-04-21 23:34:57,300 | INFO | Epoch 8/20 - Loss: 1.0118
+2026-04-21 23:34:57,337 | INFO | Epoch 9/20 - Loss: 1.0109
+2026-04-21 23:34:57,373 | INFO | Epoch 10/20 - Loss: 1.0117
+2026-04-21 23:34:57,410 | INFO | Epoch 11/20 - Loss: 1.0108
+2026-04-21 23:34:57,447 | INFO | Epoch 12/20 - Loss: 1.0114
+2026-04-21 23:34:57,484 | INFO | Epoch 13/20 - Loss: 1.0108
+2026-04-21 23:34:57,521 | INFO | Epoch 14/20 - Loss: 1.0104
+2026-04-21 23:34:57,558 | INFO | Epoch 15/20 - Loss: 1.0106
+2026-04-21 23:34:57,594 | INFO | Epoch 16/20 - Loss: 1.0107
+2026-04-21 23:34:57,632 | INFO | Epoch 17/20 - Loss: 1.0103
+2026-04-21 23:34:57,722 | INFO | Epoch 18/20 - Loss: 1.0094
+2026-04-21 23:34:57,758 | INFO | Epoch 19/20 - Loss: 1.0104
+2026-04-21 23:34:57,795 | INFO | Epoch 20/20 - Loss: 1.0099
+2026-04-21 23:34:57,796 | INFO | r-net saved to: ./r_nets/dutch/iter_2/beta_025/r_net_inaccurate_trusting.pth
+2026-04-21 23:34:57,809 | INFO | --- Training r-net for Beta: 0.3
+2026-04-21 23:34:57,809 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.3 | Iter: 2
+2026-04-21 23:34:58,373 | DEBUG | Input Tensor Shape: torch.Size([2418, 11])
+2026-04-21 23:34:58,410 | INFO | Epoch 1/20 - Loss: 0.9794
+2026-04-21 23:34:58,446 | INFO | Epoch 2/20 - Loss: 0.9793
+2026-04-21 23:34:58,481 | INFO | Epoch 3/20 - Loss: 0.9788
+2026-04-21 23:34:58,517 | INFO | Epoch 4/20 - Loss: 0.9790
+2026-04-21 23:34:58,553 | INFO | Epoch 5/20 - Loss: 0.9788
+2026-04-21 23:34:58,589 | INFO | Epoch 6/20 - Loss: 0.9788
+2026-04-21 23:34:58,625 | INFO | Epoch 7/20 - Loss: 0.9783
+2026-04-21 23:34:58,756 | INFO | Epoch 8/20 - Loss: 0.9784
+2026-04-21 23:34:58,793 | INFO | Epoch 9/20 - Loss: 0.9783
+2026-04-21 23:34:58,829 | INFO | Epoch 10/20 - Loss: 0.9781
+2026-04-21 23:34:58,865 | INFO | Epoch 11/20 - Loss: 0.9780
+2026-04-21 23:34:58,900 | INFO | Epoch 12/20 - Loss: 0.9776
+2026-04-21 23:34:58,937 | INFO | Epoch 13/20 - Loss: 0.9775
+2026-04-21 23:34:58,978 | INFO | Epoch 14/20 - Loss: 0.9774
+2026-04-21 23:34:59,014 | INFO | Epoch 15/20 - Loss: 0.9775
+2026-04-21 23:34:59,049 | INFO | Epoch 16/20 - Loss: 0.9771
+2026-04-21 23:34:59,085 | INFO | Epoch 17/20 - Loss: 0.9769
+2026-04-21 23:34:59,121 | INFO | Epoch 18/20 - Loss: 0.9770
+2026-04-21 23:34:59,157 | INFO | Epoch 19/20 - Loss: 0.9768
+2026-04-21 23:34:59,193 | INFO | Epoch 20/20 - Loss: 0.9764
+2026-04-21 23:34:59,194 | INFO | r-net saved to: ./r_nets/dutch/iter_2/beta_03/r_net_inaccurate_trusting.pth
+2026-04-21 23:34:59,205 | INFO | --- Training r-net for Beta: 0.35
+2026-04-21 23:34:59,205 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.35 | Iter: 2
+2026-04-21 23:34:59,764 | DEBUG | Input Tensor Shape: torch.Size([2418, 11])
+2026-04-21 23:35:00,118 | INFO | Epoch 1/20 - Loss: 0.9550
+2026-04-21 23:35:00,216 | INFO | Epoch 2/20 - Loss: 0.9483
+2026-04-21 23:35:00,320 | INFO | Epoch 3/20 - Loss: 0.9456
+2026-04-21 23:35:00,358 | INFO | Epoch 4/20 - Loss: 0.9446
+2026-04-21 23:35:00,396 | INFO | Epoch 5/20 - Loss: 0.9442
+2026-04-21 23:35:00,433 | INFO | Epoch 6/20 - Loss: 0.9433
+2026-04-21 23:35:00,471 | INFO | Epoch 7/20 - Loss: 0.9429
+2026-04-21 23:35:00,508 | INFO | Epoch 8/20 - Loss: 0.9427
+2026-04-21 23:35:00,546 | INFO | Epoch 9/20 - Loss: 0.9429
+2026-04-21 23:35:00,583 | INFO | Epoch 10/20 - Loss: 0.9426
+2026-04-21 23:35:00,620 | INFO | Epoch 11/20 - Loss: 0.9419
+2026-04-21 23:35:00,657 | INFO | Epoch 12/20 - Loss: 0.9420
+2026-04-21 23:35:00,695 | INFO | Epoch 13/20 - Loss: 0.9421
+2026-04-21 23:35:00,734 | INFO | Epoch 14/20 - Loss: 0.9424
+2026-04-21 23:35:00,774 | INFO | Epoch 15/20 - Loss: 0.9408
+2026-04-21 23:35:00,812 | INFO | Epoch 16/20 - Loss: 0.9407
+2026-04-21 23:35:00,849 | INFO | Epoch 17/20 - Loss: 0.9411
+2026-04-21 23:35:00,886 | INFO | Epoch 18/20 - Loss: 0.9417
+2026-04-21 23:35:00,923 | INFO | Epoch 19/20 - Loss: 0.9407
+2026-04-21 23:35:00,960 | INFO | Epoch 20/20 - Loss: 0.9404
+2026-04-21 23:35:00,962 | INFO | r-net saved to: ./r_nets/dutch/iter_2/beta_035/r_net_inaccurate_trusting.pth
+2026-04-21 23:35:00,978 | INFO | --- Training r-net for Beta: 0.4
+2026-04-21 23:35:00,978 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.4 | Iter: 2
+2026-04-21 23:35:01,514 | DEBUG | Input Tensor Shape: torch.Size([2418, 11])
+2026-04-21 23:35:01,659 | INFO | Epoch 1/20 - Loss: 0.9255
+2026-04-21 23:35:01,743 | INFO | Epoch 2/20 - Loss: 0.9162
+2026-04-21 23:35:01,780 | INFO | Epoch 3/20 - Loss: 0.9093
+2026-04-21 23:35:01,845 | INFO | Epoch 4/20 - Loss: 0.9075
+2026-04-21 23:35:01,882 | INFO | Epoch 5/20 - Loss: 0.9072
+2026-04-21 23:35:01,919 | INFO | Epoch 6/20 - Loss: 0.9066
+2026-04-21 23:35:01,957 | INFO | Epoch 7/20 - Loss: 0.9059
+2026-04-21 23:35:01,994 | INFO | Epoch 8/20 - Loss: 0.9056
+2026-04-21 23:35:02,031 | INFO | Epoch 9/20 - Loss: 0.9050
+2026-04-21 23:35:02,068 | INFO | Epoch 10/20 - Loss: 0.9046
+2026-04-21 23:35:02,105 | INFO | Epoch 11/20 - Loss: 0.9046
+2026-04-21 23:35:02,144 | INFO | Epoch 12/20 - Loss: 0.9041
+2026-04-21 23:35:02,182 | INFO | Epoch 13/20 - Loss: 0.9031
+2026-04-21 23:35:02,219 | INFO | Epoch 14/20 - Loss: 0.9032
+2026-04-21 23:35:02,256 | INFO | Epoch 15/20 - Loss: 0.9029
+2026-04-21 23:35:02,293 | INFO | Epoch 16/20 - Loss: 0.9029
+2026-04-21 23:35:02,330 | INFO | Epoch 17/20 - Loss: 0.9026
+2026-04-21 23:35:02,367 | INFO | Epoch 18/20 - Loss: 0.9023
+2026-04-21 23:35:02,404 | INFO | Epoch 19/20 - Loss: 0.9026
+2026-04-21 23:35:02,441 | INFO | Epoch 20/20 - Loss: 0.9021
+2026-04-21 23:35:02,441 | INFO | r-net saved to: ./r_nets/dutch/iter_2/beta_04/r_net_inaccurate_trusting.pth
+2026-04-21 23:35:02,453 | INFO | --- Training r-net for Beta: 0.45
+2026-04-21 23:35:02,453 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.45 | Iter: 2
+2026-04-21 23:35:02,987 | DEBUG | Input Tensor Shape: torch.Size([2418, 11])
+2026-04-21 23:35:03,262 | INFO | Epoch 1/20 - Loss: 0.8648
+2026-04-21 23:35:03,364 | INFO | Epoch 2/20 - Loss: 0.8647
+2026-04-21 23:35:03,402 | INFO | Epoch 3/20 - Loss: 0.8645
+2026-04-21 23:35:03,440 | INFO | Epoch 4/20 - Loss: 0.8645
+2026-04-21 23:35:03,476 | INFO | Epoch 5/20 - Loss: 0.8641
+2026-04-21 23:35:03,513 | INFO | Epoch 6/20 - Loss: 0.8641
+2026-04-21 23:35:03,550 | INFO | Epoch 7/20 - Loss: 0.8637
+2026-04-21 23:35:03,588 | INFO | Epoch 8/20 - Loss: 0.8638
+2026-04-21 23:35:03,625 | INFO | Epoch 9/20 - Loss: 0.8630
+2026-04-21 23:35:03,662 | INFO | Epoch 10/20 - Loss: 0.8627
+2026-04-21 23:35:03,698 | INFO | Epoch 11/20 - Loss: 0.8626
+2026-04-21 23:35:03,735 | INFO | Epoch 12/20 - Loss: 0.8625
+2026-04-21 23:35:03,772 | INFO | Epoch 13/20 - Loss: 0.8622
+2026-04-21 23:35:03,809 | INFO | Epoch 14/20 - Loss: 0.8621
+2026-04-21 23:35:03,846 | INFO | Epoch 15/20 - Loss: 0.8619
+2026-04-21 23:35:03,883 | INFO | Epoch 16/20 - Loss: 0.8616
+2026-04-21 23:35:03,919 | INFO | Epoch 17/20 - Loss: 0.8617
+2026-04-21 23:35:03,956 | INFO | Epoch 18/20 - Loss: 0.8621
+2026-04-21 23:35:03,993 | INFO | Epoch 19/20 - Loss: 0.8610
+2026-04-21 23:35:04,030 | INFO | Epoch 20/20 - Loss: 0.8613
+2026-04-21 23:35:04,031 | INFO | r-net saved to: ./r_nets/dutch/iter_2/beta_045/r_net_inaccurate_trusting.pth
+2026-04-21 23:35:04,042 | INFO | --- Training r-net for Beta: 0.5
+2026-04-21 23:35:04,042 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.5 | Iter: 2
+2026-04-21 23:35:04,573 | DEBUG | Input Tensor Shape: torch.Size([2418, 11])
+2026-04-21 23:35:04,616 | INFO | Epoch 1/20 - Loss: 0.8253
+2026-04-21 23:35:04,653 | INFO | Epoch 2/20 - Loss: 0.8232
+2026-04-21 23:35:04,690 | INFO | Epoch 3/20 - Loss: 0.8225
+2026-04-21 23:35:04,916 | INFO | Epoch 4/20 - Loss: 0.8222
+2026-04-21 23:35:04,996 | INFO | Epoch 5/20 - Loss: 0.8220
+2026-04-21 23:35:05,033 | INFO | Epoch 6/20 - Loss: 0.8218
+2026-04-21 23:35:05,071 | INFO | Epoch 7/20 - Loss: 0.8216
+2026-04-21 23:35:05,108 | INFO | Epoch 8/20 - Loss: 0.8214
+2026-04-21 23:35:05,146 | INFO | Epoch 9/20 - Loss: 0.8214
+2026-04-21 23:35:05,183 | INFO | Epoch 10/20 - Loss: 0.8211
+2026-04-21 23:35:05,220 | INFO | Epoch 11/20 - Loss: 0.8209
+2026-04-21 23:35:05,257 | INFO | Epoch 12/20 - Loss: 0.8205
+2026-04-21 23:35:05,294 | INFO | Epoch 13/20 - Loss: 0.8203
+2026-04-21 23:35:05,332 | INFO | Epoch 14/20 - Loss: 0.8200
+2026-04-21 23:35:05,369 | INFO | Epoch 15/20 - Loss: 0.8202
+2026-04-21 23:35:05,408 | INFO | Epoch 16/20 - Loss: 0.8198
+2026-04-21 23:35:05,445 | INFO | Epoch 17/20 - Loss: 0.8195
+2026-04-21 23:35:05,482 | INFO | Epoch 18/20 - Loss: 0.8193
+2026-04-21 23:35:05,520 | INFO | Epoch 19/20 - Loss: 0.8193
+2026-04-21 23:35:05,557 | INFO | Epoch 20/20 - Loss: 0.8190
+2026-04-21 23:35:05,558 | INFO | r-net saved to: ./r_nets/dutch/iter_2/beta_05/r_net_inaccurate_trusting.pth
+2026-04-21 23:35:05,570 | INFO | --- R-NET TRAINING FINISHED | User: inaccurate_trusting | DS: dutch
+2026-04-21 23:35:05,574 | INFO | STARTING R-NETS TRAINING | User: inaccurate_trusting | DS: dutch
+2026-04-21 23:35:05,575 | INFO | --- Calibrating for iteration 3 ---
+2026-04-21 23:35:05,575 | INFO | --- Training r-net for Beta: 0.2
+2026-04-21 23:35:05,575 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.2 | Iter: 3
+2026-04-21 23:35:06,121 | DEBUG | Input Tensor Shape: torch.Size([2411, 11])
+2026-04-21 23:35:06,375 | INFO | Epoch 1/20 - Loss: 1.0688
+2026-04-21 23:35:06,709 | INFO | Epoch 2/20 - Loss: 1.0605
+2026-04-21 23:35:06,834 | INFO | Epoch 3/20 - Loss: 1.0531
+2026-04-21 23:35:06,872 | INFO | Epoch 4/20 - Loss: 1.0515
+2026-04-21 23:35:06,909 | INFO | Epoch 5/20 - Loss: 1.0518
+2026-04-21 23:35:06,948 | INFO | Epoch 6/20 - Loss: 1.0513
+2026-04-21 23:35:06,986 | INFO | Epoch 7/20 - Loss: 1.0501
+2026-04-21 23:35:07,023 | INFO | Epoch 8/20 - Loss: 1.0494
+2026-04-21 23:35:07,061 | INFO | Epoch 9/20 - Loss: 1.0500
+2026-04-21 23:35:07,098 | INFO | Epoch 10/20 - Loss: 1.0491
+2026-04-21 23:35:07,136 | INFO | Epoch 11/20 - Loss: 1.0488
+2026-04-21 23:35:07,174 | INFO | Epoch 12/20 - Loss: 1.0478
+2026-04-21 23:35:07,211 | INFO | Epoch 13/20 - Loss: 1.0485
+2026-04-21 23:35:07,248 | INFO | Epoch 14/20 - Loss: 1.0475
+2026-04-21 23:35:07,296 | INFO | Epoch 15/20 - Loss: 1.0481
+2026-04-21 23:35:07,335 | INFO | Epoch 16/20 - Loss: 1.0481
+2026-04-21 23:35:07,372 | INFO | Epoch 17/20 - Loss: 1.0474
+2026-04-21 23:35:07,409 | INFO | Epoch 18/20 - Loss: 1.0481
+2026-04-21 23:35:07,447 | INFO | Epoch 19/20 - Loss: 1.0475
+2026-04-21 23:35:07,484 | INFO | Epoch 20/20 - Loss: 1.0469
+2026-04-21 23:35:07,485 | INFO | r-net saved to: ./r_nets/dutch/iter_3/beta_02/r_net_inaccurate_trusting.pth
+2026-04-21 23:35:07,498 | INFO | --- Training r-net for Beta: 0.25
+2026-04-21 23:35:07,498 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.25 | Iter: 3
+2026-04-21 23:35:08,034 | DEBUG | Input Tensor Shape: torch.Size([2411, 11])
+2026-04-21 23:35:08,074 | INFO | Epoch 1/20 - Loss: 1.0231
+2026-04-21 23:35:08,112 | INFO | Epoch 2/20 - Loss: 1.0173
+2026-04-21 23:35:08,149 | INFO | Epoch 3/20 - Loss: 1.0160
+2026-04-21 23:35:08,197 | INFO | Epoch 4/20 - Loss: 1.0145
+2026-04-21 23:35:08,234 | INFO | Epoch 5/20 - Loss: 1.0148
+2026-04-21 23:35:08,272 | INFO | Epoch 6/20 - Loss: 1.0144
+2026-04-21 23:35:08,309 | INFO | Epoch 7/20 - Loss: 1.0141
+2026-04-21 23:35:08,346 | INFO | Epoch 8/20 - Loss: 1.0143
+2026-04-21 23:35:08,383 | INFO | Epoch 9/20 - Loss: 1.0142
+2026-04-21 23:35:08,420 | INFO | Epoch 10/20 - Loss: 1.0139
+2026-04-21 23:35:08,457 | INFO | Epoch 11/20 - Loss: 1.0135
+2026-04-21 23:35:08,495 | INFO | Epoch 12/20 - Loss: 1.0135
+2026-04-21 23:35:08,532 | INFO | Epoch 13/20 - Loss: 1.0137
+2026-04-21 23:35:08,570 | INFO | Epoch 14/20 - Loss: 1.0128
+2026-04-21 23:35:08,606 | INFO | Epoch 15/20 - Loss: 1.0127
+2026-04-21 23:35:08,643 | INFO | Epoch 16/20 - Loss: 1.0133
+2026-04-21 23:35:08,681 | INFO | Epoch 17/20 - Loss: 1.0130
+2026-04-21 23:35:08,718 | INFO | Epoch 18/20 - Loss: 1.0129
+2026-04-21 23:35:08,755 | INFO | Epoch 19/20 - Loss: 1.0132
+2026-04-21 23:35:08,793 | INFO | Epoch 20/20 - Loss: 1.0131
+2026-04-21 23:35:08,794 | INFO | r-net saved to: ./r_nets/dutch/iter_3/beta_025/r_net_inaccurate_trusting.pth
+2026-04-21 23:35:08,805 | INFO | --- Training r-net for Beta: 0.3
+2026-04-21 23:35:08,805 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.3 | Iter: 3
+2026-04-21 23:35:09,332 | DEBUG | Input Tensor Shape: torch.Size([2411, 11])
+2026-04-21 23:35:09,574 | INFO | Epoch 1/20 - Loss: 0.9851
+2026-04-21 23:35:09,817 | INFO | Epoch 2/20 - Loss: 0.9817
+2026-04-21 23:35:09,853 | INFO | Epoch 3/20 - Loss: 0.9807
+2026-04-21 23:35:09,891 | INFO | Epoch 4/20 - Loss: 0.9809
+2026-04-21 23:35:09,928 | INFO | Epoch 5/20 - Loss: 0.9803
+2026-04-21 23:35:09,965 | INFO | Epoch 6/20 - Loss: 0.9806
+2026-04-21 23:35:10,002 | INFO | Epoch 7/20 - Loss: 0.9803
+2026-04-21 23:35:10,039 | INFO | Epoch 8/20 - Loss: 0.9801
+2026-04-21 23:35:10,076 | INFO | Epoch 9/20 - Loss: 0.9798
+2026-04-21 23:35:10,113 | INFO | Epoch 10/20 - Loss: 0.9798
+2026-04-21 23:35:10,150 | INFO | Epoch 11/20 - Loss: 0.9800
+2026-04-21 23:35:10,187 | INFO | Epoch 12/20 - Loss: 0.9800
+2026-04-21 23:35:10,223 | INFO | Epoch 13/20 - Loss: 0.9793
+2026-04-21 23:35:10,260 | INFO | Epoch 14/20 - Loss: 0.9788
+2026-04-21 23:35:10,297 | INFO | Epoch 15/20 - Loss: 0.9791
+2026-04-21 23:35:10,334 | INFO | Epoch 16/20 - Loss: 0.9790
+2026-04-21 23:35:10,371 | INFO | Epoch 17/20 - Loss: 0.9786
+2026-04-21 23:35:10,408 | INFO | Epoch 18/20 - Loss: 0.9790
+2026-04-21 23:35:10,445 | INFO | Epoch 19/20 - Loss: 0.9786
+2026-04-21 23:35:10,481 | INFO | Epoch 20/20 - Loss: 0.9785
+2026-04-21 23:35:10,482 | INFO | r-net saved to: ./r_nets/dutch/iter_3/beta_03/r_net_inaccurate_trusting.pth
+2026-04-21 23:35:10,495 | INFO | --- Training r-net for Beta: 0.35
+2026-04-21 23:35:10,495 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.35 | Iter: 3
+2026-04-21 23:35:11,028 | DEBUG | Input Tensor Shape: torch.Size([2411, 11])
+2026-04-21 23:35:11,237 | INFO | Epoch 1/20 - Loss: 0.9523
+2026-04-21 23:35:11,281 | INFO | Epoch 2/20 - Loss: 0.9471
+2026-04-21 23:35:11,319 | INFO | Epoch 3/20 - Loss: 0.9457
+2026-04-21 23:35:11,355 | INFO | Epoch 4/20 - Loss: 0.9453
+2026-04-21 23:35:11,391 | INFO | Epoch 5/20 - Loss: 0.9450
+2026-04-21 23:35:11,428 | INFO | Epoch 6/20 - Loss: 0.9448
+2026-04-21 23:35:11,464 | INFO | Epoch 7/20 - Loss: 0.9445
+2026-04-21 23:35:11,500 | INFO | Epoch 8/20 - Loss: 0.9443
+2026-04-21 23:35:11,537 | INFO | Epoch 9/20 - Loss: 0.9437
+2026-04-21 23:35:11,574 | INFO | Epoch 10/20 - Loss: 0.9439
+2026-04-21 23:35:11,611 | INFO | Epoch 11/20 - Loss: 0.9433
+2026-04-21 23:35:11,648 | INFO | Epoch 12/20 - Loss: 0.9434
+2026-04-21 23:35:11,684 | INFO | Epoch 13/20 - Loss: 0.9432
+2026-04-21 23:35:11,720 | INFO | Epoch 14/20 - Loss: 0.9431
+2026-04-21 23:35:11,756 | INFO | Epoch 15/20 - Loss: 0.9436
+2026-04-21 23:35:11,799 | INFO | Epoch 16/20 - Loss: 0.9429
+2026-04-21 23:35:11,889 | INFO | Epoch 17/20 - Loss: 0.9425
+2026-04-21 23:35:11,925 | INFO | Epoch 18/20 - Loss: 0.9421
+2026-04-21 23:35:11,962 | INFO | Epoch 19/20 - Loss: 0.9422
+2026-04-21 23:35:11,998 | INFO | Epoch 20/20 - Loss: 0.9429
+2026-04-21 23:35:11,999 | INFO | r-net saved to: ./r_nets/dutch/iter_3/beta_035/r_net_inaccurate_trusting.pth
+2026-04-21 23:35:12,011 | INFO | --- Training r-net for Beta: 0.4
+2026-04-21 23:35:12,011 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.4 | Iter: 3
+2026-04-21 23:35:12,535 | DEBUG | Input Tensor Shape: torch.Size([2411, 11])
+2026-04-21 23:35:12,878 | INFO | Epoch 1/20 - Loss: 0.9094
+2026-04-21 23:35:13,137 | INFO | Epoch 2/20 - Loss: 0.9073
+2026-04-21 23:35:13,258 | INFO | Epoch 3/20 - Loss: 0.9067
+2026-04-21 23:35:13,294 | INFO | Epoch 4/20 - Loss: 0.9064
+2026-04-21 23:35:13,332 | INFO | Epoch 5/20 - Loss: 0.9061
+2026-04-21 23:35:13,369 | INFO | Epoch 6/20 - Loss: 0.9060
+2026-04-21 23:35:13,405 | INFO | Epoch 7/20 - Loss: 0.9058
+2026-04-21 23:35:13,442 | INFO | Epoch 8/20 - Loss: 0.9057
+2026-04-21 23:35:13,478 | INFO | Epoch 9/20 - Loss: 0.9056
+2026-04-21 23:35:13,515 | INFO | Epoch 10/20 - Loss: 0.9053
+2026-04-21 23:35:13,552 | INFO | Epoch 11/20 - Loss: 0.9048
+2026-04-21 23:35:13,589 | INFO | Epoch 12/20 - Loss: 0.9048
+2026-04-21 23:35:13,625 | INFO | Epoch 13/20 - Loss: 0.9049
+2026-04-21 23:35:13,663 | INFO | Epoch 14/20 - Loss: 0.9047
+2026-04-21 23:35:13,700 | INFO | Epoch 15/20 - Loss: 0.9047
+2026-04-21 23:35:13,737 | INFO | Epoch 16/20 - Loss: 0.9047
+2026-04-21 23:35:13,773 | INFO | Epoch 17/20 - Loss: 0.9043
+2026-04-21 23:35:13,810 | INFO | Epoch 18/20 - Loss: 0.9042
+2026-04-21 23:35:13,847 | INFO | Epoch 19/20 - Loss: 0.9039
+2026-04-21 23:35:13,883 | INFO | Epoch 20/20 - Loss: 0.9045
+2026-04-21 23:35:13,884 | INFO | r-net saved to: ./r_nets/dutch/iter_3/beta_04/r_net_inaccurate_trusting.pth
+2026-04-21 23:35:13,895 | INFO | --- Training r-net for Beta: 0.45
+2026-04-21 23:35:13,895 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.45 | Iter: 3
+2026-04-21 23:35:14,421 | DEBUG | Input Tensor Shape: torch.Size([2411, 11])
+2026-04-21 23:35:14,458 | INFO | Epoch 1/20 - Loss: 0.8664
+2026-04-21 23:35:14,495 | INFO | Epoch 2/20 - Loss: 0.8660
+2026-04-21 23:35:14,532 | INFO | Epoch 3/20 - Loss: 0.8658
+2026-04-21 23:35:14,571 | INFO | Epoch 4/20 - Loss: 0.8657
+2026-04-21 23:35:14,607 | INFO | Epoch 5/20 - Loss: 0.8654
+2026-04-21 23:35:14,853 | INFO | Epoch 6/20 - Loss: 0.8652
+2026-04-21 23:35:15,078 | INFO | Epoch 7/20 - Loss: 0.8650
+2026-04-21 23:35:15,117 | INFO | Epoch 8/20 - Loss: 0.8649
+2026-04-21 23:35:15,155 | INFO | Epoch 9/20 - Loss: 0.8652
+2026-04-21 23:35:15,192 | INFO | Epoch 10/20 - Loss: 0.8649
+2026-04-21 23:35:15,229 | INFO | Epoch 11/20 - Loss: 0.8649
+2026-04-21 23:35:15,267 | INFO | Epoch 12/20 - Loss: 0.8651
+2026-04-21 23:35:15,304 | INFO | Epoch 13/20 - Loss: 0.8646
+2026-04-21 23:35:15,341 | INFO | Epoch 14/20 - Loss: 0.8650
+2026-04-21 23:35:15,378 | INFO | Epoch 15/20 - Loss: 0.8647
+2026-04-21 23:35:15,416 | INFO | Epoch 16/20 - Loss: 0.8649
+2026-04-21 23:35:15,453 | INFO | Epoch 17/20 - Loss: 0.8645
+2026-04-21 23:35:15,490 | INFO | Epoch 18/20 - Loss: 0.8646
+2026-04-21 23:35:15,530 | INFO | Epoch 19/20 - Loss: 0.8645
+2026-04-21 23:35:15,568 | INFO | Epoch 20/20 - Loss: 0.8644
+2026-04-21 23:35:15,569 | INFO | r-net saved to: ./r_nets/dutch/iter_3/beta_045/r_net_inaccurate_trusting.pth
+2026-04-21 23:35:15,583 | INFO | --- Training r-net for Beta: 0.5
+2026-04-21 23:35:15,583 | INFO | Training r-net | User: inaccurate_trusting | Beta: 0.5 | Iter: 3
+2026-04-21 23:35:16,135 | DEBUG | Input Tensor Shape: torch.Size([2411, 11])
+2026-04-21 23:35:16,179 | INFO | Epoch 1/20 - Loss: 0.8255
+2026-04-21 23:35:16,215 | INFO | Epoch 2/20 - Loss: 0.8239
+2026-04-21 23:35:16,252 | INFO | Epoch 3/20 - Loss: 0.8232
+2026-04-21 23:35:16,288 | INFO | Epoch 4/20 - Loss: 0.8231
+2026-04-21 23:35:16,325 | INFO | Epoch 5/20 - Loss: 0.8228
+2026-04-21 23:35:16,362 | INFO | Epoch 6/20 - Loss: 0.8229
+2026-04-21 23:35:16,398 | INFO | Epoch 7/20 - Loss: 0.8228
+2026-04-21 23:35:16,434 | INFO | Epoch 8/20 - Loss: 0.8225
+2026-04-21 23:35:16,471 | INFO | Epoch 9/20 - Loss: 0.8222
+2026-04-21 23:35:16,510 | INFO | Epoch 10/20 - Loss: 0.8222
+2026-04-21 23:35:16,547 | INFO | Epoch 11/20 - Loss: 0.8225
+2026-04-21 23:35:16,583 | INFO | Epoch 12/20 - Loss: 0.8223
+2026-04-21 23:35:16,619 | INFO | Epoch 13/20 - Loss: 0.8221
+2026-04-21 23:35:16,657 | INFO | Epoch 14/20 - Loss: 0.8222
+2026-04-21 23:35:16,693 | INFO | Epoch 15/20 - Loss: 0.8220
+2026-04-21 23:35:16,729 | INFO | Epoch 16/20 - Loss: 0.8219
+2026-04-21 23:35:16,766 | INFO | Epoch 17/20 - Loss: 0.8212
+2026-04-21 23:35:16,802 | INFO | Epoch 18/20 - Loss: 0.8219
+2026-04-21 23:35:16,838 | INFO | Epoch 19/20 - Loss: 0.8218
+2026-04-21 23:35:16,874 | INFO | Epoch 20/20 - Loss: 0.8219
+2026-04-21 23:35:16,876 | INFO | r-net saved to: ./r_nets/dutch/iter_3/beta_05/r_net_inaccurate_trusting.pth
+2026-04-21 23:35:16,890 | INFO | --- R-NET TRAINING FINISHED | User: inaccurate_trusting | DS: dutch
