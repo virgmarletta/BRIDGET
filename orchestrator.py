@@ -47,6 +47,7 @@ set_all_seeds(42)
 
 def net_calibration(ds_name,  
                     user_suffix, 
+                    user_model,
                     iter, 
                     target, 
                     train_set, 
@@ -158,6 +159,7 @@ def net_calibration(ds_name,
 
     choose_optimal_tau(ds_name=ds_name,
                        user_suffix=user_suffix, # da fuori
+                       user_model= user_model,
                        net=net,
                        model_path=save_dir, #viene dall'alto
                        device=device, #probabilmente viene dall'alto 
@@ -301,6 +303,7 @@ def run_hic(ds_name, params, objects):
     net_params=DATASETS[ds_name]['net_params']
 
     user_suffix= params['user_suffix']
+    user_full_name= params['full_name']
     
     rule_att= DATASETS[ds_name]['rule_att']
     rule_value= DATASETS[ds_name]['rule_value']
@@ -370,6 +373,7 @@ def run_hic(ds_name, params, objects):
 
             net_calibration(ds_name= ds_name, 
                             user_suffix= user_suffix, 
+                            user_full_name= user_name,
                             iter= iteration, 
                             target= target, 
                             train_set= hic_df, 
@@ -518,6 +522,7 @@ def run_calibration(def_net_path, # DA PATH
 
 def choose_optimal_tau(ds_name,
                        user_suffix, # da fuori
+                       user_model,
                        net,
                        model_path, #viene dall'alto
                        device, #probabilmente viene dall'alto 
@@ -540,11 +545,13 @@ def choose_optimal_tau(ds_name,
                                       user_suffix=user_suffix,
                                       iteration=iteration,
                                       layers=layers,
-                                      net= net, device=device, X_val= X_val, y_val=y_val, log=log, min_coverage= min_coverage)
+                                      net= net, 
+                                      user_model=user_model, device=device, 
+                                      X_val= X_val, y_val=y_val, log=log, min_coverage= min_coverage)
    
     log.info(f" Best tau for {ds_name}, Iter {iteration}: {best_tau} (Acc: {best_acc})")
 
-   #tau_dir= fr'.\nets\{ds_name}\iter_{iteration}\{user_suffix}_models'
+    #tau_dir= fr'.\nets\{ds_name}\iter_{iteration}\{user_suffix}_models'
     #os.makedirs(tau_dir, exist_ok=True)
     model_key = f"{layers[0]}_{layers[1]}_{user_suffix}_model"
     #tau_path = os.path.join(tau_dir, f'tau_threshold_{model_key}.json')

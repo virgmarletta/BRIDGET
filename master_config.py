@@ -248,8 +248,90 @@ DATASETS = {
         'stricter_delta': 0.03,
         'warm_up': 1075, #warm up given for the MiC portion, obtained as 20% of the test set (thus 25% of 5376)
         'belief_threshold':0.7,
+    },
+
+    "cdc": {
+        "target": "Diabetes_binary",
+        "yaml_prefix": "experts_cdc",
+
+        # ds info
+        "rule_att" : 'BMI', 
+        "rule_value" : 0.99, # viene scalata anyways
+        "protected":['Sex', 'Age'],
+        
+
+        "paths": { 
+                "dataset_path": r"./datasets/cdc_binary.csv", #DS 
+                "user_obj_path": r"./trained_experts/cdc", # USER 
+                "trained_preprocessor": r"./HIC_res/cdc", # PREPROCESSOR TRAINED BY THE HIC PHASE 
+                "incremental_learner": r"./HIC_res/cdc", #INCREMENTAL LEARNER TRAINED BY THE HIC PHASE 
+
+                "hic_df_save_path": r"./processed_data/cdc/hic_switch_ds", #DF SWITCH (PRODUCED BY HIC PHASE)
+                "hic_previous_performance": r"./HIC_res/cdc", # PREVIOUS FEA(HIC)
+                "def_net_save_path": r"./nets/cdc",   #SAVE DIR FOR TRAINED NETS + TAU THRESHOLDS
+                "mic_previous_performance": r"./MIC_res/cdc", # PREVIOUS FEA(MIC)
+                "mic_df_save_path": r"./processed_data/cdc/mic_result_ds", # DF PRODUCED BY MIC PHASE
+                "r_net_path": r"./r_nets/cdc", #R-NETS FOR ANQI MAO DEFERRAL 
+                "anqi_mao_thresholds": r"./r_nets_results/cdc",
+                "validation_data_save_path": r"./processed_data/cdc/validation_data",
+                "scaled_mic_batch": r"./processed_data/cdc/scaled_batch3",
+                "hic_logs": r"./logs/cdc/hic",
+                "r_net_training_logs": r"./logs/cdc/r_net_training",
+                "mic_logs": r"./logs/cdc/mic",
+                "tau_calibration_res": r"./nets/cdc"
+                
+        },
+
+        "base_obj_paths": {
+            'preprocessors': r"./HIC_res/cdc/base_objects/preprocessors",
+            'incremental_learners': r"./HIC_res/cdc/base_objects/incremental_learners"
+
+        }, 
+        
+        "baseline_paths": {
+            "trained_experts": r'./baseline/experts/cdc',
+            "trained_scalers": r'./baseline/scalers/cdc',
+            "train_df_labeled_by_experts": r"./baseline/mic/labeled_ds/cdc/train", #this one is universal across all baseline strats
+            "test_df_for_mic": r"./baseline/mic/labeled_ds/cdc/test",  #this one is universal across all baseline strats
+            "validation_set_labeled": r"./baseline/mic/labeled_ds/cdc/val",
+
+            # two stage deferral strat
+            "calibrated_r_nets":  r"./baseline/mic/r_nets/cdc",
+            "trained_nets": r"./baseline/mic/nets/cdc",
+            "anqi_mao_thresh_baseline": r"./baseline/mic/thresholds/cdc",
+
+            # benchmarking strats
+            "benchmark_res": r"./baseline/mic/cdc",        
+            "logs": r"./baseline/logs/cdc"
+        },
+        
+    
+
+        # hic phase config
+        "allocated_budget": [9207, 9208, 9208], # 1/3 of the total (27623)
+        "batches_offset": [0, 9207, 18415, 27623],
+        "skepticism_threshold": 0.2,
+        "start_performance": 63,  #just a default value for the first iteration
+        
+
+        #NN calibration
+        "net_params": {
+            "lr": 0.001,
+            "weight_decay": 1e-2,
+            "label_smoothing": 0.00,
+    
+          },
+
+        # MACHINE IN COMMAND PARAMS
+        "benchmark_performance": 63,
+        'performance_delta': 0.05,
+        'stricter_delta': 0.03,
+        'warm_up': 2762, #warm up given for the MiC portion, obtained as 20% of the test set (thus 20% of 13812)
+        'belief_threshold':0.7,
     }
-}
+
+
+ }
 
 
 
@@ -292,10 +374,10 @@ R_NET_CONFIGS = {
     "lr": 1e-3,
     "dropout": 0.2,
     "alpha": 1.0,
-    #"betas": [0.1, 0.3, 0.5, 0.7, 0.9],
+    "betas": [0.1, 0.3, 0.5, 0.7, 0.9],
     #"betas": [0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8],
     #"betas": [0.1, 0.2, 0.3, 0.4, 0.5],
-    "betas": [0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5],
+    #"betas": [0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5],
     "linspace_dimension": 300,
     "lower_thresh":0.0,
     "upper_thresh": 0.8,

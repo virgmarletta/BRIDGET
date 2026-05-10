@@ -684,18 +684,31 @@ def compute_class_weights(labels):
 ###########
 # -- CALIBRAZIONE THRESHOLD STRAT 1 E 2
 
-def evaluate_threshold(tau, max_conf, y_gt, y_preds):
+def evaluate_threshold(tau, max_conf, y_gt, y_preds, y_human_preds):
 
     y_val_pred = np.array(y_preds).flatten()
     y_gt = np.array(y_gt).flatten()
+    y_human_preds = np.array(y_human_preds).flatten()
     max_conf = np.array(max_conf).flatten()
     
     mask = max_conf >= tau
     if mask.sum() == 0:
         return 0.0, 0.0, 1.0 # acc=0, coverage=0, defer_rate=1
-    acc_sel = (y_val_pred[mask] == np.array(y_gt)[mask]).astype(float).mean()
+    
+    # the initial implementation was a variant of SelectivePrediction that calcuted the threshold
+    # wrt to the machine's perf only, independently from the humans contribution
+    #acc_sel = (y_val_pred[mask] == np.array(y_gt)[mask]).astype(float).mean()
     coverage = mask.mean()
     defer_rate = 1.0 - coverage
+
+    if mask.sum() == 0:
+        # if mask is empty, the acc is just the human acc
+        acc_sys = (y_human_preds == y_gt).mean()
+        return acc_sys, 0.0, 1.0
+
+    sys_acc= np.where(mask, y_val_pred, y_human_preds) #take either the machines or the human prediction
+    #so you dont need to apply the mask to gt because it has all rows now
+    acc_sel = (sys_acc == y_gt).mean()
     return acc_sel, coverage, defer_rate
 
 
@@ -736,12 +749,17 @@ def plot_confusion_matrix(model, dataloader, device,save_path):
     report = classification_report(all_labels, all_preds, output_dict=True)
     return report
 
-def calibrate_tau(ds_name, user_suffix, layers, iteration, net, device, X_val, y_val, log, min_coverage= 0.6):
+def calibrate_tau(ds_name, user_suffix, layers, iteration, net, user_model, device, X_val, y_val, log, min_coverage= 0.6):
     
+    human_preds= []
+    for i, (rec, gt) in enumerate(zip(X_val, y_val)):
+        y_human= user_model.predict(rec, gt, i)
+        human_preds.append(y_human)
+     
     with torch.no_grad():
             probas= net.predict_proba_nn(X_val, device)
             y_val_pred= net.predict(X_val,device)
-
+            
             # DEBUG
             """
             y_val_np = y_val.cpu().numpy() if torch.is_tensor(y_val) else np.array(y_val)
@@ -753,14 +771,14 @@ def calibrate_tau(ds_name, user_suffix, layers, iteration, net, device, X_val, y
             manual_acc = (y_val_pred.flatten() == y_val_np.flatten()).mean()
             print(f"DEBUG: Manual Accuracy in loop: {manual_acc:.4f}")
             """
-
+    
     max_conf= probas.max(axis=1)
 
     taus= np.linspace(0.50, 0.99, 50)
     y_val_np= y_val.cpu().numpy() if torch.is_tensor(y_val) else np.array(y_val)
 
     log.info("Entering Evaluate Threshold")
-    res= [evaluate_threshold(t, max_conf, y_preds=y_val_pred, y_gt=y_val_np) for t in taus]
+    res= [evaluate_threshold(t, max_conf, y_preds=y_val_pred, y_gt=y_val_np, y_human_preds=human_preds) for t in taus]
 
     df_res = pd.DataFrame(res, columns=['acc_sel', 'coverage', 'defer_rate'])
     df_res['tau'] = taus
