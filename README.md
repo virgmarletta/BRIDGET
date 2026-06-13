@@ -17,7 +17,7 @@ By training the deferral system on co-labeled data emerging from the interaction
 While this process effectively enhances the baseline predictor's performance, the overall systemic results are extremely dependent on the skepticism thresholds put in place during the co-evolutionary labeling process and the specific archetype of the human interacting within the system.
 
 ## Architecture
-qui image
+![Concept](https://github.com/virgmarletta/BRIDGET/blob/master/bridget_concept.png)
 
 ### Pipeline Breakdown
 1. **Data Partitioning**
