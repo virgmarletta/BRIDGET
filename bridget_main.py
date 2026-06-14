@@ -64,14 +64,10 @@ if not hasattr(np, "float_"):
     np.float_ = np.float64
 if not hasattr(np, "int_"):
     np.int_ = np.int64
-from copy import deepcopy
-
 import pickle
 import os 
 from collections import Counter
 from river import metrics
-import orjson
-import json
 from bridget_utils import *
 
 
@@ -239,22 +235,23 @@ class HiC(BRIDGET):
     Class for the Human-in-Command phase
 
     Attributes:
-        RULE, PAST, SKEPT, GROUP, EVA, 
-        n_bins, n_var, maxc, 
-        rule_att, rule_value, 
-        hic_model_name, hic_model,
-        start_performance=60, # we input the accuracy/f1 score obtained by the incremental model during pre-training
-        allocated_budget = 200,  # so we can fix it sorta as a benchmark, meaning we ideally want to achieve a +5% within the available budget):
-        skepticism_threshold= 0.6,
-        performance_delta= 0.05,
+        RULE, 
+        PAST, 
+        SKEPT, 
+        GROUP, 
+        EVA, 
+        n_bins, 
+        n_var, 
+        maxc, 
+        rule_att, 
+        rule_value (int): 
+        hic_model_name (str): 
+        hic_model (obj):
+        start_performance (int): 60, # we input the accuracy/f1 score obtained by the incremental model during pre-training
+        allocated_budget (int): 200,  # so we can fix it sorta as a benchmark, meaning we ideally want to achieve a +5% within the available budget):
+        skepticism_threshold (float): 0.6,
+        performance_delta (float): 0.05,
         **kwargs
-
-
-    Methods:
-        __init__:
-        train:
-        get_eval_report:
-        start_HiC:
 
     """
     def __init__(self,
@@ -407,8 +404,7 @@ class HiC(BRIDGET):
             accuracy_score = []#Lista usata per salvare i vari punteggi di accuracy
             f1_score = []#Lista salvata per salvare i vari punteggi di f1
             
-            #frank_cms = []
-            #equality = []#Lista usata per verificare quando cambiano i modelli
+           
 
             # FEA structures
             skepticisms = []
@@ -558,12 +554,6 @@ class HiC(BRIDGET):
 
                     vs_records, vs_decision = get_value_swap_records(x, self.processed,
                                                                     self.protected, self.attr_list) #Is record covered by Individual Fairness Check?
-                    """
-                    if user_truth == machine_prediction:
-                        skepticism = 0
-                    else:
-                        skepticism = mach_fea * pred_proba - user_fea * user_proba
-                    """
 
                     if user_truth == machine_prediction:
                         skepticism = 0
@@ -641,7 +631,7 @@ class HiC(BRIDGET):
                                 #print(f"User belief: {confirm}")
                                 #confirm = None
                                 
-                                if confirm in [0, "0", False]: # Frank originale dice if confirm == None ma non si attiva mai
+                                if confirm in [0, "0", False]: 
                                     self.log.info(f"XAI requested at record {i}")
                                     start_time = time.time()
                                     xai_log = prepr_log_for_xai(warm_up_set, self.processed, self.attr_list, self.target)
@@ -653,7 +643,6 @@ class HiC(BRIDGET):
                                                                             relevance_window= 50, 
                                                                             n_neighbors= 2
                                                                             )
-                                    # passi x qui e non record perchè rec è una tupla
                                     
                                     time_KNN= time.time()-start_time
 
@@ -825,25 +814,17 @@ class HiC(BRIDGET):
                     DN, PP, _ = get_fairness(self.hic_model, self.protected, self.processed, self.protected_values)
                     fairnes_relabel = DN[:round(len(DN) * 0.25)] + PP[:round(len(PP) * 0.25)]
                     for e in fairnes_relabel:
-                        #self.processed[e[1]][self.target] = not self.processed[e[1]][self.target] per un booleano
                         self.processed[e[1]]['decision'] = 1 - self.processed[e[1]]['decision']
                     
                     self.hic_model = pickle.loads(pickle.dumps(self.initial_model))
                     self.log.info(f"Retraining HiC model at record {i}, Group Fairness")
-                    #for x_train_sample, y_train_sample in zip(x_avv, y_avv):
-                     #   self.hic_model.learn_one(x_train_sample, y_train_sample)
                     
                     for proc in (self.processed.keys()):
-                    #for idx in self.rec_order:
-                    
                         x_relabel = self.processed[proc]['dict_form']
                         y_relabel = self.processed[proc]['decision']
                         self.retrain_count += 1
                         self.hic_model.learn_one(x_relabel, y_relabel)
                         
-                        
-                    #percentage_dict,_ = get_percentage_and_df(None,self.processed,self.target)
-
                 
                 if self.EVA:
                     human_fairness, human_acc, systemic = evaluation_human(self.processed, self.protected, self.Y,
@@ -876,7 +857,7 @@ class HiC(BRIDGET):
                     "sparsity_OPP": sparsities_KNN_OPP,
                     "proximity_SAME": proximities_KNN_SAME,
                     "proximity_OPP": proximities_KNN_OPP,
-                    "method": "KNN",  # Aggiungi il name del metodo
+                    "method": "KNN",  
                     "dataset": self.dataset_name
                     }
 
@@ -995,7 +976,6 @@ class MiC(BRIDGET):
                  performance_delta= 0.05,
                  belief_threshold= 0.6,
                  tau_threshold= None,
-                 #anqi_mao_thresh=None,
                  human_deferral_cost= None,  #input as str so it can save
                  **kwargs
                  ):
@@ -1009,13 +989,13 @@ class MiC(BRIDGET):
         self.benchmark_performance=benchmark_performance
         self.device= device
         self.performance_delta= performance_delta
-        #self.user_patience= user_patience
+
         self.warm_up= warm_up
 
         self.belief_threshold= belief_threshold
         self.tau= tau_threshold
-        #self.anqi_mao_thresh= anqi_mao_thresh
-        # works just like the one in HiC, however like a lower performance bound
+      
+       
         self.performance_thresh= (self.benchmark_performance - (self.benchmark_performance * self.performance_delta)) /100
 
         # containers delle metriche di valutazione custom
@@ -1108,13 +1088,7 @@ class MiC(BRIDGET):
                 ## quindi qui ora da outputs dobbiamo ricavare la classe con output in logit maggiore
 
                 net_output= torch.argmax(outputs, dim=1).item()
-                
-                """""
-                if record < 20: # sanity check
-                    correct = (net_output == y_gt)
-                    print(f" DEBUG REC {record} | Pred: {net_output} | GT: {y_gt} | Match: {correct}")
-                """
-
+            
                 mach_predictions.append(net_output)
 
             ## - PREDICT PROBA, LOGGING
@@ -1132,17 +1106,12 @@ class MiC(BRIDGET):
 
             ## - DEFERRAL LOGIC 
             
-            if two_step_deferral: ## ANQI MAO LOGIC
+            if two_step_deferral: ## Two Stage Deferral Strategy
                  
                 deferral_proba= p_defer(x_rec, r_net)
                 p_val = deferral_proba.item()
-                #print(p_val)
-
-
-                #if net_output != y_gt:
-                #    print(f" MACHINE ERROR | p_defer: {p_val:.4f} | Will Defer? {p_val >= 0.5}")
-
-                if p_val >= 0.5: # prova con 0.5
+             
+                if p_val >= 0.5: 
                     
                     x_input_user = x_rec.squeeze().cpu().numpy()    
                     user_pred = self.user_model.predict(x_input_user, y_gt, record)
@@ -1173,17 +1142,17 @@ class MiC(BRIDGET):
                     
 
 
-            else:  # CONFIDENCE BASED DEFERRAL
+            else:  # Selective Prediction
                  
-                # 1. No Deferral, Explanation Provided ? these records are reliable according to the results obtained, 
-                # so we supply explanations + similar records to maybe "boost" confidence 
+                # 1. No Deferral, these records are reliable according to the results obtained, 
+
                 
                 if max_conf >= self.tau:
 
                     decision = int(net_output)
                     x_input_user = x_rec.squeeze().cpu().numpy()
                     user_pred= self.user_model.predict(x_input_user, y_gt, record) 
-                    ## prendiamo ugualmente la predizione che avrebbe fornito l'user in questo caso
+    
                     provider= 'M'
 
                     if net_output == y_gt:
@@ -1191,9 +1160,6 @@ class MiC(BRIDGET):
                         
                     self.stats[net_output]['machine']['got']+=1 # this is relative to the class the net has predicted
                     self.undeferred_decisions+=1
-
-
-
 
                 # 2. Deferral to user: the model was unrealiable here, show counterexamples
                 else:
@@ -1214,8 +1180,6 @@ class MiC(BRIDGET):
 
                
             self.mic_preds.append(decision) # updating the structure
-
-
 
             ### Explanation logic: GROWING SPHERES
 
@@ -1353,7 +1317,7 @@ class MiC(BRIDGET):
                 # performance of the model on deferred instances
 
 
-                strat = "Mao" if two_step_deferral else "Confidence"
+                strat = "Two_Step" if two_step_deferral else "Confidence"
                 dir = os.path.join("MIC_res", 
                                    f"{self.dataset_name}", 
                                    f"iter_{self.training_iter}", 
@@ -1385,7 +1349,6 @@ class MiC(BRIDGET):
                 
                 mic_res = {
                     "model.pkl": self.mic_model,
-                    #"Performances.txt": self.mic_results,
                     "Model_Confidence.txt": mach_confidence,
                     "MiC_stats.txt": self.stats,
                     "System_Accuracy.txt": self.fea_mic,
@@ -1426,7 +1389,7 @@ class MiC(BRIDGET):
         ## - UPDATING SAVE STRUCTURES
         
 
-        strat = "Mao" if two_step_deferral else "Confidence"
+        strat = "Two_Step" if two_step_deferral else "Confidence"
         dir = os.path.join("MIC_res", 
                                    f"{self.dataset_name}", 
                                    f"iter_{self.training_iter}", 

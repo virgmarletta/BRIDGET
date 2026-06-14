@@ -22,8 +22,8 @@ DATASETS = {
                 "mic_previous_performance": r"./MIC_res/dutch", # PREVIOUS PERFORMANCE(MIC)
                 "mic_df_save_path": r"./processed_data/dutch/mic_result_ds", # DF PRODUCED BY MIC PHASE
                 
-                "r_net_path": r"./r_nets/dutch", #R-NETS FOR ANQI MAO DEFERRAL 
-                "anqi_mao_thresholds": r"./r_nets_results/dutch",
+                "r_net_path": r"./r_nets/dutch", #R-NETS FOR TWO-STAGE DEFERRAL 
+                "two_stage_thresholds": r"./r_nets_results/dutch",
                 "validation_data_save_path": r"./processed_data/dutch/validation_data",
                 "scaled_mic_batch": r"./processed_data/dutch/scaled_batch3",
                 "hic_logs": r"./logs/dutch/hic",
@@ -49,7 +49,7 @@ DATASETS = {
             # two stage deferral strat
             "calibrated_r_nets":  r"./baseline/mic/r_nets/dutch",
             "trained_nets": r"./baseline/mic/nets/dutch",
-            "anqi_mao_thresh_baseline": r"./baseline/mic/thresholds/dutch",
+            "two_stage_thresh_baseline": r"./baseline/mic/thresholds/dutch",
 
             # benchmarking strats
             "benchmark_res": r"./baseline/mic/dutch",        
@@ -106,7 +106,7 @@ DATASETS = {
                 "mic_previous_performance": r"./MIC_res/compas", # PREVIOUS FEA(MIC)
                 "mic_df_save_path": r"./processed_data/compas/mic_result_ds", # DF PRODUCED BY MIC PHASE
                 "r_net_path": r"./r_nets/compas", #R-NETS FOR ANQI MAO DEFERRAL 
-                "anqi_mao_thresholds": r"./r_nets_results/compas",
+                "two_stage_thresholds": r"./r_nets_results/compas",
                 "validation_data_save_path": r"./processed_data/compas/validation_data",
                 "scaled_mic_batch": r"./processed_data/compas/scaled_batch3",
                 "hic_logs": r"./logs/compas/hic",
@@ -132,7 +132,7 @@ DATASETS = {
             # two stage deferral strat
             "calibrated_r_nets":  r"./baseline/mic/r_nets/compas",
             "trained_nets": r"./baseline/mic/nets/compas",
-            "anqi_mao_thresh_baseline": r"./baseline/mic/thresholds/compas",
+            "two_stage_thresh_baseline": r"./baseline/mic/thresholds/compas",
 
             # benchmarking strats
             "benchmark_res": r"./baseline/mic/compas",        
@@ -193,7 +193,7 @@ DATASETS = {
                 "mic_previous_performance": r"./MIC_res/adult", # PREVIOUS FEA(MIC)
                 "mic_df_save_path": r"./processed_data/adult/mic_result_ds", # DF PRODUCED BY MIC PHASE
                 "r_net_path": r"./r_nets/adult", #R-NETS FOR ANQI MAO DEFERRAL 
-                "anqi_mao_thresholds": r"./r_nets_results/adult",
+                "two_stage_thresholds": r"./r_nets_results/adult",
                 "validation_data_save_path": r"./processed_data/adult/validation_data",
                 "scaled_mic_batch": r"./processed_data/adult/scaled_batch3",
                 "hic_logs": r"./logs/adult/hic",
@@ -219,7 +219,7 @@ DATASETS = {
             # two stage deferral strat
             "calibrated_r_nets":  r"./baseline/mic/r_nets/adult",
             "trained_nets": r"./baseline/mic/nets/adult",
-            "anqi_mao_thresh_baseline": r"./baseline/mic/thresholds/adult",
+            "two_stage_thresh_baseline": r"./baseline/mic/thresholds/adult",
 
             # benchmarking strats
             "benchmark_res": r"./baseline/mic/adult",        
@@ -273,7 +273,7 @@ DATASETS = {
                 "mic_previous_performance": r"./MIC_res/cdc", # PREVIOUS FEA(MIC)
                 "mic_df_save_path": r"./processed_data/cdc/mic_result_ds", # DF PRODUCED BY MIC PHASE
                 "r_net_path": r"./r_nets/cdc", #R-NETS FOR ANQI MAO DEFERRAL 
-                "anqi_mao_thresholds": r"./r_nets_results/cdc",
+                "two_stage_thresholds": r"./r_nets_results/cdc",
                 "validation_data_save_path": r"./processed_data/cdc/validation_data",
                 "scaled_mic_batch": r"./processed_data/cdc/scaled_batch3",
                 "hic_logs": r"./logs/cdc/hic",
@@ -299,7 +299,7 @@ DATASETS = {
             # two stage deferral strat
             "calibrated_r_nets":  r"./baseline/mic/r_nets/cdc",
             "trained_nets": r"./baseline/mic/nets/cdc",
-            "anqi_mao_thresh_baseline": r"./baseline/mic/thresholds/cdc",
+            "two_stage_thresh_baseline": r"./baseline/mic/thresholds/cdc",
 
             # benchmarking strats
             "benchmark_res": r"./baseline/mic/cdc",        

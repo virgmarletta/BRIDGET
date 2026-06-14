@@ -807,7 +807,7 @@ def mic_session(ds_name,
 
         mic_inst= MiC(mic_model=mic_net, 
                         mic_model_name= def_net_name, 
-                        dataset_name = ds_name , 
+                        dataset_name = ds_name, 
                         batch1= batch1,
                         batch1_test=batch1_test,
                         batch3= test_batch, 
@@ -898,8 +898,8 @@ def run_mic(ds_name,
     strat_1_name= params['strat_1_name']
     strat_2_name= params['strat_2_name']
     def_net_name= params['mic_model_name']
-    run_confidence= params['run_confidence']
-    run_mao = params['run_mao']
+    run_sel= params['run_selective_prediction']
+    run_two_steps = params['run_two_step_deferral']
     batch1= params['batch1']
     batch1_test=params['batch1_test']
 
@@ -1036,7 +1036,7 @@ def run_mic(ds_name,
     os.makedirs(mic_save_path, exist_ok=True)
 
     ############ DEFERRAL STRAT 1: CONFIDENCE BASED
-    if run_confidence:
+    if run_sel:
         log.info(f"STARTING STRAT {strat_1_name} | USER {user_name} | Iter {iteration}")
 
 
@@ -1105,7 +1105,7 @@ def run_mic(ds_name,
 
 
     ############ DEFERRAL STRAT 2: ANQI MAO TWO STAGE DEFERRAL
-    if run_mao:        
+    if run_two_steps:        
 
         log.info(f"STARTING STRAT {strat_2_name} | USER {user_name} | Iter {iteration}")
         
@@ -1114,12 +1114,12 @@ def run_mic(ds_name,
             beta_str= str(beta).replace('.', '')
             beta_key = f"beta_{beta_str}"
 
-            initial_state_mao = strat_2_res[beta_key]['initial_state']  
+            initial_state_two_steps = strat_2_res[beta_key]['initial_state']  
 
-            start_perf_mao = initial_state_mao["benchmark"]
-            start_delta_mao= initial_state_mao['delta']
+            start_perf_two_steps = initial_state_two_steps["benchmark"]
+            start_delta_two_steps= initial_state_two_steps['delta']
 
-            log.info(f" Current Beta {beta} | Start Perf: {start_perf_mao:.2f}")
+            log.info(f" Current Beta {beta} | Start Perf: {start_perf_two_steps:.2f}")
 
             # 0. retrieving def net
             net_dir= DATASETS[ds_name]['paths']['def_net_save_path']
@@ -1172,8 +1172,8 @@ def run_mic(ds_name,
                                 batch1= batch1,
                                 batch1_test=batch1_test,
                                 training_iter= iteration,
-                                benchmark_performance= start_perf_mao,
-                                performance_delta= start_delta_mao,
+                                benchmark_performance= start_perf_two_steps,
+                                performance_delta= start_delta_two_steps,
                                 warm_up= warm_up,
                                 belief_threshold= belief_threshold,
                                 user_model= current_expert,
