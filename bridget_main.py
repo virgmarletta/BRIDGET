@@ -1,9 +1,65 @@
+
+"""
+========================================
+BRIDGET DECISION MAKING ENGINE  
+========================================
+
+This module implements the infrastructure of BRIDGET's decision making logic using OOP, with a parent class BRIDGET and two subclasses 
+representing the two operational phases that handle their decision logic independently from each other.
+
+
+Assumptions and Scope
+----------------------------------------
+..note:: BRIDGET establishes a collaboration with one machine (which is an Incremental Model during the Human in Command streaming phase, and a 
+      traditional batch learner in the subsequent Machine in Command) and ONE human. Although operationally it is possible to re-structure the 
+      code to a working standard for the multiple expert setting, the intended usage as the first prototype required first and foremost the validation
+      of the underlying empirical assumptions.
+
+      Additionally, stress testing the algorithm with a heterogeneous pool of experts (with varying degrees of trust in the machine and expertise, 
+      explicited by their False Positive and False Negative Rate) highlighted a direct relation between the severity of the 
+      skepticism threshold and the success of the subsequent Deferral Policies caused by the interaction with inaccurate and not trusting users.
+
+      It is necessary, before proceding with expanding the structure towards multiple users, to determine whether systemic degradation at the later iterations
+      can be mitigated by adopting alternative skepticism schemes or by systemically raising the threshold over time
+
+      
+..note:: The structure is model agnostic. 
+        However, Human in Command requires an Incremental Model, while Machine in Command requires two batch learners (predictor/rejector pair) 
+        
+        For the record, during the experimental validation the following models were used:
+        * Synthetic Users : modified OpenL2D generation scheme (reasoning and formulation provided in the full text)
+        * Human in Command: Adaptive Random Forest (River)
+        * Machine in Command: DNN (the predictor and rejector have different architectures and hyperparams)
+
+        
+Architecture
+----------------------------------------
+    * **BRIDGET: initializes the logging processes and the internal structures necessary in both phases. Handles logging when drift is detected
+
+    * **HIC: adapts the FRANK (Mazzoni et al.) algorithm and integrates it with BRIDGET's refinements listed in the foundational paper, 
+       as well as the modifications that arose during my thesis project in collaboration with my supervisors.
+
+       In line with FRANK, 4 decision rules are used to regulate the HAIC co-evolutionary training. 
+       In particular, the SLC (Skeptical Learning Check, line) directly exploits the Skeptical Learning paradigm using a set skepticism threshold
+       that is compared with the current skepticism level of the machine based on the empirical accuracies and confidence of both agents.
+
+       During SLC, a 1-NN (modulable) record of the same and opposite label is provided to the user to monitor consistency
+       
+
+    * **MIC: implements the Machine in Command labeling logic via the Selective Prediction (Mozannar et al., 2020) and 
+       Two-Stage Learning to Defer (Mao et al., 2023)
+
+       Counterfactuals are provided using the GrowingSpheres algorithm (plausibility, proximity and sparsity are contextually evaluated and stored)
+
+"""
+
+
 from river import metrics
 import random
 import numpy as np
 import time
 from tqdm import tqdm
-from classes import BetaUser, DeferralNet, RiverModelWrapper, PyTorchWrapper
+from classes import PyTorchWrapper
 if not hasattr(np, "float_"):
     np.float_ = np.float64
 if not hasattr(np, "int_"):
@@ -22,6 +78,32 @@ from bridget_utils import *
 
 
 class BRIDGET:
+
+    """
+    BRIDGET main class
+
+
+    Args:
+        dataset_name,
+        user_name, 
+        batch1, 
+        batch3, 
+        batch1_test
+        target, 
+        user_model, 
+        protected, 
+        cats, 
+        num,
+        preprocessor=None,
+        training_iter=1,
+        log= None
+
+
+
+    Methods:
+        __init__:
+        switch_phase:
+    """
     def __init__(self, 
                  dataset_name, user_name, 
                  batch1, batch3, batch1_test, 
@@ -110,7 +192,14 @@ class BRIDGET:
        
 
     def switch_phase(self, drift_detected, current_phase, current_log, strat=None):
-    
+        """
+        Checkpoints the log structure in case of drift detection, saving it in a specific folder
+
+        Attributes:
+            drift_detected, current_phase, current_log, strat=None
+        
+        
+        """
         if drift_detected:
 
             self.log.warning(f"DRIFT DETECTED | Phase: {current_phase} | Strat: {strat}")           
@@ -119,7 +208,7 @@ class BRIDGET:
                 phase_info = f"Current desired performance: {self.desired_performance:.4f} | Last 5 Machine EA: {self.machine_fea[-5:]}"
         
             else: 
-                phase_info = f"Current  belief_threshold: {self.belief_threshold} | Last 5 Machine EA: {self.fea_mic[-5:]}"
+                phase_info = f"Current belief_threshold: {self.belief_threshold} | Last 5 Machine EA: {self.fea_mic[-5:]}"
 
             self.log.info(f"DRIFT METRICS: {phase_info}")
             dir = os.path.join(f"processed_data", 
@@ -146,6 +235,28 @@ class BRIDGET:
 
 class HiC(BRIDGET):
 
+    """
+    Class for the Human-in-Command phase
+
+    Attributes:
+        RULE, PAST, SKEPT, GROUP, EVA, 
+        n_bins, n_var, maxc, 
+        rule_att, rule_value, 
+        hic_model_name, hic_model,
+        start_performance=60, # we input the accuracy/f1 score obtained by the incremental model during pre-training
+        allocated_budget = 200,  # so we can fix it sorta as a benchmark, meaning we ideally want to achieve a +5% within the available budget):
+        skepticism_threshold= 0.6,
+        performance_delta= 0.05,
+        **kwargs
+
+
+    Methods:
+        __init__:
+        train:
+        get_eval_report:
+        start_HiC:
+
+    """
     def __init__(self,
                  RULE, PAST, SKEPT, GROUP, EVA, 
                  n_bins, n_var, maxc, 
@@ -223,9 +334,12 @@ class HiC(BRIDGET):
         """
         Funzione per calibrare il modello incrementale che poi diventa self.initial model
         
-        :param self: Description
-        :param x_data: data stream necessario
-        :param y_data: data stream con le labels
+        Attributes:
+            x_warm_up, 
+            _warm_up, 
+            x_test_warm_up, 
+            y_test_warm_up
+
         """
 
         accuracy = metrics.Accuracy()
@@ -275,6 +389,16 @@ class HiC(BRIDGET):
         return report
 
     def start_HiC(self, warm_up_set):
+            
+            """
+            Attributes:
+                warm_up_set:
+
+            Returns:
+                final_log, 
+                accuracy_score, 
+                f1_score
+            """
             self.processed= dict()
             
 
@@ -368,9 +492,7 @@ class HiC(BRIDGET):
                     
                 
                 else:  # LOGIC FOR UNSEEN RECORDS
-                    #self.rec_order.append(record)
-
-
+                   
                     self.processed[record] = dict()
                     self.processed[record]['notes'] = []
                     self.processed[record]['vs'] = None
@@ -727,7 +849,7 @@ class HiC(BRIDGET):
                     human_fairness, human_acc, systemic = evaluation_human(self.processed, self.protected, self.Y,
                                                                         self.attr_list)
                 
-                    frank_fairness, frank_acc,frank_f1,_ = evaluation_frank(self.X_test1, self.Y_test1, self.hic_model, self.protected, self.preprocessor)
+                    frank_fairness, frank_acc, frank_f1,_ = evaluation_frank(self.X_test1, self.Y_test1, self.hic_model, self.protected, self.preprocessor)
                     accuracy_score.append(frank_acc)
                     f1_score.append(frank_f1)
                     
@@ -839,6 +961,30 @@ class HiC(BRIDGET):
             return df_final_hic, accuracy_score, f1_score
 
 class MiC(BRIDGET):
+
+
+    """
+    Class for the Machine-in-Command phase
+
+    Attributes:
+        mic_model, 
+        mic_model_name,
+        benchmark_performance,
+        warm_up,
+        device,
+        performance_delta= 0.05,
+        belief_threshold= 0.6,
+        tau_threshold= None,
+        human_deferral_cost= None,  #input as str so it can save
+        **kwargs
+
+
+    Methods:
+        __init__:
+        train:
+        start_MiC:
+
+    """
 
     def __init__(self,
                  mic_model, 
@@ -1022,7 +1168,7 @@ class MiC(BRIDGET):
                     if net_output == y_gt:
                         net_correct_on_undeferred+=1
 
-                    self.stats[net_output]['machine']['got']+=1
+                    self.stats[net_output]['machine']['got']+=1 
                     self.undeferred_decisions+=1
                     
 

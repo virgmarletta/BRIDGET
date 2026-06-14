@@ -79,9 +79,9 @@ experts:
 
       # - OPTION 1: Fixed Expertise
       # - i due target combined rappresenterebbero l'overall expertise degli esperti
-      target_FPR: 0.05
+      target_FPR: 0.1
 
-      target_FNR: 0.05
+      target_FNR: 0.1
 
       # - OPTION 2: Bounded Expertise
       # - sarebbe necessario avere target mean e std + max/min target FPR per la distribuzione
@@ -94,9 +94,9 @@ experts:
 
       belief_value: 0.4
 
-      target_FPR: 0.05
+      target_FPR: 0.1
       
-      target_FNR: 0.05
+      target_FNR: 0.1
 
 
 

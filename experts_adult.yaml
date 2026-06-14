@@ -59,8 +59,8 @@ experts:
 
 
       capital-gain:
-        - 0.5
-        - 0.15
+        - 0.55
+        - 0.1
 
       capital-loss:
         - -0.35

@@ -1,8 +1,0 @@
-{
-    "model_key": "32_16_inacc_t_model",
-    "tau_threshold": 0.77,
-    "best_val_acc": 0.906006006006006,
-    "net_path": "./nets/adult/iter_1/inacc_t_models/32_16/32_16_model_7.pt",
-    "ds_name": "adult",
-    "iteration": 1
-}

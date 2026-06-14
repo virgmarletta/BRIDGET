@@ -1,49 +1,50 @@
-# Bridget orchestration script
+"""
+========================================
+BRIDGET ORCHESTRATION PIPELINE 
+========================================
 
-# the idea is to include the net_calibration during the Human in Command orchestrator, since the df is required
-# then the cfm, loss descent and accuracy plots are printed and once the net structure is chosen, its passed to the Machine in Command script
+This script serves as the main execution orchestrator for the framework.
+It handles the three macro-processes independently, by executing each step in the pipeline according to the iterations
+and data configurations/splits specified in the master_config.py file (which is thorougly referenced in the code below), 
+while also managing the logging of the results at each step.
 
+In particular, the file is structured to:
+
+* Define DeferralNets validation and training using the data emerging from the Human in Command co-evolutionary labeling
+* Instantiate Human in Command and Machine in Command sessions, called in the respective run_hic and run_mic macro functions
+* Run the entire pipeline for a given dataset, user and model configurations, with minimal supervisor intervention 
+   (DeferralNet selection MUST be performed before the execution of the run_mic function, using the results provided by the run_calibration functions)
+
+The guide is referenced in the README file and in the examples provided in the repo.
+
+
+"""
 
 import numpy as np
 import torch
 import pandas as pd
 import os
-import pickle
-import random
 import matplotlib.pyplot as plt
-import seaborn as sns
 import torch.nn as nn
 import torch.optim as optim
 import json
 import glob
-import logging
 import joblib
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-
-from torchsummary import summary
-from torch.utils.data import TensorDataset, DataLoader
 from torch.optim.lr_scheduler import StepLR
 
-from ignite.metrics import Accuracy, Loss
-from ignite.engine import Engine, Events, create_supervised_trainer, create_supervised_evaluator
-from ignite.handlers import EarlyStopping, ModelCheckpoint
-from ignite.contrib.handlers import global_step_from_engine
-
-
-from xailib.models.sklearn_classifier_wrapper import sklearn_classifier_wrapper
-
 from classes import *
-
 from bridget_main import MiC, HiC
 from bridget_utils import *
 from master_config import DATASETS, NET_CONFIGS, FRANK_RULES, R_NET_CONFIGS
 
-
-import logging
-import sys
-
-
 set_all_seeds(42)
+
+
+#========================================
+#HUMAN IN COMMAND PHASE ASSETS 
+#========================================
+
+
 
 def net_calibration(ds_name,  
                     user_suffix, 
@@ -63,30 +64,45 @@ def net_calibration(ds_name,
 
 
     """
-    ds_name: str format (eg. "dutch", "compas") for logging purposes, taken from the config.py file
-    user_suffix: str format (eg. "acc_t"), identifying the user for logging purposes
-    target: label in str format
-    train_set: dataframe obtained after the Human in Command phase
-    val_set: dataframe derived at the very top :)
-    feature_order: list
-    net_layers: list (eg. [16,8], [32,16]) as per the config.py file) identifying the NN structure
-    net_params: dict containing the training configuration (eg dropout_coeff, lr, weight_decay, smoothing)
+    Trains the Nets using the co-labeled data and the hyperparams configuration within the master_config.py file, 
+    checkpoints model weights, plots
+    
+    Args:
+        ds_name (str): used for logging and saving purposes, derived from the master_config.py file (eg. "dutch", "compas")
+        user_suffix (str): identification of the current synthetic user for logging purposes (eg. "acc_t")
+        user_model (object): synthetic user model
+        iter (int): number of current iteration
+        target (str): target label in string format
+        train_set (pd.DataFrame): co-labeled data obtained after the Human in Command phase
+        val_set (pd.DataFrame): validation set scaled using the preprocessor updated after HIC
+        feature_order (list): list of feature names in str format (NO TARGET LABEL)
+        net_layers (list): list identifying the NN structures (eg. [16,8], [32,16]) as per master_config.py
+        net_params (dict): dict containing the training configuration (eg dropout_coeff, lr, weight_decay, smoothing) as per master_config.py
 
     """
+
     set_all_seeds(42)
+    
     log.info(f"Entered Net Calibration | USER {user_suffix} | iter {iter}")
-    # 1. creating the tensors ds
+
+
+
+
+    # 1. Data Loader and Tensor Datasets creation for the Training data and the validation data
     X_cal, y_cal, train_loader = create_loader(train_set, feature_order, target, shuffle=False)
 
     _, _, val_loader = create_loader(val_set, feature_order, target, shuffle=False) #default size= 128, shuffle= False
 
-    # 2. instantiate net and its necessary components + getting the class weights
     
+    
+    
+    # 2. DeferralNet instantiation and retriaval of its necessary components from the master_config.py file
+
     net= DeferralNet(input_size=X_cal.shape[1],  #default val for the dropout coeff was set to 0 for the def net class
-                           hidden_layer1= net_layers[0], 
-                           hidden_layer2= net_layers[1], 
-                           output_size=2,
-                           dropout_coeff=0.0)
+                            hidden_layer1= net_layers[0], 
+                            hidden_layer2= net_layers[1], 
+                            output_size=2,
+                            dropout_coeff=0.0)
     net.to(device)
 
     optimizer = optim.Adam(params=net.parameters(),
@@ -94,12 +110,16 @@ def net_calibration(ds_name,
                        weight_decay=net_params['weight_decay']
                     )
     
-    weight_0, weight_1= compute_class_weights(y_cal)
+    weight_0, weight_1= compute_class_weights(y_cal)  # computing class weights for the CE loss
     weights = torch.tensor([weight_0, weight_1]).to(device)
-    criterion= nn.CrossEntropyLoss(weight=weights, label_smoothing=net_params['label_smoothing'])
-    scheduler = StepLR(optimizer, step_size=step_size, gamma=gamma) 
 
-    if baseline: 
+    criterion= nn.CrossEntropyLoss(weight=weights, label_smoothing=net_params['label_smoothing']) #applying label smoothing if necessary
+    scheduler = StepLR(optimizer, step_size=step_size, gamma=gamma) #defining scheduler for ADAM
+
+    
+
+    # 3. Defining saving directory for the trained nets and the plots according to the respective synthetic user and current BRIDGET iteration
+    if baseline: #this one was for the baseline
         net_dir= DATASETS[ds_name]['baseline_paths']['trained_nets']
         model_name= f'{net_layers[0]}_{net_layers[1]}'
 
@@ -107,7 +127,7 @@ def net_calibration(ds_name,
         save_dir = os.path.join(net_dir, 
                                 f"{user_suffix}_models",
                                 f"{model_name}")
-        
+     
     else:
         net_dir= DATASETS[ds_name]['paths']['def_net_save_path']
         model_name= f'{net_layers[0]}_{net_layers[1]}'
@@ -118,6 +138,9 @@ def net_calibration(ds_name,
                                 f"{user_suffix}_models",
                                 f"{model_name}")
 
+    
+    # 4. Training and validating of the Deferral Nets structures (including Loss plots, confusion matrix and classification report)
+    
     training_history, validation_history = net_trainer(net, optimizer,
                                                 criterion, 
                                                 device, 
@@ -127,7 +150,7 @@ def net_calibration(ds_name,
                                                 iter, 
                                                 model_name, 
                                                 save_dir,
-                                                log_interval=100, patience=3, max_epochs=20)
+                                                log_interval=100, patience=8, max_epochs=20)
     
     
     fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(10, 3))
@@ -155,6 +178,8 @@ def net_calibration(ds_name,
     report_save_path = os.path.join(save_dir, f"report_{model_name}.parquet")
     report_df.to_parquet(report_save_path)
 
+
+    # 5. Calibrating Tau threshold for the Selective Prediction deferral policy (ref Mozannar et al. 2020) on the validation data using the trained nets
     log.info("Calibrating TAU thresholds")
 
     choose_optimal_tau(ds_name=ds_name,
@@ -172,38 +197,48 @@ def net_calibration(ds_name,
                        min_coverage= 0.6
                         )
 
-
-
-
     
 
-def hic_session(warm_up_set, # PARAMS
-                hic_df_save_path, #main config 
-                target, #main config
-                protected, #main config 
-                categoricals, # PARAMS
-                 numericals, # PARAMS
-                 ds_name, #main config 
-                 rules,  #main config
-                 user_name, # PARAMS
-                 user_model, #hic_objects
-                 hic_iter, # PARAMS
-                 preprocessor, # hic_objects
-                 hic_model_name, # PARAMS
-                 hic_model, # hic_objects
-                 batch3, # PARAMS
-                 batch1, # PARAMS
-                 batch1_test,# PARAMS
-                 allocated_budget, #main config 
-                 start_performance, #main config  !!!!!!! CHANGES AFTER ITER
-                 performance_delta, #main config 
+def hic_session(warm_up_set, hic_df_save_path,
+                 target, 
+                 protected, 
+                 categoricals, 
+                 numericals,
+                 ds_name, 
+                 rules, 
+                 user_name, 
+                 user_model, 
+                 hic_iter, 
+                 preprocessor, 
+                 hic_model_name, 
+                 hic_model, 
+                 batch3, 
+                 batch1, 
+                 batch1_test,
+                 allocated_budget,
+                 start_performance, 
+                 performance_delta, 
                  skept_thresholds,
                  rule_att,
                  rule_value,
-                 log): #main config 
+                 log):
     
-    #set_all_seeds(42)
+    """
+    Instantiating the HiC class, running the start_HiC method of the HiC subclass. Then it logs and saves the results in the respective folders
 
+    Although the list of args is extensive, the parameters are passed down by the run_hic function that requires the "params" and "objects" arguments.
+    We refer to that to avoid repetitions
+
+
+    Returns:
+        hic_df (pd.DataFrame): structure containing the final predictions provided by the HIC phase, includes informative cols (e.g., "provider" of the final label of the row) 
+        hic_inst (object): class instance, used to extract the benchmark result for the subsequent iteration
+        evaluation_results (pd.DataFrame): DataFrame reporting the results pertaining to the fairness metrics, skepticism and XAI counters
+        train_acc (list): list of accuracy values computed at each row
+        train_f1 (list): list of f1 scores values computed at each row
+
+    
+    """
     hic_inst= HiC(
                     cats=categoricals,
                     num=numericals,
@@ -213,7 +248,6 @@ def hic_session(warm_up_set, # PARAMS
                     batch1=batch1,
                     batch3=batch3,
                     batch1_test=batch1_test,
-                    
                     user_model=user_model,
                     preprocessor=preprocessor,
                     hic_model=hic_model,                    
@@ -259,15 +293,55 @@ def hic_session(warm_up_set, # PARAMS
     return hic_df, hic_inst, evaluation_results, train_acc, train_f1
 
 
-
-
-# da sistemare questa, parameters are messy
 def run_hic(ds_name, params, objects):
 
+    """
+    
+    This function handles the entire HIC pipeline.
+    It requires the params and objects structure.
+
+    Args:
+
+    * ds_name (str): dataset name, for logging purposes and necessary to build the saving directory
+    * objects (dict): a dictionary which is built prior to BRIDGET's initialization. 
+                After preparing the data and conducting the necessary preprocessing steps for each dataset, the dict is filled with
+
+                * user_model (obj): straightforward, the user model frfom the BetaUser subclass (modulable, can include another class in the classes.py) 
+                  that will call .predict during the co-evolutionary labeling
+                * preprocessor (obj): River Preprocessor (the scaler), warmed up on the warm up set alongside the Incremental Learner.
+                                      During the streaming co evolutionary process this scaler is continuously updated, until the iteration comes to and end.
+                                      It is then checkpointed, used to scale the Validation and MIC Testing data and reloaded to the subsequent
+                                      Human in Command iteration to learn again
+
+
+                * incremental_learner (obj): River (although again, its modulable, any streaming model can be used) Incremental Model.
+                                             Pre-trained on a separate warm-up set, it then enters the co-evolutionary training and its updated/re-trained from scratch
+                                             according to the rules in bridget_main.py. Once the HIC phase ends, its checkpointed and frozen.
+                                             Then, its reloaded at the subsequent HIC iteration to resume training and labeling.
+
+
+
+    * params (dict): Due to the nature of the datasets and rules tested hereby, the master_config.py file contains 
+              partial information only pertaining to the structures required in the HIC phase, organized in the DATASETS dictionary asset that is 
+              imported at the top of the scripts.
+              Params addresses the following requirements prior to deploying BRIDGET, and contextually with building the "objects" dictionary
+    
+              *warm_up_set (pd.DataFrame): DataFrame of data allocated towards pre-training the Incremental Learner
+              *cats (list): list of categorical features in str format
+              *num (list): list of numerical features in str format
+              *incremental_learner_name (str): chosen saving name of the Incremental Learner (e.g., "ARF")
+              *batch1 (pd.DataFrame): training data for the Human in Command phase
+              *batch3 (pd.DataFrame): testing data for the Machine in Command phase
+              *batch1_test (pd.DataFrame): testing data (diagnostics only) for the Human in Command phase
+              *feature_order (list): list of the features' names in str format
+              *user_suffix (str): used for building the saving structures (e.g., "acc_t")
+    
+    """
+
+    # ========================================
+    # 1. Creating the custom log for the current synthetic user and dataset
+    # ========================================
     user_name=params['user_name']
-
-    # creating the log first
-
     log_dir = DATASETS[ds_name]['paths']['hic_logs']
     user_log_path = os.path.join(log_dir, f"{user_name}.log")
     
@@ -275,7 +349,13 @@ def run_hic(ds_name, params, objects):
     log.info(f"STARTING HIC RUN | User: {params['user_name']} | DS: {ds_name}")
 
 
-    #retrieving params from sources
+    # ========================================
+    # 2. Retrieving necessary assets from the params, objects dictionaries 
+    # ========================================
+
+    # (these contain a mix of fixed parameters listed beforehand in the master_config.py file, as well as custom params and configs for the 
+    # current dataset that must be explicited after data preparation and splitting)
+     
     current_preprocessor= objects['preprocessor']
     current_incremental_learner= objects['incremental_learner']
 
@@ -303,22 +383,35 @@ def run_hic(ds_name, params, objects):
     net_params=DATASETS[ds_name]['net_params']
 
     user_suffix= params['user_suffix']
-    user_full_name= params['full_name']
     
     rule_att= DATASETS[ds_name]['rule_att']
     rule_value= DATASETS[ds_name]['rule_value']
     rules=FRANK_RULES
 
     
-    # instantiating results dict
+
+    # ========================================
+    # 3. Instantiating hic_res dict to keep track of the current performance that will act as a benchmark (+/- performance_delta) for the subsequent iterations
+    # ========================================
     hic_res= {
         'initial_state': {
             'performance_goal': DATASETS[ds_name]['start_performance'],
     }
     }
+    
 
-    # looping through iter 1 2 3 
+
+
+    # ========================================
+    # 4. MAIN HUMAN IN COMMAND LOOP
+    # ========================================
+    # iterating through the 3 iterations defined in the conceptual pipelin. As the exact data splits are defined in the master_config.py,
+    # if more than 3 iterations are needed, the for loop must be modified accordingly, as well as the data splits in master_config
+    # no update is required on the logging functions or the directory definition since its modular and will handle it automatically
+
     for iteration in range(1,4):
+        
+        #4.A Defining starting performance for the current iter, referencing splits in master_config (Modular, no need to change anything)
         current_perf= hic_res['initial_state']['performance_goal']
 
         log.info(f"---  ITERATION {iteration}/3 ---")
@@ -326,9 +419,10 @@ def run_hic(ds_name, params, objects):
 
         start_idx = batches_offsets[iteration-1]
         end_idx = batches_offsets[iteration]
-
         current_batch = batch1.iloc[start_idx:end_idx]
 
+
+        # 4.b Running hic_session function
         hic_df, hic_inst, _, test_acc, test_f1 = hic_session(
             ds_name=ds_name,
             preprocessor=current_preprocessor,
@@ -358,12 +452,18 @@ def run_hic(ds_name, params, objects):
             
         )
 
-        log.info(f" HiC Session completed. Acc on Test set: {np.mean(test_acc):.4f}, F1 Acc: {np.mean(test_f1):.4f}")
+        log.info(f" HiC Session completed. Acc on Train set: {np.mean(test_acc):.4f}, F1 Acc: {np.mean(test_f1):.4f}")
+        
+
+        # 4.C Scaling the validation set data AND the Machine in Command Testing data (which are then saved in the respective directories)
+        # using the latest version of the RIVER preprocessor trained in HIC alongside the Incremental Learner
         
         log.info(" Scaling validation and MIC sets...")
-        val_set, _ = scale_data(ds_name, iteration, params) #with this f we save the val set and df 3 scaled using the scaler trained in hic
+        val_set, _ = scale_data(ds_name, iteration, params) # returnin
 
-        # after receiving the dataset from the Human in Command phase, its time to calibrate the nets
+
+
+        # 4.D DeferralNets training and validation, and respective Tau threshold computation
 
         for arch_name in ["small", "medium", "large", "xl"]:
             layers = NET_CONFIGS[arch_name]['layers']
@@ -373,7 +473,7 @@ def run_hic(ds_name, params, objects):
 
             net_calibration(ds_name= ds_name, 
                             user_suffix= user_suffix, 
-                            user_full_name= user_name,
+                            user_model= user_model,
                             iter= iteration, 
                             target= target, 
                             train_set= hic_df, 
@@ -384,16 +484,20 @@ def run_hic(ds_name, params, objects):
                             step_size= step_size,
                             gamma=gamma, 
                             log= log,
-                            device= torch.device("cpu"))
+                            device= torch.device("cpu")
+                            )
 
     
             
             log.info(f"Plots and conf matrix saved | ITER {iteration} | ARCHITECTURE {arch_name}")
 
-        # now at the end we need to retrieve every object that is changed across iter
+
+        # 4.E Retrieving assets for the next iteration
         log.info(f"Loading updated objects for the next iter...")
 
-        #1. PREPROCESSOR 
+        
+        
+        # PREPROCESSOR 
         
         prepr_dir= DATASETS[ds_name]['paths']['trained_preprocessor'] # prepr_dir
         prepr_path= os.path.join(
@@ -404,7 +508,7 @@ def run_hic(ds_name, params, objects):
                 )
         trained_preprocessor = joblib.load(prepr_path)
 
-        #2. INCREMENTAL MODEL
+        # INCREMENTAL MODEL
        
         model_dir= DATASETS[ds_name]['paths']['incremental_learner'] # prepr_dir
         model_path= os.path.join(
@@ -416,12 +520,12 @@ def run_hic(ds_name, params, objects):
         
         trained_model = joblib.load(model_path)
 
-        #3. FEA (STARTING PERFORMANCE)
+        # CURRENT PERFORMANCE
 
         current_perf= (np.mean(hic_inst.machine_fea))*100
         log.info(f"Iteration {iteration} res | Machine EA: {current_perf:.2f}")
 
-        # 4. UPDATE for the next iteration
+        #  UPDATE for the next iteration
         # Usually, you'd update this based on the 'train_acc' or 'eval_results' 
         # so the next HiC run knows where the human/machine left off
         hic_res['initial_state']['performance_goal'] = current_perf
@@ -433,7 +537,10 @@ def run_hic(ds_name, params, objects):
 
 
 
-# operazioni da fare in
+
+#========================================
+#CALIBRATION PHASE ASSETS 
+#========================================
 
 def run_calibration(def_net_path, # DA PATH
                     df_switch, #INSERIRE MANUALMENTE # remember it should be the correct df
@@ -446,9 +553,31 @@ def run_calibration(def_net_path, # DA PATH
                     epochs= 20,
                     baseline= False
                     ):
+    
+
+    """
+    This function handles the preliminary steps to deploy the Two-Stage Deferral Strategy within the Machine in Command phase.
+    From the pipeline standpoint, this process happens after the supervisor has chosen the optimal DeferralNet architecture
+    and before initializing Machine in Command
+    
+    Args:
+        def_net_path (str): directory saving path as specified in master_config.py
+        df_switch (pd.DataFrame): co-labeled data resulting from the corresponding iteration of Human in Command
+        ds_name (str): dataset name in string format
+        params (dict): 
+        device (torch.device): 
+        iteration (int):
+        def_net_layers (list): net architecture chosen by the supervisor after model selection (e.g. [32,16])
+        batch_size (int, default= 128): 
+        epochs (int, default= 20): number of training epochs 
+        baseline (bool)
+    
+    """
     #the idea within this function is simple: use the functions train r net and generate report of the anqi mao values :)
 
-    #first create log from path
+    # ========================================
+    # 1. Creating saving directories using user name
+    # ========================================
     user_name= params['user_name']
 
     if baseline:
@@ -461,14 +590,19 @@ def run_calibration(def_net_path, # DA PATH
     log = custom_log(params['user_name'], user_log_path)
     log.info(f"STARTING R-NETS TRAINING | User: {params['user_name']} | DS: {ds_name}")
 
-    #1. retrieving necessary params
+    # ========================================
+    # 2. Retrieving necessary assets, creating Tensor Dataset and Loader for the Training data
+    # ========================================
+    # these two refer to the Two-Stage Deferral Strategy (Mao et al., 2023) and load the configs from the master_config.py file
+    # if there should arise the need to expand or restrict the inference cost (Beta) search interval, modify the corresponding
+    # values in master_config, there is no need to specify it in this function
     r_conf= R_NET_CONFIGS   
     betas= r_conf.get('betas', [])
 
     target=DATASETS[ds_name].get('target')
     feat_order= params.get('feature_order')
 
-    #2. creating loader for the training data
+    # creating loader for the training data
     X_cal, y_cal, _ = create_loader(df_switch, feat_order, target, shuffle= False)
 
     if baseline:
@@ -476,15 +610,22 @@ def run_calibration(def_net_path, # DA PATH
     else:
         log.info(f"--- Calibrating for iteration {iteration} ---")
     
+
+
+
+
+    # ========================================
+    # 3. Training Rejector Net on co-evolutionary data, looping over the Human Inference Cost (BETA), then checkpointing
+    # ========================================
+    # the nets calibrated will have the exact same architecture as specified in the 
     for beta in betas:
         log.info(f"--- Training r-net for Beta: {beta}")
         
-        # by looping through the 3 iters and the 5 beta configurations we'll obtain the 15 nets for each user
         r_net= train_r_net(df_switch, 
                             ds_name,
                             user_name, 
                             device, 
-                            alpha=r_conf.get('alpha') , 
+                            alpha=r_conf.get('alpha'), 
                             beta= beta, 
                             feat_order=feat_order, #its required without the labels here
                             layers= r_conf.get('architecture'), 
@@ -496,7 +637,6 @@ def run_calibration(def_net_path, # DA PATH
                             batch_size=batch_size,
                             epochs= epochs,
                             baseline= baseline
-                            
                             )
         
 
@@ -536,27 +676,56 @@ def choose_optimal_tau(ds_name,
                         ):
     
    
+    """
+    Function that handles the optimal deferral threshold search for the Net architecture tested, then saves it to be reloaded in the 
+    Machine in Command phase after model selection
+
+    Args:
+        All params spared for min_coverage are passed to this function within the run_calibration process. To avoid repetitions, refer to the 
+        description above.
+
+        min_coverage (float): Minimum proportion of rows that must be evaluated by the machine within the SelectivePrediction deferral policy context
+                              that allows to assess the accuracy-coverage trade off.
+                              Default value is 0.6.
+        
+    Returns:
+        best_tau (float): Optimal Tau threshold scored within the linear space search interval for the specific net architecture, user and dataset tested
+                          Used for logging purposes during the run_calibration function.
     
+    """
+
+    # ========================================
+    # 1. Instatiating the Tensor Dataset loader for the validation set
+    # ========================================
+
     X_val, y_val, _= create_loader(validation_set, feat_order, target, shuffle=False)
-    #print(f"DEBUG: Raw first 5: {validation_set[target].values[:5]}")
-    #print(f"DEBUG: y_val first 5: {y_val[:5]}")
-    
+
+
+    # ========================================
+    # 2. Conducting Linear Space search
+    # ========================================
+
     best_tau, best_acc= calibrate_tau(ds_name=ds_name, 
                                       user_suffix=user_suffix,
                                       iteration=iteration,
                                       layers=layers,
                                       net= net, 
-                                      user_model=user_model, device=device, 
-                                      X_val= X_val, y_val=y_val, log=log, min_coverage= min_coverage)
-   
+                                      user_model=user_model, 
+                                      device=device, 
+                                      X_val= X_val, 
+                                      y_val=y_val, 
+                                      log=log, 
+                                      min_coverage= min_coverage)
+    
+
+    # ========================================
+    # 3. Reporting best results, saving to corresponding directory
+    # ========================================
+
     log.info(f" Best tau for {ds_name}, Iter {iteration}: {best_tau} (Acc: {best_acc})")
 
-    #tau_dir= fr'.\nets\{ds_name}\iter_{iteration}\{user_suffix}_models'
-    #os.makedirs(tau_dir, exist_ok=True)
     model_key = f"{layers[0]}_{layers[1]}_{user_suffix}_model"
-    #tau_path = os.path.join(tau_dir, f'tau_threshold_{model_key}.json')
-
-    model_key = f"{layers[0]}_{layers[1]}_{user_suffix}_model"
+    
     if os.path.isfile(model_path):
         save_folder = os.path.dirname(model_path)
         net_path = model_path
@@ -584,44 +753,90 @@ def choose_optimal_tau(ds_name,
     return best_tau
     
 
-# scope of this function is to be called within a loop of betas, so theres no need to call betas here 
+#========================================
+#MACHINE IN COMMAND PHASE ASSETS 
+#========================================
 
-def choose_optimal_deferral_thresh(report, 
-                                   def_rate_lower, # must be in percentile format (eg. 0.73 instead of 73%)
-                                   def_rate_upper,
-                                   log
-                                   ): # must be in percentile format 
+def mic_session(ds_name, 
+                target, #SOPPRA
+                layers,
+                def_net_path,
+                def_net_name,
+                device,
+                df_switch, #just for xai 
+                test_batch, # PARAMS MA HA IL SUO PATH
+                training_iter,
+                benchmark_performance,
+                performance_delta,
+                warm_up,
+                belief_threshold,
+                user_model,
+                user_name,
+                batch1,
+                batch1_test,
+                log,
+                preprocessor,
+                cats,
+                num,
+                protected,
+                tau_threshold= None,
+                r_net= None,
+                human_defer_cost= None #anqi mao's beta
+                ):
+        
 
-    # function that chooses the optimal anqi mao deferral thresh wrt the deferral rate 
-    # the policy: lets say we fix a minimum of at least 14/15 % defer rate, and fix a max of 23%/25% 
-    # so the reports produced by the run_calibration functions are filtered and then the results is chosen amongst the remaining row
+        """
+        
+        
+        Args:
+         
+        """
 
-    # criteria to select: maximum accuracy achievable, if theres a tie choose the one with the lower deferral rate
+        X_stream= torch.tensor(data= test_batch.drop(columns=[target]).values, dtype=torch.float32).to(device)
+        y_stream= torch.tensor(data=test_batch[target].values, dtype= torch.long).to(device)
 
-    # 1. fixing the range wrt parameters 
-    mask= (report['deferral_rate'] > def_rate_lower) & (report['deferral_rate'] <= def_rate_upper)
-    filtered= report[mask]
-
-    if filtered.empty:
-        # if no row is in range get the one nearest the upper bound
-        report['dist'] = (report['deferral_rate'] - def_rate_upper).abs()
-        best_row = report.sort_values('dist').iloc[0]
-        log.debug(f" Picking closest thresh: {best_row['deferral_rate']:.6%}")
-
-    else:
-     
-        best_row = filtered.sort_values(by=['team_accuracy', 'deferral_rate'], 
-                                        ascending=[False, True]).iloc[0]
-
-    return best_row
+        mic_net= DeferralNet(input_size=X_stream.shape[1], 
+                         hidden_layer1=layers[0], hidden_layer2=layers[1], 
+                         output_size= NET_CONFIGS['output_size'],
+                         dropout_coeff= 0.0)
+        mic_net.to(device)
+        
+        mic_net.load_state_dict(torch.load(def_net_path, map_location=device))
+        mic_net.eval()
 
 
+        mic_inst= MiC(mic_model=mic_net, 
+                        mic_model_name= def_net_name, 
+                        dataset_name = ds_name , 
+                        batch1= batch1,
+                        batch1_test=batch1_test,
+                        batch3= test_batch, 
+                        training_iter= training_iter,
+                        target=target,
+                        benchmark_performance=benchmark_performance, 
+                        performance_delta=performance_delta, 
+                        warm_up=warm_up,
+                        belief_threshold= belief_threshold,
+                        user_model= user_model,
+                        user_name= user_name,
+                        preprocessor=preprocessor,
+                        cats=cats,
+                        num=num,
+                        log=log,
+                        device= device,
+                        protected=protected,
+                        tau_threshold=tau_threshold,
+                        human_deferral_cost=human_defer_cost)
+        
+    
+        if r_net:
+            mic_df =mic_inst.start_MiC(X_stream, y_stream, df_switch, r_net=r_net, two_step_deferral=True)
 
-# when loading an expert or whatever, need this 
-# exp_path= fr".\trained_experts\{ds_name}\{name}.pkl"
-# current_expert= joblib.load(exp_path)
+        else:   
+            mic_df =mic_inst.start_MiC(X_stream, y_stream, df_switch)
+        
+        return mic_df, mic_inst
 
-# in params im gonna insert a run_confidence, run_mao check so i can disable one of the two strats
 
 
 
@@ -637,6 +852,23 @@ def run_mic(ds_name,
             ):
 
 
+    """ 
+    
+    Args:
+    ds_name,
+            device, #probabilmente viene dall'alto 
+            layers,# vengono dall'alto, always a lst btw, oppure da master config
+            params,# da fuori
+            objects, # OBJECTS
+            iteration,
+            strat_1_res (bool, optional)
+            strat_2_res (bool, optional)
+            baseline (bool, optional)
+    
+    Returns:
+    strat_1_res (dict):
+    strat_2_res (dict):
+    """
     ########## 
     # creating the log first
     user_name = params['user_name']
@@ -661,7 +893,6 @@ def run_mic(ds_name,
     
     user_suff= params['user_suffix']
     i_learner_name= params['incremental_learner_name']
-    #feat_order= params['feature_order']
     cats=params['cats']
     num=params['num']
     strat_1_name= params['strat_1_name']
@@ -808,22 +1039,7 @@ def run_mic(ds_name,
     if run_confidence:
         log.info(f"STARTING STRAT {strat_1_name} | USER {user_name} | Iter {iteration}")
 
-        """
-        # computing tau threshold
-        tau_thresh= choose_optimal_tau(ds_name=ds_name,
-                    user_suffix=user_suff, # da fuori
-                    net=def_net,
-                    model_path=def_net_path, #viene dall'alto
-                    device=device, #probabilmente viene dall'alto 
-                    layers=layers,#vengono dall'alto, always a lst btw
-                    validation_set=validation_set,
-                    feat_order=feat_order,
-                    target=target,
-                    iteration=iteration, #viene da su
-                    min_coverage= min_coverage,
-                    log=log
-                        )
-        """
+
         initial_state = strat_1_res['initial_state']
         start_perf_conf = initial_state["benchmark"]
         start_delta = initial_state['delta']
@@ -854,7 +1070,6 @@ def run_mic(ds_name,
                                 log=log,
                                 protected=protected,
                                 tau_threshold=current_tau,
-                                #anqi_mao_thresh= None,
                                 r_net= None,
                                 human_defer_cost= None #anqi mao's beta
                             )
@@ -943,26 +1158,7 @@ def run_mic(ds_name,
 
             log.debug(f"RETRIEVING R-NET | PATH {r_net_path}")
 
-            # 2. retrieving anqi mao report to get thresh
-            """"
-            report_dir= DATASETS[ds_name]['paths']["anqi_mao_thresholds"]
-            report_path= os.path.join(report_dir,
-                            f"{user_name}",
-                            f"iter_{iteration}",
-                            f"beta_{beta_str}",
-                            f"report_{user_name}.parquet"
-                            )
-            report= pd.read_parquet(report_path)
-            
-            anqi_mao_thresh_row= choose_optimal_deferral_thresh(report, # DEVONO ESSERE PRESI DA FUORI e HANNO IL LORO PATH
-                                def_rate_lower= R_NET_CONFIGS['defer_rate_low'], # must be in percentile format (eg. 0.73 instead of 73%)
-                                def_rate_upper= R_NET_CONFIGS['defer_rate_upp'],
-                                log=log
-                                )
-            anqi_mao_thresh= anqi_mao_thresh_row[0]
-            
-            log.debug(f"CURRENT ANQI MAO THRESH: {anqi_mao_thresh} | USER {user_name} | ITER {iteration}")
-            """
+           
             # 3. starting MIC SESSION
             mic_df, mic_inst= mic_session(
                                 ds_name=ds_name, 
@@ -988,7 +1184,6 @@ def run_mic(ds_name,
                                 log=log,
                                 protected=protected,
                                 tau_threshold=None,
-                                #anqi_mao_thresh= anqi_mao_thresh,
                                 r_net= r_net,
                                 human_defer_cost=beta
                             )
@@ -1032,133 +1227,6 @@ def run_mic(ds_name,
     
     
 
-def mic_session(ds_name, 
-                target, #SOPPRA
-                layers,
-                def_net_path,
-                def_net_name,
-                device,
-                df_switch, #just for xai 
-                test_batch, # PARAMS MA HA IL SUO PATH
-                training_iter,
-                benchmark_performance,
-                performance_delta,
-                warm_up,
-                belief_threshold,
-                user_model,
-                user_name,
-                batch1,
-                batch1_test,
-                log,
-                preprocessor,
-                cats,
-                num,
-                protected,
-                tau_threshold= None,
-                #anqi_mao_thresh= None,
-                r_net= None,
-                human_defer_cost= None #anqi mao's beta
-                ):
-        
-
-        X_stream= torch.tensor(data= test_batch.drop(columns=[target]).values, dtype=torch.float32).to(device)
-        y_stream= torch.tensor(data=test_batch[target].values, dtype= torch.long).to(device)
-
-        mic_net= DeferralNet(input_size=X_stream.shape[1], 
-                         hidden_layer1=layers[0], hidden_layer2=layers[1], 
-                         output_size= NET_CONFIGS['output_size'],
-                         dropout_coeff= 0.0)
-        mic_net.to(device)
-        
-        mic_net.load_state_dict(torch.load(def_net_path, map_location=device))
-        mic_net.eval()
-
-        #set_all_seeds(42)
-
-        mic_inst= MiC(mic_model=mic_net, mic_model_name= def_net_name, 
-                            dataset_name = ds_name , 
-                            batch1= batch1,
-                            batch1_test=batch1_test,
-                            batch3= test_batch, 
-                            training_iter= training_iter,
-                            target=target,
-                            benchmark_performance=benchmark_performance, 
-                            performance_delta=performance_delta, 
-                            warm_up=warm_up,
-                            belief_threshold= belief_threshold,
-                            user_model= user_model,
-                            user_name= user_name,
-                            preprocessor=preprocessor,
-                            cats=cats,
-                            num=num,
-                            log=log,
-                            device= device,
-                            protected=protected,
-                            tau_threshold=tau_threshold,
-                            #anqi_mao_thresh= anqi_mao_thresh,
-                            human_deferral_cost=human_defer_cost)
-        
-    
-        if r_net:
-            mic_df =mic_inst.start_MiC(X_stream, y_stream, df_switch, r_net=r_net, two_step_deferral=True)
-
-        else:   
-            mic_df =mic_inst.start_MiC(X_stream, y_stream, df_switch)
-        
-        return mic_df, mic_inst
 
 
 
-
-
-
-
-"""
-def OLD_ mic_session(df_switch,df_batch_3, label, mic_net, 
-                net_path, device, thresholds, base_config, 
-                user_params, r_net=None, human_deferral_cost= None):
-    
-    X_stream= torch.tensor(data= df_batch_3.drop(columns=[label]).values, dtype=torch.float32).to(device)
-    y_stream= torch.tensor(data=df_batch_3[label].values, dtype= torch.long).to(device)
-    
-    mic_net.load_state_dict(torch.load(net_path, map_location=device))
-    mic_net.eval()
-
-    set_all_seeds(42)
-
-    mic_inst= MiC(mic_net, 'Def_Net', 
-                        human_deferral_cost=human_deferral_cost,
-                        **thresholds, 
-                        **base_config,
-                        **user_params)
-
-    if r_net:
-        mic_df =mic_inst.start_MiC(X_stream, y_stream, df_switch, r_net=r_net, two_step_deferral=True)
-
-    else:   
-        mic_df =mic_inst.start_MiC(X_stream, y_stream, df_switch)
-    
-    return mic_df, mic_inst
-
-"""
-
-"""
-def old_hic_session(warm_up_set, path, attributes, rules, user_params, config, thresholds):
-
-    set_all_seeds(42)
-
-    hic_inst= HiC(**rules, **attributes, **user_params, **config, **thresholds)
-    
-    hic_df, train_acc, train_f1 = hic_inst.start_HiC(warm_up_set)
-
-    os.makedirs(path, exist_ok=True)
-    file_path = os.path.join(path, f"iter_{hic_iter}\hic_{hic_inst.name}.csv")
-
-    hic_df.to_csv(file_path, index=False)
-
-    evaluation_results = hic_inst.get_eval_report()
-    eval_path = os.path.join(path, f"iter_{hic_iter}\hic_{hic_inst.name}_evaluation.csv")
-    evaluation_results.to_csv(eval_path, index=False)
-    
-    return hic_df, evaluation_results, train_acc, train_f1
-"""

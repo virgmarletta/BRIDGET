@@ -17,10 +17,11 @@ DATASETS = {
                 "incremental_learner": r"./HIC_res/dutch", #INCREMENTAL LEARNER TRAINED BY THE HIC PHASE 
 
                 "hic_df_save_path": r"./processed_data/dutch/hic_switch_ds", #DF SWITCH (PRODUCED BY HIC PHASE)
-                "hic_previous_performance": r"./HIC_res/dutch", # PREVIOUS FEA(HIC)
+                "hic_previous_performance": r"./HIC_res/dutch", # PREVIOUS PERFORMANCE (HIC)
                 "def_net_save_path": r"./nets/dutch",   #SAVE DIR FOR TRAINED NETS + TAU THRESHOLDS
-                "mic_previous_performance": r"./MIC_res/dutch", # PREVIOUS FEA(MIC)
+                "mic_previous_performance": r"./MIC_res/dutch", # PREVIOUS PERFORMANCE(MIC)
                 "mic_df_save_path": r"./processed_data/dutch/mic_result_ds", # DF PRODUCED BY MIC PHASE
+                
                 "r_net_path": r"./r_nets/dutch", #R-NETS FOR ANQI MAO DEFERRAL 
                 "anqi_mao_thresholds": r"./r_nets_results/dutch",
                 "validation_data_save_path": r"./processed_data/dutch/validation_data",
@@ -73,7 +74,7 @@ DATASETS = {
         },
         
         # MACHINE IN COMMAND PARAMS
-        "benchmark_performance": 65,
+        "benchmark_performance": 63,
         'performance_delta': 0.05,
         'stricter_delta': 0.03,
         'warm_up': 738, #20% of 3688

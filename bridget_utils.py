@@ -5,7 +5,7 @@ import dice_ml
 from xailib.models.sklearn_classifier_wrapper import sklearn_classifier_wrapper
 import time
 import pandas as pd
-#from xailib.explainers.lore_explainer import LoreTabularExplainer
+from xailib.explainers.lore_explainer import LoreTabularExplainer
 from sklearn.metrics import accuracy_score,f1_score, classification_report, confusion_matrix
 import fatf.fairness.data.measures as fatf_dfm
 from sklearn.metrics import confusion_matrix
@@ -19,10 +19,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
 from torch.utils.data import TensorDataset, DataLoader
-from torch.optim.lr_scheduler import StepLR
+
 
 from ignite.metrics import Accuracy, Loss
-from ignite.engine import Engine, Events, create_supervised_trainer, create_supervised_evaluator
+from ignite.engine import Events, create_supervised_trainer, create_supervised_evaluator
 from ignite.handlers import EarlyStopping, ModelCheckpoint
 from ignite.contrib.handlers import global_step_from_engine
 from collections import Counter
@@ -30,6 +30,12 @@ from master_config import DATASETS
 import joblib
 import logging
 import sys
+
+
+
+
+
+
 ###########
 # -- FUNZIONI NECESSARIE PER LA PREDIZIONE DEGLI ESPERTI (prese da Open L2D)
 def sig(x):
@@ -39,6 +45,18 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-np.clip(x, -15, 15)))
 
 def invert_labels_with_probabilities(labels_arr, p_arr, seed):
+    """
+    Main decisional engine of OpenL2D's expert prediction strategy
+
+    Params: 
+        labels_arr, p_arr, seed
+    
+    
+    Returns: 
+        new_labels (array): array of labels where each has been flipped with its corresponding probability in p_arr
+    
+    """
+    
     rng = np.random.default_rng(seed=seed)
     
     mask = rng.binomial(n=1, p=p_arr, size=np.atleast_1d(labels_arr).shape[0]).astype(bool)
@@ -255,9 +273,24 @@ def convert_dict_list_to_float32(dict_list):
     ]
 
 
-def get_percentage_and_df(df_train, processed, target, feature_names= None): # modificata leggermente aggiungendo le colonne di provider, model conf ecc
+def get_percentage_and_df(df_train, processed, target, feature_names= None): 
 
-    #  issue: è necessario aggiungere il caso in cui il log sia vuoto (cioè la primissima riga del ciclo start HiC)
+    """
+    
+    Params:
+        df_train (pd.DataFrame or dict), 
+        processed (dict), 
+        target (str)
+        feature_names (list of str)
+
+
+    Returns:
+    percentage_dict, 
+    df_log[order]
+    """
+
+    # modificata leggermente aggiungendo le colonne di provider, model conf ecc
+
     user_truth= 'expert prediction'
     machine_prediction= 'machine prediction'
     g_truths= 'ground truth'
@@ -266,7 +299,6 @@ def get_percentage_and_df(df_train, processed, target, feature_names= None): # m
     processed_c = processed.copy()
     rows = []
 
-    #query_instance = pd.DataFrame([x])
     df_log  = pd.DataFrame()
     #print('Processed_C',processed_c)
 
@@ -309,7 +341,7 @@ def get_percentage_and_df(df_train, processed, target, feature_names= None): # m
     if not df_log.empty and target in df_log.columns:
         percentage_dict = (df_log[target].value_counts(normalize=True) * 100).round(2).to_dict()
 
-    return  percentage_dict, df_log[order]
+    return percentage_dict, df_log[order]
 
 
 
@@ -331,14 +363,31 @@ def convert_numpy(obj):
 
 
 ###########
-# -- DRIFT CHECK and FEA
+# -- DRIFT CHECK FUNCTIONS: BRIDGET'S EXIT CONDITIONS
 
-def exit_HiC(available_budget, current_budget, fea_vals, desired_performance):
 
-    if not fea_vals:
+# The idea is very simple. Whereas the foundational paper focused on the FEA formulation, once it was invalidated
+# it was necessary to shift towards canonical accuracy as a benchmark to assess concept drift
+
+# additionally, to induce realism, the conditions take into account the desired performance of the iteration (based on the results obtained in the previous)
+
+def exit_HiC(available_budget, current_budget, current_performance, desired_performance):
+    """
+    Drift check function for the Human in Command phase.
+    It compares the current performance of the machine with the desired benchmark, by taking into account:
+        - the available budget for the current iteration allocated by the human (which is a proxy of the human's fatigue)
+        - the current budget already spent
+
+    Parameters:
+        available_budget (int): initial amount of budget allocated by the human for the current iteration
+        current_budget (int): rolling amount of budget spent by the human during the HIC phase
+        current_performance (list): list of accuracy values of the incremental learner at each row during HIC
+        desired_performance (float): performance benchmark to compare with in Human in Command
+    """
+    if not current_performance:
         return False
     
-    avg_fea= np.mean(fea_vals)
+    avg_fea= np.mean(current_performance)
 
     if current_budget < available_budget and avg_fea < desired_performance:
         return False
@@ -346,42 +395,30 @@ def exit_HiC(available_budget, current_budget, fea_vals, desired_performance):
         return True
 
 
-"""
-def exit_MiC(fea_vals, user_patience, low_belief_count, desired_performance):
-    # same in form, different concept, this time the user patience is an input param given deliberately by the user
 
-    # if we wanted to replicate the effect of the budget in the MiC phase, we could theorize that after a certain no. of low belief instances
-    # produced by the machine, the user gets dissatisfied and looks into it every single time there is a new low belief count, to assess whether to switch phase or not
-    # the effect on the exit condition is basically like p_max of the first formulation, with a new name this time
-
-    if not fea_vals:
-        return False
+def exit_MiC(current_performance, desired_performance, undeferred_decisions, warm_up):
     
-    avg_fea= np.mean(fea_vals)
-    
-    if low_belief_count > user_patience and avg_fea < desired_performance:
-        return True
+    """
+    Drift check function for the Machine in Command phase.
+    It compares the current performance of the machine with the desired benchmark, by taking into account:
+        - the rolling amount of undeferred decisions taken by the machine
+        - a warm up period for undeferred decisions to let the machine stabilize its performance
 
-    return False
-"""
-
-def exit_MiC(fea_vals, desired_performance, undeferred_decisions, warm_up):
-
-
-    # EDIT: WARM UP AS OF NOW is a threshold of 20% of the original test set size, to be compared w the number of undeferred decisions
-    # TLDR find stability in the empirical acc wrt undeferred decisions 
-    
-    # new variant of exit_MiC disregarding any user patience budget as a exit condition, 
-    # thus also invalidating the low belief count condition
+    Parameters:
+        current_performance (list): list of accuracy values of the machine at each row
+        desired_performance (float): performance benchmark to compare with
+        undeferred_decisions (int): amount of rows labeled independently by the machine 
+        warm_up (int): 
+    """
    
 
-    if not fea_vals:
+    if not current_performance:
         return False
     
     if undeferred_decisions < warm_up:
         return False
     
-    avg_fea= np.mean(fea_vals)
+    avg_fea= np.mean(current_performance)
 
     if avg_fea < desired_performance:
         return True
@@ -392,7 +429,7 @@ def exit_MiC(fea_vals, desired_performance, undeferred_decisions, warm_up):
 
 
 ###########
-# -- UTILITIES / PREPROCESSING FUNCTIONS
+# -- UTILITIES / PREPROCESSING FUNCTIONS USED FOR THE EXPERIMENTAL VALIDATION
 
 def clean_compas(data, col_to_delete=None, col_to_strip= None, drop_duplicates=True):
 
@@ -593,15 +630,25 @@ def scale_data(ds_name, iteration, params):
 # 8. add the event handler and checkpoint
 # 9. call trainer run with train loader and max epochs as params
 
-def net_trainer(net, optimizer, criterion, device, train_loader, val_loader, scheduler, iter, model_prefix, directory_name,
-                log_interval=100, patience=5, max_epochs=20):
+def net_trainer(net, 
+                optimizer, 
+                criterion, 
+                device, 
+                train_loader, 
+                val_loader, 
+                scheduler, 
+                model_prefix, 
+                directory_name,
+                log_interval=100, 
+                patience=5, 
+                max_epochs=20):
 
     set_all_seeds(42)
+    
     # first set the structures
     training_history = {'accuracy':[],'loss':[]}
     validation_history = {'accuracy':[],'loss':[]}
     val_metrics = {"accuracy": Accuracy(), "loss": Loss(criterion)}
-
 
     # set trainer and evaluators
     trainer = create_supervised_trainer(net, optimizer, criterion, device)
@@ -637,7 +684,6 @@ def net_trainer(net, optimizer, criterion, device, train_loader, val_loader, sch
 
 
     # get score function
-
     def score_function(engine):
         return engine.state.metrics["accuracy"]
     
@@ -991,9 +1037,6 @@ def generate_thresh_report(X_cal,
     file_path = os.path.join(save_dir, f"report_{user_name}.parquet")
 
     report.to_parquet(file_path, index=False)
- 
-
-
 
 def deferral_loss(r, pred_correct, C):
     """
@@ -1827,11 +1870,25 @@ def get_mic_data(ds_name, iteration, user_name, strategy, beta, metrics):
     for metric in metrics:
         # careful here because there might be some other DefNet/ARF shenanigans
         
-        matches = list(base_path.glob(f"*{metric}.txt"))
+        parquet_matches = list(base_path.glob(f"*{metric}.parquet"))
+        
+        txt_matches = list(base_path.glob(f"*{metric}.txt"))
 
-        if matches:
-            target_path = matches[0] 
+        if parquet_matches:
+            target_path = parquet_matches[0]
+            df = pd.read_parquet(target_path)
+            if 'idx' not in df.columns and df.index.name != 'idx':
+                df.index.name = 'idx'
+            elif 'idx' in df.columns:
+                df.set_index('idx', inplace=True)
 
+            if main_df is None:
+                    main_df = df
+            else:
+                main_df = pd.concat([main_df, df], axis=1)        
+
+        elif txt_matches:
+            target_path = txt_matches[0] 
             df = pd.read_csv(target_path, header=None, sep='\s+', names=['idx', metric])
             df.set_index('idx', inplace=True)
             
@@ -1839,34 +1896,11 @@ def get_mic_data(ds_name, iteration, user_name, strategy, beta, metrics):
                 main_df = df
             else:
                 main_df = main_df.join(df, how='inner')
-        
+
         else:
-            print(f"file not found in {base_path}")
-        
-        """
-        path = base_path / f"{metric}.txt"
-
-        if not path.exists():
-            if strategy== 'Confidence':
-                path = base_path / f"MIC_DRIFT_Def_Net_{metric}.txt"
-            else:
-                path = base_path / f"MIC_DRIFT_Def_Net_beta{beta}{metric}.txt"
-        
-        if path.exists():
-            
-            df = pd.read_csv(path, header=None, sep='\s+', names=['idx', metric])
-            df.set_index('idx', inplace=True)
-            
-            if main_df is None:
-                main_df = df
-            else:
-                main_df = main_df.join(df, how='inner')
-        else:
-            print(f"file not found in {path}")
-        """
-
-
-
+            print(f"File for {metric} not found in {base_path}")
+            continue
+                
     return main_df
 
 def retrieve_metric(path, col_names):

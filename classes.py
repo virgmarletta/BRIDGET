@@ -1,4 +1,11 @@
 ### --- This is the first test. Objective: create classes for the Users to be employed in both HiC and MiC
+
+
+
+
+
+
+
 from bridget_utils import *
 import random
 import numpy as np
@@ -6,23 +13,11 @@ import pandas as pd
 import torch
 import torch.nn as nn
 from sklearn.base import BaseEstimator
-import copy
-import math
-from pyexpat import model
 import torch
 import numpy as np
 import torch.nn as nn
-import torch.nn.functional as F
-import argparse
-import os
 import random
-import shutil
-import time
-import torch.utils.data as data
-import sys
-import pickle
-import logging
-from tqdm import tqdm
+
 
 
 # -- Di seguito manteniamo la classe principale User di FRANK, che rappresenta le caratteristiche (in senso di attributi) dell'User
@@ -34,30 +29,44 @@ def sigmoid(x):
 
 
 class User:
-        def __init__(self, belief_level, rethink_level, fairness):
 
-            self.belief_level= belief_level  # belief level si intende quello della f sotto o quello fisso che definisce l'archetipo?
-            self.rethink_level= rethink_level
-            self.fairness= fairness
+    """
+    Params:
+    belief_level (float)
+    rethink_level (float)
+    fairness (float)
 
+
+    Methods:
+    __init__
+    believe:
+    rethink:
+    farirness_percentage
+    """
+    def __init__(self, belief_level, rethink_level, fairness):
+
+        self.belief_level= belief_level  # belief level si intende quello della f sotto o quello fisso che definisce l'archetipo?
+        self.rethink_level= rethink_level
+        self.fairness= fairness
+
+    
+    def believe(self, seed=None):
+        rng= random.Random(seed) if seed is not None else random
         
-        def believe(self, seed=None):
-            rng= random.Random(seed) if seed is not None else random
-            
-            if self.belief_level > 1:
-                return None
+        if self.belief_level > 1:
+            return None
 
-            else:
-                return rng.choices(population=[True, False], 
-                              weights=[self.belief_level, 1-self.belief_level], k=1)[0]
-        
+        else:
+            return rng.choices(population=[True, False], 
+                            weights=[self.belief_level, 1-self.belief_level], k=1)[0]
+    
 
-        def rethink(self):
-            return random.choices(population=[True, False], 
-                              weights=[self.rethink_level, 1-self.rethink_level], k=1)[0]
-        
-        def fairness_percentage(self):
-            return self.fairness
+    def rethink(self):
+        return random.choices(population=[True, False], 
+                            weights=[self.rethink_level, 1-self.rethink_level], k=1)[0]
+    
+    def fairness_percentage(self):
+        return self.fairness
         
 # -- Sottoclasse BetaUser (in Open L2A calcoliamo i betas)
 # -- In sostanza dobbiamo dare la predizione dell'user usando la logica di IDN di Open L2A
@@ -69,6 +78,19 @@ class User:
 
 class BetaUser(User):
     
+    """
+    
+    Methods:
+    __init__
+    sample_weights
+    search_bounds
+    fit
+    calc_probs_fp
+    calc_probs_fn
+    predict
+    """
+
+
     def __init__(self, 
                  belief_level, rethink_level, fairness, 
                  fpr, fnr,
@@ -237,14 +259,6 @@ class BetaUser(User):
     
         self.error_prob.loc[mask, 'p_of_fp'] = probability_of_fp[mask]
 
-        """
-        probability_of_fp = (y == 0) * (
-            self.fpr_beta + (self.alpha*(X * weights/(np.linalg.norm(weights))).sum(axis=1)
-            )).apply(sigmoid)
-        self.error_prob.loc[X.index,'p_of_fp'] = probability_of_fp
-        """
-
-
     def calc_probs_fn(self, X, y, **kwargs):  # kwargs not used (compatibility purposes)
         if self.w is None:
             raise ValueError('Synthetic expert must be .fit() to the data.')
@@ -262,20 +276,6 @@ class BetaUser(User):
         mask = (y==1)
 
         self.error_prob.loc[mask, 'p_of_fn'] = probability_of_fn[mask]
-
-
-
-        """
-        probability_of_fn = (y == 1) * (
-            self.fnr_beta - (self.alpha*(X * weights/(np.linalg.norm(weights))).sum(axis=1)
-            )).apply(sigmoid)
-    
-        self.error_prob.loc[X.index,'p_of_fn'] = probability_of_fn
-        """
-
-
-
-
 
 
     def predict(self, record, ground, iter, **kwargs):  # kwargs not used (compatibility purposes)
@@ -335,15 +335,29 @@ class BetaUser(User):
 
 
 
-
-
 class DeferralNet(nn.Module):
 
+    """
+
+    Params:
+    input_size (int):
+    hidden_layer1, 
+    hidden_layer2,
+    output_size, 
+    dropout_coeff=None)
+
+
+    Methods:
+    __init__
+    forward
+    predict_proba_nn
+    predict
+
+    """
     def __init__(self, input_size, hidden_layer1, hidden_layer2, output_size, dropout_coeff=None):
         super(DeferralNet, self).__init__()
 
         self.softmax = nn.Softmax(dim=1)
-
 
         #self.flatten =nn.Flatten()
         self.linear_relu_stack = nn.Sequential(
@@ -365,6 +379,7 @@ class DeferralNet(nn.Module):
 
     def predict_proba_nn(self, x, device= None):
         self.eval()
+
         with torch.no_grad():
             if not torch.is_tensor(x): # non si sa mai
                 x = torch.tensor(x, dtype=torch.float32).to(device)
@@ -378,111 +393,6 @@ class DeferralNet(nn.Module):
     def predict(self, x, device=None):
         probas= self.predict_proba_nn(x, device)
         return np.argmax(probas, axis=1)
-
-
-
-
-class RiverModelWrapper(BaseEstimator):
-    def __init__(self, river_model, target_column, feature_names=None):
-        self.river_model = river_model
-        self.target_column = target_column
-        self.feature_names = feature_names
-
-    def predict_one(self, x):
-        return self.river_model.predict_one(x)
-    
-    def predict_proba_one(self, x):
-        return self.river_model.predict_proba_one(x)
-    
-    def learn_one(self, x, y):
-        self.river_model.learn_one(x, y)
-
-    def fit(self, X, Y):
-        if isinstance(X, np.ndarray):
-            for x, y in zip(X, Y):
-                x = {name: value for name, value in zip(self.feature_names, x)}
-                self.river_model.learn_one(x, y)
-                
-        elif isinstance(X, pd.DataFrame):
-            X = X.to_dict(orient='records')
-            for x, y in zip(X, Y):
-                self.river_model.learn_one(x, y)
-        else:
-            self.river_model.learn_one(X, Y)
-        
-        return self
-   
-    def predict(self, X):
-       
-        if isinstance(X, pd.DataFrame):
-            X = X.to_dict(orient='records')
-            preds = [self.river_model.predict_one(x) for x in X]
-            return np.array(preds).astype(int)
-        
-        elif isinstance(X, np.ndarray):
-            X = X.squeeze()
-           
-            
-            if X.ndim == 1:
-                x_d = [{name: value for name, value in zip(self.feature_names, X)}]
-                
-                x_dict = {name: value for name, value in zip(self.feature_names, X)}
-                pred = self.river_model.predict_one(x_dict)
-                # Fondamentale: restituiamo un array di un solo elemento intero
-
-                return np.array([int(pred)])
-            else:
-                preds = []
-                for row in X:
-                    x_dict = {name: value for name, value in zip(self.feature_names, row)}
-                    preds.append(self.river_model.predict_one(x_dict))
-        
-                return np.array(preds).astype(int)
-        else:
-            # Caso singolo dizionario o altro
-            pred = self.river_model.predict_one(X)
-            return np.array([int(pred)])
-    
-    def predict_proba(self, X):
-      
-        probas = []
-        
-        if isinstance(X, pd.DataFrame): 
-            X = X.to_dict(orient='records')
-            for x in X:
-                
-                try:
-                   
-                    prediction_proba = self.river_model.predict_proba_one(x)
-                    probas.append([prediction_proba.get(False, 0), prediction_proba.get(True, 0)])
-                except:
-                    probas.append([0, 0])
-                #print(probas)
-                
-        elif isinstance(X, np.ndarray):
-            
-            
-            if X.ndim == 1:
-                x_d = [{name: value for name, value in zip(self.feature_names, X)}]
-                
-            else:
-                x_d = []
-                for row in X:
-                    x_d.append({name: value for name, value in zip(self.feature_names, row)})
-            
-            for x in x_d:
-                prediction_proba = self.river_model.predict_proba_one(x)
-                try:
-                    probas.append([prediction_proba.get(False, 0), prediction_proba.get(True, 0)])
-                except:
-                    probas.append([0, 0])
-        else:
-            raise TypeError("Formato di input non supportato: utilizzare DataFrame o array NumPy.")
-       
-        return np.array(probas)
-
-
-
 
 class PyTorchWrapper(BaseEstimator):  # esclusivamente per la XAI in MiC
     def __init__(self, model, target, features_names):
@@ -513,6 +423,7 @@ class PyTorchWrapper(BaseEstimator):  # esclusivamente per la XAI in MiC
 
     def predict_proba(self, X):
         self.model.eval() 
+        
         if isinstance(X, dict):
             
             X = np.array([[X[f] for f in self.features_names]])
@@ -550,104 +461,5 @@ class PyTorchWrapper(BaseEstimator):  # esclusivamente per la XAI in MiC
         return int(torch.argmax(res, dim=1).item())
 
 
-
-
-
-class Baseline:
-
-    def __init__(self, 
-                 user, #user is already calibrated
-                 label,
-                 train_set,
-                 test_set,
-                 val_set,
-                 x_train,
-                 y_train,
-                 x_test,
-                 y_test,
-                 x_val,
-                 y_val,
-                 model= None,
-                 strat= None):
-        
-        ## note, remember that train set and test set must be transformed to tensors anyways
-
-        self.model= model
-        self.user= user
-        self.label= label
-        self.strat= strat
-
-        self.train_set= train_set
-        self.test_set= test_set
-        self.val_set= val_set
-        self.features_names= [c for c in self.train_set if c != self.label]
-
-        self.x_train= x_train
-        self.y_train= y_train
-
-        self.x_test= x_test
-        self.y_test= y_test
-
-        self.x_val= x_val
-        self.y_val= y_val
-
-    
-
-    def fit_expert(self, scaler):
-    
-        train_scaled= scaler.fit_transform(self.x_train)
-        test_scaled= scaler.transform(self.x_test)
-        val_scaled= scaler.transform(self.x_val)
-
-        train= pd.DataFrame(train_scaled, columns= self.features_names)
-        test= pd.DataFrame(test_scaled, columns= self.features_names)
-        val= pd.DataFrame(val_scaled, columns= self.features_names)
-
-        train_user_preds= []
-        test_user_preds= []
-        val_user_preds= []
-
-
-        for i in tqdm(range(len(train))):
-            x= train.iloc[i]
-            y_gt= self.y_train.iloc[i]
-            
-            user_pred= self.user.predict(x, y_gt, i)
-            train_user_preds.append(user_pred)
-        
-
-        for i in tqdm(range(len(test))):
-            x= test.iloc[i]
-            y_gt= self.y_test.iloc[i]
-            
-            user_pred = self.user.predict(x, y_gt, i)
-           
-            test_user_preds.append(user_pred)
-        
-        for i in tqdm(range(len(val))):
-            x= val.iloc[i]
-            y_gt= self.y_val.iloc[i]
-            
-            user_pred = self.user.predict(x, y_gt, i)
-           
-            val_user_preds.append(user_pred)
-        
-        train_df = self.train_set.copy()
-        test_df = self.test_set.copy()
-        val_df = self.val_set.copy()
-
-        train_df[self.features_names] = train
-        test_df[self.features_names] = test
-        val_df[self.features_names] = val
-
-        train_df['expert prediction'] = train_user_preds
-        test_df['expert prediction'] = test_user_preds
-        val_df['expert prediction'] = val_user_preds
-
-        return train_df, test_df, val_df
-    
-    
-    def fit_model(self, train_loader):
-        pass
 
 
