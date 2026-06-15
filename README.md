@@ -23,22 +23,34 @@ By training the deferral system on co-labeled data emerging from the interaction
 While this process effectively enhances the baseline predictor's performance, the overall systemic results are extremely dependent on the skepticism thresholds put in place during the co-evolutionary labeling process and the specific archetype of the human interacting within the system.
 
 ### Pipeline Breakdown
+
 1. **Data Partition**: The data is split into a warm up set to pre-train the Incremental Learner, a portion allocated to the streaming learning during Human in Command, the validation set used to assess the batch learners performances and the Machine in Command testing data.
+
 2. **Human-in-Command (HIC) Phase**: The user assumes the primary decision provider role during the streaming phase. The Incremental Learner can challenge the authority following a Skeptical Learning interactive rule.
+
 3. **Calibration & Deferral Policy Training**: Co-labeled data resulting from the HIC phase is used to train the predictor and rejector. Contextually a validation set is used to calibrate the thresholds necessary for the deferral policies featured in MIC.
+
 4. **Machine-in-Command (MIC) Phase** The machine is the primary decision provider, it has the choice to defer difficult cases to the user according to the **deferral** policies. BRIDGET natively supports Selective Prediction and Two-Stage Learning to Defer.
 
 ### Repository Structure
+
 * **`bridget_main.py`**: handles the core decision making pipeline of the framework with the BRIDGET, HIC and MIC classes
+
 * **`orchestrator.py`**: manages the deployment phase by automizing the process using 3 pipeline functions
+
 * **`classes.py`**: contains the PyTorch model wrapper and the `BetaUser` synthetic expert simulation
+
 * **`master_config.py`**: establishes the configurations used in the experimental validation
+
 * **`bridget_utils.py`**: contains all support functions necessary during the execution
+
 * **`datasets/`**: provides the data used for the full experimental validation
-* **`growingspheres/`**: stores the necessary assets to generate counterfactuals using the homonymn algorithm **GrowingSpheres**
+
+* **`growingspheres/`**: stores the necessary assets to generate counterfactuals using the homonymn algorithm **GrowingSpheres** (original source code available at [(https://github.com/thibaultlaugel/growingspheres)]
+
 * **`demo_dutch.py`**: provides an example of BRIDGET's deployment on the `Dutch Census` dataset with a single user archetypes, whose specifications are provided in `experts_dutch.yaml`
 
 
 ### Requirements
 The runtime environment was validated on **Python 3.13.9**. 
-The stack includes `river`, `torch`, `pytorch-ignite`, `FAT-Forensics`,full requirements are listed in the requirements.txt file.
+The stack includes `river`, `torch`, `pytorch-ignite`, `FAT-Forensics`, full requirements are listed in the **`requirements.txt`** file.
