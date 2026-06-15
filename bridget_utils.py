@@ -1,3 +1,22 @@
+"""
+========================================
+BRIDGET UTILITIES MODULE 
+========================================
+
+This module contains all mathematical definitions, visualization tools, transformations and processing for the BRIDGET 
+framework and its experimental validation.
+
+Subsections:
+    * Simulated experts helper functions
+    * Fairness metrics for the Human in Command phase
+    * Exit Conditions
+    * Neural Network Training
+    * Deferral Policies logic
+    * Counterfactual and K-NN Generators
+    * Logging, Visualization 
+
+"""
+
 import numpy as np
 import torch
 from scipy.spatial.distance import cdist
@@ -29,13 +48,10 @@ import joblib
 import logging
 import sys
 
+#========================================
+# SYNTHETIC USER SIMULATION HELPERS 
+#========================================
 
-
-
-
-
-###########
-# -- FUNZIONI NECESSARIE PER LA PREDIZIONE DEGLI ESPERTI (prese da Open L2D)
 def sig(x):
     return 1/(1+np.exp(-x))
 
@@ -47,11 +63,12 @@ def invert_labels_with_probabilities(labels_arr, p_arr, seed):
     Main decisional engine of OpenL2D's expert prediction strategy
 
     Params: 
-        labels_arr, p_arr, seed
-    
-    
+        labels_arr (array-like):
+        p_arr (array-like):
+        seed (int):
+   
     Returns: 
-        new_labels (array): array of labels where each has been flipped with its corresponding probability in p_arr
+        new_labels (nparray): array of labels where each has been flipped with its corresponding probability in p_arr
     
     """
     
@@ -62,14 +79,14 @@ def invert_labels_with_probabilities(labels_arr, p_arr, seed):
     new_labels = np.atleast_1d(labels_arr).copy()
     
     new_labels[mask] = np.abs(new_labels[mask] - 1)
-    
 
     return new_labels.astype(int)
 
 
 
-###########
-# -- FUNZIONI DI SUPPORTO HIC PHASE 
+#========================================
+# FAIRNESS METRICS HELPERS 
+#========================================
 
 def get_index (attribute, attr_list):
     for j in range(len(attr_list)):
@@ -286,9 +303,6 @@ def get_percentage_and_df(df_train, processed, target, feature_names= None):
     percentage_dict, 
     df_log[order]
     """
-
-    # modificata leggermente aggiungendo le colonne di provider, model conf ecc
-
     user_truth= 'expert prediction'
     machine_prediction= 'machine prediction'
     g_truths= 'ground truth'
@@ -304,9 +318,9 @@ def get_percentage_and_df(df_train, processed, target, feature_names= None):
 
         for entry in processed_c.values():
                 
-                row = entry['dict_form'].copy() # features originali 
+                row = entry['dict_form'].copy()  
 
-                # colonne aggiuntive necessarie per HiC e MiC
+                # adding necessary columns for HIC and MIC phase
                 row[user_truth]= entry['user']
                 row[machine_prediction]= entry['machine']
                 row[g_truths]= entry['ground_truth']
@@ -324,7 +338,7 @@ def get_percentage_and_df(df_train, processed, target, feature_names= None):
 
             df_proc = df_proc[order]
 
-        if df_train is None or df_train.empty: # se il log è vuoto
+        if df_train is None or df_train.empty: 
             df_log= df_proc
         
         else:
@@ -342,7 +356,6 @@ def get_percentage_and_df(df_train, processed, target, feature_names= None):
     return percentage_dict, df_log[order]
 
 
-
 def convert_numpy(obj):
     if isinstance(obj, np.integer):
         return int(obj)
@@ -356,18 +369,9 @@ def convert_numpy(obj):
         return [convert_numpy(item) for item in obj]
     return obj
 
-
-
-
-
-###########
-# -- DRIFT CHECK FUNCTIONS: BRIDGET'S EXIT CONDITIONS
-
-
-# The idea is very simple. Whereas the foundational paper focused on the FEA formulation, once it was invalidated
-# it was necessary to shift towards canonical accuracy as a benchmark to assess concept drift
-
-# additionally, to induce realism, the conditions take into account the desired performance of the iteration (based on the results obtained in the previous)
+#========================================
+# EXIT CONDITIONSS 
+#========================================
 
 def exit_HiC(available_budget, current_budget, current_performance, desired_performance):
     """
@@ -391,8 +395,6 @@ def exit_HiC(available_budget, current_budget, current_performance, desired_perf
         return False
     else: 
         return True
-
-
 
 def exit_MiC(current_performance, desired_performance, undeferred_decisions, warm_up):
     
@@ -424,13 +426,23 @@ def exit_MiC(current_performance, desired_performance, undeferred_decisions, war
     return False
 
 
-
-
-###########
-# -- UTILITIES / PREPROCESSING FUNCTIONS USED FOR THE EXPERIMENTAL VALIDATION
+#========================================
+# PREPROCESSING FOR EXPERIMENTAL VALIDATION
+#========================================
 
 def preprocess(data, col_to_delete=None, col_to_strip= None, drop_duplicates=True):
+    """
+    Grouping preprocessing operations
 
+    Args:
+        data (DataFrame): input structure
+        col_to_delete (list of str, optional): List of columns to drop
+        col_to_strip (list of str, optional): List of columns where () must be stripped
+        drop_duplicates (bool): If False does not drop duplicates
+    Returns:
+        data (DataFrame): processed structure 
+    
+    """
     if col_to_strip is not None:
         data[col_to_strip] = data[col_to_strip].str.strip("()")
     
@@ -444,6 +456,16 @@ def preprocess(data, col_to_delete=None, col_to_strip= None, drop_duplicates=Tru
 
 
 def stratif(start_point, end_point, class_0, class_1):
+    """
+    Custom stratification sampling, since River does not provide it
+
+    Args:
+        start_point
+        end_point, 
+        class_0, 
+        class_1
+
+    """
     start_idx_0 = int(len(class_0) * start_point)
     end_idx_0 = int(len(class_0) * end_point)
     
@@ -454,7 +476,6 @@ def stratif(start_point, end_point, class_0, class_1):
     class_1_perc = class_1.iloc[start_idx_1 : end_idx_1]
 
     total= pd.concat([class_0_perc, class_1_perc]).reset_index(drop=True)
-    #chiaramente se c'è il concat bisogna rifare lo shuffle
 
     return total.sample(frac=1, random_state= 42).reset_index(drop=True)
 
@@ -480,7 +501,13 @@ def scale_df(data, pipe, target_col, feat_order, save_path, filename):  # a quan
     return df_result
 
 def apply_map(data, col_mapping):
+    """
+    Apply column mapping provided
 
+    Args:
+        data (DataFrame)
+        col_mapping(dict): e.g., {"sex": {"Male":0, "Female":1}
+    """
     for col, mapping in col_mapping.items():
         if col in data.columns:
             data[col] = data[col].map(mapping)
@@ -504,7 +531,6 @@ def set_all_seeds(seed=42):
     np.random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
     
-   
     try:
         import torch
         torch.manual_seed(seed)
@@ -516,6 +542,7 @@ def set_all_seeds(seed=42):
 
 
 def save_data(directory, prefix, data_dict):
+    
     os.makedirs(directory, exist_ok=True)
 
     for suffix, data in data_dict.items():
@@ -560,54 +587,54 @@ def create_loader(df, features, target, human_preds= None, batch_size=128, shuff
 
 def scale_data(ds_name, iteration, params):
 
-        user_name= params['user_name']
-        user_suffix= params['user_suffix']
-        incr_learner_name= params['incremental_learner_name']
-        target= DATASETS[ds_name]['target']
+    user_name= params['user_name']
+    user_suffix= params['user_suffix']
+    incr_learner_name= params['incremental_learner_name']
+    target= DATASETS[ds_name]['target']
 
-        prepr_dir= DATASETS[ds_name]['paths']['trained_preprocessor'] # prepr_dir
-        prepr_path= os.path.join(
-                prepr_dir, 
-                f"iter_{iteration}", 
-                f"results_{user_name}",
-                f"User_{user_name}_{incr_learner_name}_preprocessor.pkl"
-                )
-        trained_preprocessor = joblib.load(prepr_path)
-
-
-        hic_save_dir= DATASETS[ds_name]['paths']['hic_df_save_path'] # r".\processed_data\dutch\hic_switch_ds"
-        hic_path=  os.path.join(
-                        hic_save_dir, 
-                        f"iter_{iteration}", 
-                        f"results_{user_name}",
-                        f"hic_{user_name}.parquet"
-                )
-        df_hic_final = pd.read_parquet(hic_path)
-
-        ordering = [c for c in df_hic_final.columns if c not in [
-        'ground truth', 
-        'proba_model', 'provider', 'machine prediction', 'expert prediction']]
+    prepr_dir= DATASETS[ds_name]['paths']['trained_preprocessor'] # prepr_dir
+    prepr_path= os.path.join(
+            prepr_dir, 
+            f"iter_{iteration}", 
+            f"results_{user_name}",
+            f"User_{user_name}_{incr_learner_name}_preprocessor.pkl"
+            )
+    trained_preprocessor = joblib.load(prepr_path)
 
 
-        val_dir= DATASETS[ds_name]['paths']['validation_data_save_path']
-        val_path=  os.path.join(
-                        val_dir, 
-                        f"iter_{iteration}", 
-                )
-        filename = f"{user_suffix}_validation.parquet"
-        validation_data= scale_df(params['validation_set'], trained_preprocessor,target, ordering, val_path, filename)
-        
+    hic_save_dir= DATASETS[ds_name]['paths']['hic_df_save_path'] # r".\processed_data\dutch\hic_switch_ds"
+    hic_path=  os.path.join(
+                    hic_save_dir, 
+                    f"iter_{iteration}", 
+                    f"results_{user_name}",
+                    f"hic_{user_name}.parquet"
+            )
+    df_hic_final = pd.read_parquet(hic_path)
 
-        scaled_mic_data_dir= DATASETS[ds_name]['paths']['scaled_mic_batch'] # r".\processed_data\dutch\mic_result_ds"
-        mic_path=  os.path.join(
-                        scaled_mic_data_dir, 
-                        f"iter_{iteration}"
-                )
+    ordering = [c for c in df_hic_final.columns if c not in [
+    'ground truth', 
+    'proba_model', 'provider', 'machine prediction', 'expert prediction']]
 
-        filename = fr"{user_suffix}_scaled_batch.parquet"
-        batch_3= scale_df(params['batch3'], trained_preprocessor, target, ordering, mic_path, filename)
 
-        return validation_data, batch_3
+    val_dir= DATASETS[ds_name]['paths']['validation_data_save_path']
+    val_path=  os.path.join(
+                    val_dir, 
+                    f"iter_{iteration}", 
+            )
+    filename = f"{user_suffix}_validation.parquet"
+    validation_data= scale_df(params['validation_set'], trained_preprocessor,target, ordering, val_path, filename)
+    
+
+    scaled_mic_data_dir= DATASETS[ds_name]['paths']['scaled_mic_batch'] # r".\processed_data\dutch\mic_result_ds"
+    mic_path=  os.path.join(
+                    scaled_mic_data_dir, 
+                    f"iter_{iteration}"
+            )
+
+    filename = fr"{user_suffix}_scaled_batch.parquet"
+    batch_3= scale_df(params['batch3'], trained_preprocessor, target, ordering, mic_path, filename)
+
+    return validation_data, batch_3
 
 
 
@@ -627,6 +654,11 @@ def scale_data(ds_name, iteration, params):
 # 7. call early stopping (plug params patience, max epochs)
 # 8. add the event handler and checkpoint
 # 9. call trainer run with train loader and max epochs as params
+
+
+#========================================
+# NEURAL NETWORK TRAINING 
+#========================================
 
 def net_trainer(net, 
                 optimizer, 
@@ -707,8 +739,6 @@ def net_trainer(net,
 
     return training_history, validation_history
 
-
-
 def compute_class_weights(labels):
 
     label_distrib= Counter(labels.numpy())
@@ -724,9 +754,9 @@ def compute_class_weights(labels):
 
 
 
-
-###########
-# -- CALIBRAZIONE THRESHOLD STRAT 1 E 2
+#========================================
+# DEFERRAL STRATEGIES CONFIGURATION
+#========================================
 
 def evaluate_threshold(tau, max_conf, y_gt, y_preds, y_human_preds):
 
@@ -754,13 +784,6 @@ def evaluate_threshold(tau, max_conf, y_gt, y_preds, y_human_preds):
     #so you dont need to apply the mask to gt because it has all rows now
     acc_sel = (sys_acc == y_gt).mean()
     return acc_sel, coverage, defer_rate
-
-
-
-
-
-###########
-# -- FUNZIONI DI SUPPORTO MIC PHASE 
 
 
 def plot_confusion_matrix(model, dataloader, device,save_path):
@@ -1101,9 +1124,9 @@ def p_defer(x_tensor, net):
 
 
 
-###########
-# -- FUNZIONI XAI
-# -- rivisitate per il wrapper della rete torch
+#========================================
+# GROWINGSPHERES AND K-NN DEFINITIONS
+#========================================
     
 def prepr_log_for_xai(memory, log, attr_list, target_name):  
 
@@ -1141,6 +1164,24 @@ def calculate_sparsity(x_dict, cf_x_dict):
 
 def get_neighbors(record, record_g_truth, target, cache, relevance_window= 100, n_neighbors= 1): # la cache senza le colonne provider ecc mi raccomando
     
+    """
+    Args:
+        record (dict):
+        record_g_truth (dict):
+        target (str):
+        cache (DataFrame):
+        relevance_window (int):
+        n_neighbors(int):
+
+    Returns:
+
+        k_neighbors_same (DataFrame): 
+        k_neighbors_opp (DataFrame): 
+        sparsity_same 
+        sparsity_opp
+
+    """
+
     # !! remember to pass record as a DICT
     
     # record is a dict, called as x= self.X[i]
@@ -1221,8 +1262,7 @@ def get_neighbors(record, record_g_truth, target, cache, relevance_window= 100, 
         nearest_opp= k_neighbors_opp.iloc[0] # first row 
         opp_class_vals= nearest_opp[numeric_features].values # get the vals as array
         sparsity_opp= np.sum(curr_rec_vals != opp_class_vals)
-        
-
+    
 
     return k_neighbors_same, k_neighbors_opp, sparsity_same, sparsity_opp
 
@@ -1250,7 +1290,7 @@ def calculate_distances(x_dict, examples, feature_ranges=None): # originale
         if isinstance(val, (int, float, np.number))
     ]
     if not numeric_features:
-        raise ValueError("Nessuna feature numerica trovata in x_dict.")
+        raise ValueError("No numeric feature found in x_dict.")
 
     # Prepara array di x (solo feature numeriche)
     
@@ -1315,16 +1355,20 @@ def calculate_distances(x_dict, examples, feature_ranges=None): # originale
 
 
 
-# ok allora nel py di growing spheres c'è la classe che richiede questi input:
-# def __init__(self, obs_to_interprete, prediction_fn, method='GS', target_class=None, random_state=None):
-# nell'esempio chiamata così: CF = cf.CounterfactualExplanation(obs, clf.predict, method='GS')
-# quindi passo il wrapper o il modello stesso .predict
-
 
 def get_GS_cfe(log, curr_rec, torch_model, cats, target): 
-    ## prima parte della f rimane praticamente invariata alla sua analoga usata in HiC dalla precedente implementazione
-    
-    # x_rec called like this  x = self.df_batch3[self.feature_names].iloc[record].to_dict() not a tensor
+    """
+
+    Args:
+        log (DataFrame):
+        curr_rec (dict): 
+        torch_model (object, PyTorchWrapper): 
+        cats (list): List of categorical features
+        target (str): Name of label column
+
+    Returns: 
+        cfs or curr_rec
+    """
     query_instance =pd.DataFrame([curr_rec]) 
     start_time= time.time()
     elapsed_time= 0
@@ -1337,40 +1381,20 @@ def get_GS_cfe(log, curr_rec, torch_model, cats, target):
         exp = cf.CounterfactualExplanation(rec, torch_model.predict, method= 'GS')
         exp.fit(n_in_layer=200, first_radius=0.1, sparse=True, verbose=False)
         cf_x = exp.enemy.reshape(-1)
-
-        # NOTA sull'implementazione originale della classe CounterfactualExplanation
-        # Da counterfactuals.py abbiamo che self.enemy = cf.find_counterfactuals() che è un metodo della classe GS
-        # ritorna il closest enemy e performa già il reshape 
-        #closest_ennemy_ = sorted(ennemies_,key= lambda x: pairwise_distances(self.obs_to_interprete.reshape(1, -1), x.reshape(1, -1)))[0] 
-
-        # trasformazione lambda tra x e self.obs_to_interprete (che sarebbe questo self.obs_to_interprete = obs_to_interprete
-        #self.prediction_fn = prediction_fn
-        #self.y_obs = prediction_fn(obs_to_interprete.reshape(1, -1))
-        # con self.obs_to_inteprete definito così obs_to_interprete: instance whose prediction is to be interpreded
-
-        # il formato non è menzionato, però quando chiamo il torch_model.predict ottengo un'array delle due predizioni
-        # infatti la dimensione era (8, ) e (2, ) quindi il 2 è la dimensione dell'array label (sbagliato quindi perchè ne deve prendere uno)
-
-        # tra i parametri c'è anche prediction_fn: prediction function, must return an integer label
-        # quindi la funzione predict deve ritornare una label invece dell'array 
-
-        # lets try with the predictone function of the wrapper?
-
     
         cfs= {}
 
-        for idx, feature in enumerate(features_names): # if counterfactual is found we add to the dict
+        for idx, feature in enumerate(features_names): # if counterfactual is found, it's added to the dict
             
             val = cf_x[idx]
 
-            if feature in cats: # papabile modifica se con le categoriche vi sono problemi
+            if feature in cats: 
                 val= round(val)
 
             cfs[feature]= val
 
-        # ok erano indentate dentro quindi per questo mi dava l'errore di chiave 
         elapsed_time = time.time() - start_time
-        cf_vals= np.array([cfs[f] for f in curr_rec.keys()]) # we take the vals for the counterfactual found
+        cf_vals= np.array([cfs[f] for f in curr_rec.keys()]) 
         curr_vals = np.array(list(curr_rec.values()))
         sparsity = np.sum(curr_vals != cf_vals)
 
@@ -1379,46 +1403,33 @@ def get_GS_cfe(log, curr_rec, torch_model, cats, target):
     except Exception as e:
         print(f"GS fallito {e}")
          
- 
-#4. Fallback: se nessun controfattuale è stato trovato, usa l'esempio più simile con classe opposta
-    #print("Controfattuali non trovati. Passo al fallback con l'esempio più simile.")
 
-    # nella funzione originale si chiamava nuovamente predict_one sia sull'istanza in esame x, che sulla x_h (che sarebbe la sua più vicina con classe opposta)
-    # poi veniva applicato un filtro per prendere solo i record di class opposta
-    #qui chiaramente siccome usiamo torch, dobbiamo richiamare tutti i passaggi necessari in MiC per dare la predizione
-
-    # trasformiamo il record corrente di cui vogliamo la explanation in tensore
+    # IF counterfatual was not found, retrieve the nearest example with the opposite class
     rec_t = query_instance.values.astype(np.float32)
     
-    # 4a. torch model produce la label per il current record
+    # producing the prediction using the PyTorchWrapper predict function
     with torch.no_grad():
         curr_pred= int(torch_model.predict(rec_t)[0])
 
-    # 4b. Stabiliamo la classe opposta 
-    target_class= 1- curr_pred # maschera che usiamo dopo per filtrare in modo calcolare le distanze tra il record corrente e il dataframe di predizioni di classe opposta
-   
-    fallback_data= (log.drop(columns= target, axis= 1)) # this is basically the preprocessing we did when predicting the labels in MiC; drop the target col
-    #data_t= fallback_data.values.astype(np.float32) 
-
-
-    # 4c. Produce prediction per il restante batch log
-    with torch.no_grad():  # produciamo tutte le predizioni di nuovo
+    # establishing opposite class to get a mask
+    target_class= 1- curr_pred 
+    fallback_data= (log.drop(columns= target, axis= 1)) 
+  
+    # labeling the remaining data
+    with torch.no_grad():  
         hist_pred = torch_model.predict(fallback_data)
 
-    # 4d. Filtriamo il batch usando la mask per avere solo le righe di classe opposta
+    # filtering on the opposite class to current record
     mask= (hist_pred == target_class)
     data_opposite_classes= fallback_data[mask] 
 
-#5. Calcolo distanze + sparsities
+    # computing sparsity and distance
     if not data_opposite_classes.empty:   
-        distances= cdist(query_instance, data_opposite_classes, metric= 'euclidean').flatten() # calcolo distanza euclid tra il record corrente e il DF storico con la classe opposta
-        min_d= np.argmin(distances) # assegnazione della distanza minima
+        distances= cdist(query_instance, data_opposite_classes, metric= 'euclidean').flatten()  
+        min_d= np.argmin(distances) 
 
-        nearest_opp_rec= data_opposite_classes.iloc[min_d].to_dict() # lookup del record più 'vicino' di classe opposta rispetto a quello corrente 
-        
-        #nearest_cf= np.array([nearest_opp_rec[f] for f in curr_rec.keys()])
-        #curr_vals= np.array(list(curr_rec.values()))
-
+        # lookup the "nearest" record from the opposite class to the current record
+        nearest_opp_rec= data_opposite_classes.iloc[min_d].to_dict() 
         nearest_cf = np.array([nearest_opp_rec[f] for f in curr_rec.keys() if f in nearest_opp_rec])
         curr_vals = np.array([val for f, val in curr_rec.items() if f in nearest_opp_rec])
 
@@ -1436,20 +1447,25 @@ def get_GS_cfe(log, curr_rec, torch_model, cats, target):
 
 
 
-
-###########
-# -- UTILS FOR GRAPHS
+#========================================
+# REPORTING, VISUALIZATION
+#========================================
 
 def get_hic_data(ds_name, iteration, user_name, metrics):
     """
-    the idea here is to join every txt file containing the metrics relative to a user
+    Retrieving Human in Command results needed for a specific dataset, HIC iteration, user archetype 
+
+    Args:
+        ds_name (str): Identifier of the dataset
+        iteration (int): Identifier of the HIC iteration 
+        user_name (str): Identifier of the user archetype 
+        metrics (list of str): List of diagnostics metrics to be retrieved, defined in bridget_main.py
     """
     base_path = Path(f"./HIC_res/{ds_name}/iter_{iteration}/results_{user_name}")
     
     main_df = None
     
     for metric in metrics:
-        # careful here because there might be some other DefNet/ARF shenanigans
         file_name = f"User_{user_name}_{metric}.txt"
         path = base_path / file_name
         
@@ -1470,19 +1486,25 @@ def get_hic_data(ds_name, iteration, user_name, metrics):
 
 def get_mic_data(ds_name, iteration, user_name, strategy, beta, metrics):
     """
-    the idea here is to join every txt file containing the metrics relative to a user
+    Retrieving Machine in Command results needed for a specific dataset, MIC iteration, user archetype and deferral strategy
+
+    Args:
+        ds_name (str): Identifier of the dataset
+        iteration (int): Identifier of the MIC iteration 
+        user_name (str): Identifier of the user archetype 
+        strategy (str): Identifier of the Deferral strategy (defined by the supervisor in the demo files, e.g. "Selective_Pred")
+        beta (str): Identifier of the Inference cost of the Two-Stage Deferral policy
+        metrics (list of str): List of diagnostics metrics to be retrieved, defined in bridget_main.py
     """
-    #
-    if strategy== 'Confidence':
+    
+    if strategy== 'Selective_Pred':
         base_path= Path(fr"./MIC_res/{ds_name}/iter_{iteration}/{user_name}_{strategy}")
     else:
         base_path = Path(fr"./MIC_res/{ds_name}/iter_{iteration}/{user_name}_{strategy}\beta_{beta}")
     
     main_df = None
     
-    for metric in metrics:
-        # careful here because there might be some other DefNet/ARF shenanigans
-        
+    for metric in metrics:       
         parquet_matches = list(base_path.glob(f"*{metric}.parquet"))
         
         txt_matches = list(base_path.glob(f"*{metric}.txt"))
@@ -1522,25 +1544,6 @@ def retrieve_metric(path, col_names):
 
     return data 
 
-
-
-def plot(vals):
-
-    plt.plot(vals, linestyle='-', color='royalblue')
-
-    avg_fea= np.mean(vals)
-    plt.axhline(y=avg_fea, color='red', linestyle='--', label=f'Avg: {avg_fea:.4f}')
-    plt.title('Evolution of FEA values (MiC phase)', fontsize=10)
-    plt.xlabel('Records', fontsize=10)
-    plt.ylabel('FEA values', fontsize=10)
-    plt.ylim(0.0, 1.0)
-    plt.legend(loc= 'lower right')
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-
-    plt.show()
-
-
 def plot_sns(df, metrics, color='royalblue', alpha= 0.8, mean_required=None):
 
     sns.set_theme(style="whitegrid")
@@ -1567,7 +1570,6 @@ def plot_sns(df, metrics, color='royalblue', alpha= 0.8, mean_required=None):
         plt.tight_layout()
         plt.show()
 
-
 def custom_log(name, log_file, custom_format=None):
     
     log_dir = os.path.dirname(log_file)
@@ -1580,7 +1582,7 @@ def custom_log(name, log_file, custom_format=None):
     logger.propagate = False
     
     for handler in logger.handlers[:]:
-        handler.close() # Close the file connection!
+        handler.close() 
         logger.removeHandler(handler)
 
     if custom_format is None:
@@ -1595,13 +1597,12 @@ def custom_log(name, log_file, custom_format=None):
 
     f_handler = logging.FileHandler(log_file)
     f_handler.setFormatter(formatter)
-    f_handler.setLevel(logging.DEBUG) # Store EVERY detail (even math debugs)
+    f_handler.setLevel(logging.DEBUG) 
 
     logger.addHandler(s_handler)
     logger.addHandler(f_handler)
 
     return logger
-
 
 def load_json(path):
     with open(path, 'r') as f:

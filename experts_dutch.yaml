@@ -1,54 +1,55 @@
+###########################################################
+#
+# BRIDGET SYNTHETIC EXPERTS CONFIGURATION (DUTCH CENSUS)
+#
+###########################################################
 
-# this is the first test: Generating the experts 
-# the idea is to generate 4 archetypes of synthetic users: Accurate/Inaccurate, Trusts Frank/Doesnt
-# we can define the users' accuracy by fixing their FPR/FNR
-
-# data_path: ' '
-# 
+# This support module defines the distribution parameters of the features for the Dutch Census dataset.
+# A quick note: as per the OpenL2D foundational paper, there exists two ways to define the weights distribution.
+# The first is using a common parametrized distribution across all features (Spike and Slab method)
+# The second entails defining Normal Distributions with individual mean/std parameters for each individual features
+# BRIDGET implements the latter.
 
 experts:
-  groups: 
+  groups:       
+      
+      ###########################################################
+        # 1. FEATURES DISTRIBUTION PARAMETERS
+      ###########################################################
+      # Recall that the severity of the weight associated to a feature represents, in the context of
+      # Instance-Dependent Label Noise, the influence that the feature has on the expert's prediction reasoning
+      
+      # For this purpose, the attributes are categorized in hierarchical order (no Bayesian Network was used as a reference)
+      # 1. High Influence: edu_level, economic_status, cur_eco_activity
+      # 2. Medium Influence: household_position, household_size
+      # 3. Low Influence: prev_residence_place, country_birth, marital_status
+      # 4. No Influece (PROTECTED/SENSITIVE ATTRIBUTES): sex, age, citizenship
 
-      # -- come da Open L2D, ci sarebbero due metodi per definire la distribuzione dei pesi
-      # -- 1. Spike and Slab (common distribution across all features)
-      # -- 2. Normal Distribution w/ individual mean/std for the features (come primo test uso questo)
-      #######################################################
-      #---------------Weight Sampling Settings--------------#
+    w_dict: # used in the sample_weights function within the BetaUser class
 
-      # fascia alta di bias: edu_level, economic_status, cur_eco_activity, household_position
-      # mild bias:household_size, prev_residence_place, marital_status
-      # no bias [protected]: sex, age, citizenship
-
-    w_dict:
-
-      sex:   #protected
+      sex:   #protected attribute
         - 0.0
         - 0.05
 
-      age:  #protected
+      age:  #protected attribute
         - 0.0
         - 0.05
-        
         
       household_position:
         - 0.4
         - 0.08
         
-
       household_size:  
         - 0.3
         - 0.08
         
-
       prev_residence_place:
         - 0.25
         - 0.08
 
-
-      citizenship: #protected
+      citizenship: #protected attribute
         - 0.0
         - 0.05
-
 
       country_birth: 
         - 0.25
@@ -56,7 +57,7 @@ experts:
 
       edu_level: 
         - 0.6
-        - 0.1 # somewhat strict
+        - 0.1 
       
       economic_status:
         - 0.55
@@ -70,64 +71,46 @@ experts:
         - 0.25
         - 0.08
       
-      
-       # - EXPERT 1: ACCURATE/TRUSTS FRANK
-    accurate_trusting:
-      
-      
-      group_seed: 1
-      n: 1
 
-      ################################################
-      #------------Performance Settings--------------#
+    ###########################################################
+      # 2. USER ARCHETYPES DEFINITION
+    ###########################################################
 
-      # -- anche qui ci sono due metodi: 1 su Defining Cost Distribution, 2 su defining FPR and FNR Distribution
-      # -- potremmo fissare il target FPR/FNR hardcoded o mantenendo la struttura di Open L2A integrale
+    # Each user is identified by their trust in the machine (belief_value) during the Human in Command phase,
+    # and their inherent expertise, represented by the targets False Positive Rate and False Negative Rate,
+    # whose intercepts and exact values are derived by the .fit function of the BetaUser class.
+    # using these two dimensions, four user archetypes are hereby identified:
 
+    # - EXPERT 1: HIGH EXPERTISE / HIGH TRUST
+    accurate_trusting:        
+      group_seed: 1 # archetype identifier
+      n: 1   # number of instances generated, the current structure supports 1 expert per archetype
       belief_value: 0.8
+      target_FPR: 0.1
+      target_FNR: 0.1
 
-      # - OPTION 1: Fixed Expertise
-      # - i due target combined rappresenterebbero l'overall expertise degli esperti
-      target_FPR: 0.10
-
-      target_FNR: 0.10
-
-      # - OPTION 2: Bounded Expertise
-      # - sarebbe necessario avere target mean e std + max/min target FPR per la distribuzione
-
-
-    # - EXPERT 2: ACCURATE/DOESNT TRUST FRANK
+    # - EXPERT 2: HIGH EXPERTISE / LOW TRUST
     accurate_not_trusting:
       group_seed: 2
       n: 1
-
       belief_value: 0.3
+      target_FPR: 0.1
+      target_FNR: 0.1
 
-      target_FPR: 0.10
-      
-      target_FNR: 0.10
-
-
-
-    # - EXPERT 3: NOT VERY ACCURATE/ TRUSTS FRANK
+    # - EXPERT 3: LOW EXPERTISE / HIGH TRUST
     inaccurate_trusting:
-
       group_seed: 3
       n: 1
       belief_value: 0.8
-    
       target_FPR: 0.3
-
       target_FNR: 0.3
 
-    # - EXPERT 4: NOT VERY ACCURATE/ DOESNT TRUST FRANK
+    # - EXPERT 4: LOW EXPERTISE / LOW TRUST
     inaccurate_not_trusting:
       group_seed: 4
       n: 1
-      belief_value: 0.3
-        
+      belief_value: 0.3  
       target_FPR: 0.3
-
       target_FNR: 0.3
       
 

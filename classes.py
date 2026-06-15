@@ -111,7 +111,6 @@ class BetaUser(User):
                  seed
     ):
         
-        
         super().__init__(belief_level, rethink_level, fairness)
 
         self.fpr= fpr
@@ -287,7 +286,7 @@ class BetaUser(User):
         For this reason single records are evaluated one at a time.
 
         Args:
-            record (dict, torch.tensor or array like): Input feature attributes representing the current row
+            record (dict, Tensor or array-like): Input feature attributes representing the current row
             ground (int): The true ground truth label of the target record instance
             iter (int): Index used to assign the seed for ensuring reproducibility
 
@@ -295,7 +294,7 @@ class BetaUser(User):
 
             int: The simulated user's classification prediction (0 or 1)
         """
-        
+
         if self.w is None:
             raise ValueError('Synthetic expert must be .fit() to the data.')
         
@@ -345,13 +344,20 @@ class BetaUser(User):
 class DeferralNet(nn.Module):
 
     """
+    DNN structure implemented with PyTorch.
+    Currently comprised of 2 hidden layers, ReLU activation. Loss function is defined in orchestrator.py (CE Loss was used in BRIDGET's experimental validation)
+    
+    Args:
+        input_size (int): Dimension of the input feature matrix
+        hidden_layer1 (int): First hidden layer neurons count (architecture defined in master_config.py, NET_CONFIGS)
+        hidden_layer2 (int): Second hidden layer neurons count (architecture defined in master_config.py, NET_CONFIGS)
+        output_size (int): Number of target classes (architecture defined in master_config.py, NET_CONFIGS)
+        ::note: The Two-Stage Deferral Strategy requires 1 output neuron, representing the computed probability of
+        deferring the input instance. In this context its retrieve in master_config.py, R_NET_CONFIGS
+        dropout_coeff (float, optional): Neuron dropout coefficient for regularization purposes
 
-    Params:
-    input_size (int):
-    hidden_layer1, 
-    hidden_layer2,
-    output_size, 
-    dropout_coeff=None)
+        x (Tensor or array-like): Feature matrix for the input instance
+        device (torch.device, optional): Either CPU or CUDA
 
     """
     def __init__(self, input_size, hidden_layer1, hidden_layer2, output_size, dropout_coeff=None):
@@ -398,8 +404,12 @@ class DeferralNet(nn.Module):
 class PyTorchWrapper(BaseEstimator):  
     
     """
+    Model agnostic Wrapper for smooth interactions between the PyTorch model and the GrowingSpheres algorithm, compliant with sklearn's BaseEstimator 
+    
     Args:
-
+        model (object, DeferralNet): 
+        target (str): Identifier of the target label
+        features_names (list): List of attribute column names in str format
     
     """
     def __init__(self, model, target, features_names):
@@ -408,6 +418,15 @@ class PyTorchWrapper(BaseEstimator):
         self.features_names= features_names
 
     def predict(self, X):
+        """
+        Computes batch prediction
+
+        Args: 
+            X (dict, DataFrame or array-like): Input feature matrix
+
+        Returns:
+            ndarray: Numpy array containing predicted integer class label
+        """
         self.model.eval() 
          
         if isinstance(X, dict):
@@ -419,7 +438,6 @@ class PyTorchWrapper(BaseEstimator):
         X_t = torch.tensor(X, dtype= torch.float32)
         device = next(self.model.parameters()).device
     
-        # 3. Move the data to that device (The missing step!)
         X_t = X_t.to(device)
 
         with torch.no_grad():
@@ -429,6 +447,15 @@ class PyTorchWrapper(BaseEstimator):
 
 
     def predict_proba(self, X):
+        """
+        Computes batch class probabilities using Softmax
+
+        Args: 
+            X (dict, DataFrame or array-like): Input feature matrix
+
+        Returns:
+            ndarray: Numpy array containing class probability distributions
+        """
         self.model.eval() 
         
         if isinstance(X, dict):
@@ -448,20 +475,24 @@ class PyTorchWrapper(BaseEstimator):
     
     
     def predict_one(self, x):
+        """
+        Computes single instance prediction
 
-        # ok ragioniamo, io gli passo x come dizionario dal main body
-        # gs invece quando lo applico mi passa una numpy array
+        Args: 
+            x (dict, DataFrame or array-like): Feature matrix for instance x
+
+        Returns:
+            int: Predicted classification label
+        """
+
+
         self.model.eval() 
 
         if isinstance(x, dict):
             x_input = np.array([[x[f] for f in self.features_names]], dtype=np.float32)
-            # se è un dict come succede, lo trasformiamo in array con dimesione (1, 8) per compas
+
         else:
             x_input = np.array(x, dtype=np.float32).reshape(-1, 8)  
-            # se non è un dict può essere tensore o già numpy array che mi arriva da GS
-            # con il reshape se fatto in maniera giusta dovrei ottenere di nuovo (1,8) ma tutto dipende da come è fatto quel -1
-            # perchè siccome gli passo come parametro di generazione 200, 200 sono le righe, quindi non può essere 1 il primo termine,
-            # ma dovrebbe essere 200
 
         with torch.no_grad():
             res = self.model(torch.from_numpy(x_input))

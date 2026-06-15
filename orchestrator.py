@@ -17,7 +17,6 @@ In particular, the file is structured to:
 
 The guide is referenced in the README file and in the examples provided in the repo.
 
-
 """
 
 import numpy as np
@@ -96,7 +95,7 @@ def net_calibration(ds_name,
     
     
     
-    # 2. DeferralNet instantiation and retriaval of its necessary components from the master_config.py file
+    # 2. DeferralNet instantiation and retrieval of its necessary components from the master_config.py file
 
     net= DeferralNet(input_size=X_cal.shape[1],  #default val for the dropout coeff was set to 0 for the def net class
                             hidden_layer1= net_layers[0], 
@@ -197,7 +196,6 @@ def net_calibration(ds_name,
                        min_coverage= 0.6
                         )
 
-    
 
 def hic_session(warm_up_set, hic_df_save_path,
                  target, 
@@ -293,8 +291,8 @@ def hic_session(warm_up_set, hic_df_save_path,
 def run_hic(ds_name, params, objects):
 
     """
-    This function handles the entire HIC pipeline.
-    It requires the params and objects structure.
+    This function handles the entire Human in Command pipeline.
+    It requires the params and objects structures.
 
     Args:
 
@@ -537,14 +535,14 @@ def run_hic(ds_name, params, objects):
 #CALIBRATION PHASE ASSETS 
 #========================================
 
-def run_calibration(def_net_path, # DA PATH
-                    df_switch, #INSERIRE MANUALMENTE # remember it should be the correct df
+def run_calibration(def_net_path, 
+                    df_switch, 
                     ds_name,
                     params,
                     device,
                     iteration,
-                    def_net_layers, # you get it from outside since you loop outside,
-                    batch_size=128, #DEF VALUE, CAN REMOVE
+                    def_net_layers, 
+                    batch_size=128, 
                     epochs= 20,
                     baseline= False
                     ):
@@ -556,23 +554,22 @@ def run_calibration(def_net_path, # DA PATH
     and before initializing Machine in Command
     
     Args:
-        def_net_path (str): directory saving path as specified in master_config.py
-        df_switch (pd.DataFrame): co-labeled data resulting from the corresponding iteration of Human in Command
-        ds_name (str): dataset name in string format
-        params (dict): 
-        device (torch.device): 
-        iteration (int):
-        def_net_layers (list): net architecture chosen by the supervisor after model selection (e.g. [32,16])
-        batch_size (int, default= 128): 
-        epochs (int, default= 20): number of training epochs 
-        baseline (bool)
+        def_net_path (str): Directory saving path of the classifiers(as specified in master_config.py, DATASETS)
+        df_switch (pd.DataFrame): Co-labeled data resulting from the corresponding iteration of Human in Command
+        ds_name (str): Dataset name in string format (in master_config.py, DATASETS)
+        params (dict): See definition above
+        device (torch.device): Either CPU or CUDA
+        iteration (int): Current experimental iteration
+        def_net_layers (list): Net architecture chosen by the supervisor after model selection (e.g. [32,16])
+        batch_size (int): Defines batch size for training 
+        epochs (int): Number of training epochs 
+        baseline (bool): Enables benchmarking process if True (WORK IN PROGRESS)
     
     """
-    #the idea within this function is simple: use the functions train r net and generate report of the anqi mao values :)
-
     # ========================================
     # 1. Creating saving directories using user name
     # ========================================
+    
     user_name= params['user_name']
 
     if baseline:
@@ -591,6 +588,7 @@ def run_calibration(def_net_path, # DA PATH
     # these two refer to the Two-Stage Deferral Strategy (Mao et al., 2023) and load the configs from the master_config.py file
     # if there should arise the need to expand or restrict the inference cost (Beta) search interval, modify the corresponding
     # values in master_config, there is no need to specify it in this function
+    
     r_conf= R_NET_CONFIGS   
     betas= r_conf.get('betas', [])
 
@@ -606,13 +604,10 @@ def run_calibration(def_net_path, # DA PATH
         log.info(f"--- Calibrating for iteration {iteration} ---")
     
 
-
-
-
     # ========================================
     # 3. Training Rejector Net on co-evolutionary data, looping over the Human Inference Cost (BETA), then checkpointing
     # ========================================
-    # the nets calibrated will have the exact same architecture as specified in the 
+    # the nets calibrated will have the exact same architecture as specified in the master_config.py, R_NET_CONFIGS dictionary 
     for beta in betas:
         log.info(f"--- Training r-net for Beta: {beta}")
         
@@ -622,7 +617,7 @@ def run_calibration(def_net_path, # DA PATH
                             device, 
                             alpha=r_conf.get('alpha'), 
                             beta= beta, 
-                            feat_order=feat_order, #its required without the labels here
+                            feat_order=feat_order, 
                             layers= r_conf.get('architecture'), 
                             dropout=r_conf.get('dropout'),
                             learning_rate=r_conf.get('lr'),
@@ -656,12 +651,12 @@ def run_calibration(def_net_path, # DA PATH
     
 
 def choose_optimal_tau(ds_name,
-                       user_suffix, # da fuori
+                       user_suffix, 
                        user_model,
                        net,
-                       model_path, #viene dall'alto
-                       device, #probabilmente viene dall'alto 
-                       layers,#vengono dall'alto, always a lst btw
+                       model_path, 
+                       device, 
+                       layers,
                        validation_set,
                        feat_order,
                        target,
@@ -680,12 +675,11 @@ def choose_optimal_tau(ds_name,
         description above.
 
         min_coverage (float): Minimum proportion of rows that must be evaluated by the machine within the SelectivePrediction deferral policy context
-                              that allows to assess the accuracy-coverage trade off.
-                              Default value is 0.6.
-        
+        that allows to assess the accuracy-coverage trade off. Default value is 0.6.
+        log (Logger): Created by the custom_log function within the run_calibration process
     Returns:
         best_tau (float): Optimal Tau threshold scored within the linear space search interval for the specific net architecture, user and dataset tested
-                          Used for logging purposes during the run_calibration function.
+        Used for logging purposes during the run_calibration function.
     
     """
 
@@ -753,13 +747,13 @@ def choose_optimal_tau(ds_name,
 #========================================
 
 def mic_session(ds_name, 
-                target, #SOPPRA
+                target, 
                 layers,
                 def_net_path,
                 def_net_name,
                 device,
-                df_switch, #just for xai 
-                test_batch, # PARAMS MA HA IL SUO PATH
+                df_switch,  
+                test_batch, 
                 training_iter,
                 benchmark_performance,
                 performance_delta,
@@ -776,39 +770,41 @@ def mic_session(ds_name,
                 protected,
                 tau_threshold= None,
                 r_net= None,
-                human_defer_cost= None #anqi mao's beta
+                human_defer_cost= None 
                 ):
         
 
         """
-        
+        Reloads the trained Neural Network from the respective paths and initializes the MiC instance relative to the Machine in Command phase
         
         Args:
-            ds_name (str): 
-                target (str):
-                layers (list):
-                def_net_path (str):
-                def_net_name (str):
-                device,
-                df_switch (DataFrame):
-                test_batch (DataFrame):
-                training_iter (int):
-                benchmark_performance (int):
-                performance_delta (float):
-                warm_up (int):
-                belief_threshold (float):
-                user_model (object, BetaUser):
-                user_name (str):
-                batch1 (DataFrame):
-                batch1_test (DataFrame):
-                log (object, custom_log):
-                preprocessor (object, river.preprocessor):
-                cats (list):
-                num (list):
-                protected (list):
-                tau_threshold (float, optional),
-                r_net (object, DeferralNet, optional)
-                human_defer_cost (float, optional)
+            ds_name (str): Identifier for the dataset tested
+            target (str): Name of the target label (defined in master_config.py, DATASETS)
+            layers (list): Architecture of the chosen classifier (e.g., [32, 16])
+            def_net_path (str): Saving paths of trained DeferralNets (as specified in master_config.py, DATASETS)
+            def_net_name (str): Identifier of the classifier, to load the correct model from the corresponding directory
+            df_switch (DataFrame): Co-labeled data resulting from the preceding Human in Command phase
+            test_batch (DataFrame): Data allocated towards the Machine in Command phase, subject to deferral
+            training_iter (int): Number of current training iteration, used for logging and checkpointing purposes
+            benchmark_performance (float): Baseline performance obtained during the latest Machine in Command iteration
+            warm_up (int): Minimum number of instances that must be labeled by the machine (NO DEFERRAL), before BRIDGET starts assessing conceptual drifts
+            device (torch.device): Either CPU/CUDA
+            performance_delta (float): Margin threshold applied to the benchmark_performance to identify the current target
+            belief_threshold (float): Threshold identifying low-belief instances, for reporting the healthiness level of the machine
+            user_model (object, BetaUser): Simulated human expert engine, modeled using a reduced version of OpenL2D
+            user_name (str): Identifier for the user archetype
+            batch1 (DataFrame): Training data for the Human in Command phase, to be co-labeled through the interaction between agents
+            batch1_test (DataFrame): Data portion used to assess the performance of the Human in Command phase through Accuracy, F1 score 
+            log (Logger): Created by the custom_log function within the run_mic process
+            preprocessor (object, optional): River scaler
+            cats (list); list of names of the categorical features
+            num (list): list of names of the numerical features
+            protected (list): list of protected attributes features (defined in master_config.py, DATASETS)
+            tau_threshold (float, optional): Deferral threshold optimizing the coverage/accuracy trade off for the Selective Prediction deferral strategy
+            r_net (object, DeferralNet, optional): Trained cost-sensitive rejector network for Two-Stage Deferral policy
+            human_deferral_cost (float, optional): Current configuration of inference cost incurred by the human when predicting contextually to the Two-Stage deferral policy
+            
+           
         """
 
         X_stream= torch.tensor(data= test_batch.drop(columns=[target]).values, dtype=torch.float32).to(device)
@@ -860,33 +856,52 @@ def mic_session(ds_name,
 
 
 def run_mic(ds_name,
-            device, #probabilmente viene dall'alto 
-            layers,# vengono dall'alto, always a lst btw, oppure da master config
-            params,# da fuori
-            objects, # OBJECTS
+            device, 
+            layers,
+            params,
+            objects, 
             iteration,
             strat_1_res=None,
             strat_2_res=None,
             baseline= False
             ):
 
-
     """ 
-    
+    This function handles the entire Machine in Command pipeline.
+    It requires the params and objects structures.
+
     Args:
-    ds_name,
-            device, #probabilmente viene dall'alto 
-            layers (list):
-            params (dict):
-            objects (dict):
-            iteration (int):
-            strat_1_res (bool, optional)
-            strat_2_res (bool, optional)
-            baseline (bool, optional)
+        ds_name (str): Identifier of the dataset evaluated (specified in master_config.py, DATASETS)
+        device (torch.device): Either CPU or CUDA 
+        layers (list): Architecture of the chosen classifier (e.g., [32, 16])
+        params (dict): Dictionary built prior to BRIDGET's initialization and updated after the run_hic and run_calibration functions have ended with the necessary assets.
+        It stores
+            *user_name (str): Full identifier of the current user archetype (e.g., "accurate_trusting")
+            *user_suffix (str): Short identifier of the current user archetype (e.g., "acc_t")
+            *incremental_learner_name (str): Identifier of the incremental learner machine used in Human in Command (e.g., "ARF")
+            *n_cols (int): Number of attributes
+            *cats (list): List of categorical features
+            *num (list): List of continuous features
+            *batch1 (DataFrame): Training data for the Human in Command phase, to be co-labeled through the interaction between agents
+            *batch1_test (DataFrame): Data portion used to assess the performance of the Human in Command phase through Accuracy, F1 score 
+            *strat_1_name (str): Identifier of the Selective Prediction strategy (e.g., "Sel_Pred")
+            *strat_2_name (str): Identifier of the Two-Stage Deferral strategy (e.g., "Two_Stage")
+            *mic_model_name (str): Identifier of the classifier used in the Machine in Command phase (e.g., "DefNet")
+            *run_selective_prediction (bool, optional): Boolean flag enabling/disabling the Selective Prediction strategy during the subsequent MIC phase  
+            *run_two_step_deferral (bool, optional): Boolean flag enabling/disabling the Two-Stage Deferral Strategy during the subsequent MIC phase  
+            
+        objects (dict): 
+            *user_model (object, BetaUser): Simulated human expert engine
+            *scaler (object): River Scaler frozen at the end of the preceding Human in Command phase, reloaded to transform the contextual data to ensure the same scale is applied
+
+        iteration (int): Current iteration number identifier
+        strat_1_res (dict, optional): Historical dict tracking the overall results of the entire experimental pipeline for the Selective Prediction strategy 
+        strat_2_res (dict, optional): Historical dict tracking the overall results of the entire experimental pipeline for the Two-Stage Deferral strategy 
+        baseline (bool): If flagged to True enables the benchmarking process (WORK IN PROGRESS)
     
     Returns:
-    * strat_1_res (dict):
-    * strat_2_res (dict):
+        * strat_1_res (dict): Evaluation results of the Selective Prediction strategy for the current Machine in Command iteration
+        * strat_2_res (dict): Evaluation results of the Two-Stage Deferral strategy for the current Machine in Command iteration
     """
     ########## 
     # creating the log first
@@ -956,9 +971,6 @@ def run_mic(ds_name,
                 }
             }
 
-
-
-    
     log.info(f"---  ITERATION {iteration}/3 ---")
     
     # 1. retrieving deferral net (DEFINE NET, THEN GET WEIGHTS)
@@ -1054,7 +1066,7 @@ def run_mic(ds_name,
                     )
     os.makedirs(mic_save_path, exist_ok=True)
 
-    ############ DEFERRAL STRAT 1: CONFIDENCE BASED
+    ############ DEFERRAL STRAT 1: SELECTIVE PREDICTION 
     if run_sel:
         log.info(f"STARTING STRAT {strat_1_name} | USER {user_name} | Iter {iteration}")
 
@@ -1072,8 +1084,8 @@ def run_mic(ds_name,
                                 layers=layers,
                                 def_net_path=def_net_path,
                                 device=device,
-                                df_switch= df_switch, #just for xai 
-                                test_batch=batch3, # PARAMS MA HA IL SUO PATH
+                                df_switch= df_switch, 
+                                test_batch=batch3, 
                                 training_iter= iteration,
                                 batch1= batch1,
                                 batch1_test=batch1_test,
@@ -1090,7 +1102,7 @@ def run_mic(ds_name,
                                 protected=protected,
                                 tau_threshold=current_tau,
                                 r_net= None,
-                                human_defer_cost= None #anqi mao's beta
+                                human_defer_cost= None 
                             )
         
 
@@ -1123,7 +1135,7 @@ def run_mic(ds_name,
         log.info(f"Iter {iteration}, skipping {strat_1_name} strategy...")
 
 
-    ############ DEFERRAL STRAT 2: ANQI MAO TWO STAGE DEFERRAL
+    ############ DEFERRAL STRAT 2: TWO-STAGE DEFERRAL STRATEGY
     if run_two_steps:        
 
         log.info(f"STARTING STRAT {strat_2_name} | USER {user_name} | Iter {iteration}")
@@ -1233,7 +1245,6 @@ def run_mic(ds_name,
     else:
         log.info(f"Iter {iteration}, skipping {strat_2_name} Deferral strategy...")
     
-
 
     return strat_1_res, strat_2_res
                  

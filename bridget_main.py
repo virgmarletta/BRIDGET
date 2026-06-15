@@ -300,16 +300,15 @@ class HiC(BRIDGET):
 
 
     def train(self, x_warm_up, y_warm_up, x_test_warm_up, y_test_warm_up):
-        
         """
-        Funzione per calibrare il modello incrementale che poi diventa self.initial model
+        Executes pre-training for the Incremental Learners before deploying BRIDGET, given the data portions allocated.
+        This method is called within BRIDGET's Human in Command phase when the model must be re-trained.
         
-        Attributes:
-            x_warm_up, 
-            y_warm_up, 
-            x_test_warm_up, 
-            y_test_warm_up
-
+        Args:
+            x_warm_up (list of dicts): Input data used for pre-training the learner
+            y_warm_up (array-like): Target label vector matching corresponding training set
+            x_test_warm_up (list of dicts): Validation set to assess Accuracy, F1 Score, Predicted Class distribution for model selection
+            y_test_warm_up (array-like): Target label vector matching corresponding testing set
         """
 
         accuracy = metrics.Accuracy()
@@ -350,6 +349,10 @@ class HiC(BRIDGET):
 
 
     def get_eval_report(self):
+        """
+        Compiles evaluation metrics for the HIC phase, including fairness metrics, counters related to the interaction rules
+        used to assess the correct functioning of the framework
+        """
         names= ['human_fairness', 'human_acc', 'systemic', 'frank_fairness', 'frank_acc',
         'rules_count', 'past_count', 'ok_count', 'no_count', 
         'xai_ok', 'xai_no', 'skept_count', 'agree_count', 'disagree_count'
@@ -359,15 +362,20 @@ class HiC(BRIDGET):
         return report
 
     def start_HiC(self, warm_up_set):
-            
             """
+            Orchestrates and executes the Human in Command phase logic.
+            Sequentially processess input instances, computes the predictions of both agents and assigns the final label
+            according to the four interaction rules.
+
             Args:
-                warm_up_set:
+                warm_up_set (DataFrame): Subset that was used to pre-train the learner, included in the procedure as a building block of the 
+                K-NN neighborhood population
 
             Returns:
-                final_log, 
-                accuracy_score, 
-                f1_score
+                final_log (DataFrame): Co-labeled streaming dataset, containing original feature values, final provider flag,
+                agent-provided labels and model confidence
+                accuracy_score (list): List tracking the Accuracy performance obtained on the holdout batch1_test data split 
+                f1_score (list): List tracking the F1-Score obtained on the holdout batch1_test data split 
             """
             self.processed= dict()
             
@@ -899,29 +907,22 @@ class HiC(BRIDGET):
             return df_final_hic, accuracy_score, f1_score
 
 class MiC(BRIDGET):
-
-
     """
-    Class for the Machine-in-Command phase
+    Orchestrates and executes the Machine in Command phase.
+    Includes the Selective Prediction and Two-Stage Deferral strategies.
+    Generates counterfactuals using the GrowingSpheres algorithm.
 
     Attributes:
-        mic_model (object, DeferralNet):
-        mic_model_name (str):
-        benchmark_performance (float):
-        warm_up (int):
-        device,
-        performance_delta (float):
-        belief_threshold (float):
-        tau_threshold (float, optional):
-        human_deferral_cost (float, optional)  
+        mic_model (object, DeferralNet): Pre-trained Neural Network classifier
+        mic_model_name (str): Identifier for the DeferralNet model
+        benchmark_performance (float): Baseline performance obtained during the latest Machine in Command iteration
+        warm_up (int): Minimum number of instances that must be labeled by the machine (NO DEFERRAL), before BRIDGET starts assessing conceptual drifts
+        device (torch.device): Either CPU/CUDA
+        performance_delta (float): Margin threshold applied to the benchmark_performance to identify the current target
+        belief_threshold (float): Threshold identifying low-belief instances, for reporting the healthiness level of the machine
+        tau_threshold (float, optional): Deferral threshold optimizing the coverage/accuracy trade off for the Selective Prediction deferral strategy
+        human_deferral_cost (float, optional): Current configuration of inference cost incurred by the human when predicting contextually to the Two-Stage deferral policy
         **kwargs
-
-
-    Methods:
-        __init__:
-        train:
-        start_MiC:
-
     """
 
     def __init__(self,
@@ -970,19 +971,20 @@ class MiC(BRIDGET):
         self.fea_net= []
         self.mic_user_fea= []
 
-        
-
-
     def start_MiC(self, x_stream, y_stream, df_switch, r_net=None, two_step_deferral= None): 
-
         """
-        
+        Executes the Machine in Command phase: instances are triaged according to the deferral policies included within the framework
+
         Args:
-            x_stream (torch.tensor): feature matrix from batch3, transformed to tensor 
-            y_stream (torch.tensor): label vector from batch3, transformed to tensor 
-            df_switch (DataFrame): co-labeled data resulting from HIC phase
-            r_net (object, optional): trained rejector for Two-Stage Deferral policy
-            two_step_deferral (bool, optional): boolean flag signaling whether Two-Stage deferral is applied
+            x_stream (Tensor): Feature matrix from batch3, transformed to tensor 
+            y_stream (Tensor):Llabel vector from batch3, transformed to tensor 
+            df_switch (DataFrame): Co-labeled data resulting from HIC phase
+            r_net (object, optional): Trained cost-sensitive rejector network for Two-Stage Deferral policy
+            two_step_deferral (bool, optional): Boolean flag signaling whether Two-Stage deferral is deployed in the current iteration
+        
+        Returns:
+            final_log (DataFrame): Final Data Frame storing the original feature values, final provider flag,
+            labels provisionally given by both agents and model confidence
         """
         # initializing logs and necessary storing structures
         self.processed= dict()
@@ -1268,7 +1270,7 @@ class MiC(BRIDGET):
                     mic_pref= f"MIC_DRIFT_{self.mic_model_name}_"
                 
                 os.makedirs(dir, exist_ok=True)
-                res_df.to_parquet(os.path.join(dir, f"{mic_pref}Perfomances.parquet"))
+                res_df.to_parquet(os.path.join(dir, f"{mic_pref}Performances.parquet"))
 
                 metrics_gs = {
                             "time_steps": times_GS,
@@ -1334,7 +1336,7 @@ class MiC(BRIDGET):
         
         os.makedirs(dir, exist_ok=True)
         res_df= pd.DataFrame(self.mic_results).transpose()
-        res_df.to_parquet(os.path.join(dir, f"{mic_pref}Perfomances.parquet"))
+        res_df.to_parquet(os.path.join(dir, f"{mic_pref}Performances.parquet"))
 
         metrics_gs = {
                         "time_steps": times_GS,

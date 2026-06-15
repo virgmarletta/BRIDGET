@@ -366,7 +366,7 @@ if __name__ == "__main__":
     params.update({
         "user_name": current_user_name,
         "user_suffix": user_suffix,
-        "run_selective_prediction": True, #e.g. 
+        "run_selective_prediction": True,
         "run_two_step_deferral": True
     })
 
