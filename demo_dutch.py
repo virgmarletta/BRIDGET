@@ -144,9 +144,6 @@ if __name__ == "__main__":
                     SKEPT=FRANK_RULES['SKEPT'], 
                     GROUP= FRANK_RULES['GROUP'], 
                     EVA=FRANK_RULES['EVA'], 
-                    n_bins=FRANK_RULES['N_BINS'], 
-                    n_var=FRANK_RULES['N_VAR'], 
-                    maxc=FRANK_RULES['MAXC'], 
                     rule_att=DATASETS[ds_name]['rule_att'], 
                     rule_value=DATASETS[ds_name]['rule_value'], 
                     hic_model_name='placeholder', 
@@ -244,8 +241,6 @@ if __name__ == "__main__":
     # 4. DEFINING CONFIGURATION
  
     initial_ordering= [c for c in data if c != target]
-
-    rules= FRANK_RULES
 
     # e.g.: Adaptive Random Forest is chosen
     base_params= {

@@ -263,9 +263,6 @@ def hic_session(warm_up_set, hic_df_save_path,
                     SKEPT= rules['SKEPT'],
                     GROUP= rules['GROUP'],
                     EVA= rules['EVA'],
-                    n_bins= rules['N_BINS'],
-                    n_var= rules['N_VAR'],
-                    maxc= rules['MAXC'],
                     rule_att= rule_att,
                     rule_value= rule_value,
                     start_performance=start_performance )
@@ -296,7 +293,6 @@ def hic_session(warm_up_set, hic_df_save_path,
 def run_hic(ds_name, params, objects):
 
     """
-    
     This function handles the entire HIC pipeline.
     It requires the params and objects structure.
 
@@ -437,7 +433,6 @@ def run_hic(ds_name, params, objects):
             batch1=current_batch,
             batch3=batch3,
             batch1_test=batch1_test,
-        
             user_model=user_model,
             hic_df_save_path= df_switch_save_path,
             target=target,
@@ -789,7 +784,31 @@ def mic_session(ds_name,
         
         
         Args:
-         
+            ds_name (str): 
+                target (str):
+                layers (list):
+                def_net_path (str):
+                def_net_name (str):
+                device,
+                df_switch (DataFrame):
+                test_batch (DataFrame):
+                training_iter (int):
+                benchmark_performance (int):
+                performance_delta (float):
+                warm_up (int):
+                belief_threshold (float):
+                user_model (object, BetaUser):
+                user_name (str):
+                batch1 (DataFrame):
+                batch1_test (DataFrame):
+                log (object, custom_log):
+                preprocessor (object, river.preprocessor):
+                cats (list):
+                num (list):
+                protected (list):
+                tau_threshold (float, optional),
+                r_net (object, DeferralNet, optional)
+                human_defer_cost (float, optional)
         """
 
         X_stream= torch.tensor(data= test_batch.drop(columns=[target]).values, dtype=torch.float32).to(device)
@@ -857,17 +876,17 @@ def run_mic(ds_name,
     Args:
     ds_name,
             device, #probabilmente viene dall'alto 
-            layers,# vengono dall'alto, always a lst btw, oppure da master config
-            params,# da fuori
-            objects, # OBJECTS
-            iteration,
+            layers (list):
+            params (dict):
+            objects (dict):
+            iteration (int):
             strat_1_res (bool, optional)
             strat_2_res (bool, optional)
             baseline (bool, optional)
     
     Returns:
-    strat_1_res (dict):
-    strat_2_res (dict):
+    * strat_1_res (dict):
+    * strat_2_res (dict):
     """
     ########## 
     # creating the log first

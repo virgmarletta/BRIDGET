@@ -41,7 +41,7 @@ def sig(x):
 
 def sigmoid(x):
     return 1 / (1 + np.exp(-np.clip(x, -15, 15)))
-
+    
 def invert_labels_with_probabilities(labels_arr, p_arr, seed):
     """
     Main decisional engine of OpenL2D's expert prediction strategy

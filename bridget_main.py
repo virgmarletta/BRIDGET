@@ -1,4 +1,3 @@
-
 """
 ========================================
 BRIDGET DECISION MAKING ENGINE  
@@ -76,36 +75,39 @@ from bridget_utils import *
 class BRIDGET:
 
     """
-    BRIDGET main class
-
-
+    Main orchestration class for the BRIDGET framework. Manages data lifecycle, data structure and phase transition.
+    
     Args:
-        dataset_name,
-        user_name, 
-        batch1, 
-        batch3, 
-        batch1_test
-        target, 
-        user_model, 
-        protected, 
-        cats, 
-        num,
-        preprocessor=None,
-        training_iter=1,
-        log= None
-
-
+        dataset_name (str): identifier for the dataset tested
+        user_name (str): identifier for the user archetype
+        batch1 (DataFrame): training data for the Human in Command phase, to be co-labeled through the interaction between agents
+        batch3 (DataFrame): data allocated towards the Machine in Command phase, subject to deferral
+        batch1_test (DataFrame): data portion used to assess the performance of the Human in Command phase through Accuracy, F1 score 
+        target (str): name of the target label (defined in master_config.py, DATASETS)
+        user_model (object, BetaUser): simulated human expert engine, modeled using a reduced version of OpenL2D
+        protected (list): list of protected attributes features (defined in master_config.py, DATASETS)
+        cats (list); list of names of the categorical features
+        num (list): list of names of the numerical features
+        preprocessor (object, optional): River scaler
+        training_iter (int): number of current training iteration, used for logging and checkpointing purposes
+        log (object, optional): custom log, see bridget_utils.py for the definition
 
     Methods:
-        __init__:
-        switch_phase:
+        __init__: initializes data components and structures needed in the subsequent phases
+        switch_phase: checkpoints and compiles logs upon conceptual drift
+
     """
     def __init__(self, 
-                 dataset_name, user_name, 
-                 batch1, batch3, batch1_test, 
+                 dataset_name, 
+                 user_name, 
+                 batch1, 
+                 batch3, 
+                 batch1_test, 
                  target, 
                  user_model, 
-                 protected, cats, num,
+                 protected, 
+                 cats, 
+                 num,
                  preprocessor=None,
                  training_iter=1,
                  log= None):
@@ -113,60 +115,38 @@ class BRIDGET:
         self.dataset_name= dataset_name
         self.name= user_name
         self.user_model = user_model 
+        self.preprocessor= preprocessor
         self.training_iter = training_iter
         self.log= log
 
-
-
-        # -- Batch 1: 60 %
-        self.df_batch1 = batch1 ## il batch 1 , cioè lo stato iniziale prima del decision making di BRIDGET
-        # WARNING!! questo batch1 viene già assunto separato totalmente dalla porzione di avviamento usata nella funzione train
-
-        # -- Batch 3: 20% usato esclusivamente per testare la fase MiC
-        # inserito all'inizio perchè funge da "lookup" dict da quale attingere la riga giusta 
-        # da appendere al log con i valori delle nuove colonne nella fase MiC
+        # defining core data components
+        self.df_batch1 = batch1 
         self.df_batch3= batch3
         
-
-        self.target = target # str format
+        self.target = target 
         self.feature_names = [c for c in self.df_batch1 if c!=self.target]
-
-        # -- Slicing over batch 1
-        self.X = self.df_batch1[self.feature_names]
-        self.X = list(self.X.to_dict(orient='index').values())
-
-        # self. X è una lista di dizionari, è comodo per costruire il logging, 
-        # quindi questo va fatto pure per il df batch3 separatamente
-        # ogni elemento della lista è un dizionario dove le chiavi sono i nomi delle colonne e i valori sono i dati della riga
-        
-        self.Y = list(self.df_batch1[target])
-        self.Y = [int(y) for y in self.Y] 
-
-        
-        self.X_test1= batch1_test[self.feature_names]  
-        self.X_test1= list(self.X_test1.to_dict(orient= 'index').values())
-    
-        self.Y_test1= list(batch1_test[target])
-        self.Y_test1 = [int(y) for y in self.Y_test1]
-        
-
-        
-        self.attr_list = list(batch1.columns) # list of str
-        self.protected= protected  # list of str
+        self.attr_list = list(batch1.columns) 
+        self.protected= protected  
         self.protected_values=batch1[protected[0]].unique()
 
         self.cats = cats
-        
-
         self.num= num
-        self.preprocessor= preprocessor
         
+        # slicing over batch1 and the corresponding test section
+        self.X = self.df_batch1[self.feature_names]
+        self.X = list(self.X.to_dict(orient='index').values())
+        self.Y = list(self.df_batch1[target])
+        self.Y = [int(y) for y in self.Y] 
         
-        
-        self.train_check = False
+        self.X_test1= batch1_test[self.feature_names]  
+        self.X_test1= list(self.X_test1.to_dict(orient= 'index').values())
+        self.Y_test1= list(batch1_test[target])
+        self.Y_test1 = [int(y) for y in self.Y_test1]
+
+        self.train_check = False #boolean check that becomes TRUE once the incremental learner is trained
               
         
-        # -- Stats Dictionary to get coverage and stuff
+        # initializing storing structure to calculate agent-wise empirical accuracies for the classes
         self.stats = dict()
         self.stats[False] = dict()
         self.stats[True] = dict()
@@ -192,8 +172,10 @@ class BRIDGET:
         Checkpoints the log structure in case of drift detection, saving it in a specific folder
 
         Attributes:
-            drift_detected, current_phase, current_log, strat=None
-        
+            drift_detected (bool): Boolean value resulting from the drift detection function called within the phases
+            current_phase (str): phase identifier, for logging purposes
+            current_log (DataFrame): runtime DataFrame of the current phase. Contains feature matrix X, ground truths vector, provider flag, label provided by agent and machine confidence (predict proba)
+            strat (str, optional): identifier of current deferral policy evaluated   
         
         """
         if drift_detected:
@@ -232,42 +214,40 @@ class BRIDGET:
 class HiC(BRIDGET):
 
     """
-    Class for the Human-in-Command phase
+    Class for the Human-in-Command phase.
+    Handles pre-training the Incremental Learner, co-labeling logic under 4 interaction rules and checkpointing/logging
 
     Attributes:
-        RULE, 
-        PAST, 
-        SKEPT, 
-        GROUP, 
-        EVA, 
-        n_bins, 
-        n_var, 
-        maxc, 
-        rule_att, 
-        rule_value (int): 
-        hic_model_name (str): 
-        hic_model (obj):
-        start_performance (int): 60, # we input the accuracy/f1 score obtained by the incremental model during pre-training
-        allocated_budget (int): 200,  # so we can fix it sorta as a benchmark, meaning we ideally want to achieve a +5% within the available budget):
-        skepticism_threshold (float): 0.6,
-        performance_delta (float): 0.05,
-        **kwargs
+        RULE (bool): Boolean flag enabling the Ideal Rule Check (defined in master_config.py, FRANK_RULES)
+        PAST (bool): Boolean flag enabling the Individual Fairness Check (defined in master_config.py, FRANK_RULES)
+        SKEPT (bool): Boolean flag enabling the Skeptical Learning Check (defined in master_config.py, FRANK_RULES)
+        GROUP (bool) Boolean flag enabling the Group Fairness Check (defined in master_config.py, FRANK_RULES)
+        EVA (bool): Boolean flag enabling evaluation on the holdout HIC Test set (defined in master_config.py, FRANK_RULES)
+        rule_att (str): Name of the feature subject to Ideal Rule Check condition (defined in master_config.py, DATASETS)
+        rule_value (int): Value of the rule enforced by Ideal Rule Check, relative to attribute rule_att (defined in master_config.py, DATASETS)
+        hic_model_name (str): Name of the chosen Incremental Learner (saving purposes)
+        hic_model (obj): River Incremental Learner model (either warmed up or cold start)
+        start_performance (int): Baseline Accuracy performance, used to modulate the benchmark within the exit conditions (STARTING value defined in master_config.py, DATASETS)
+        performance_delta (float): Delta applied to the start_performance to create the desired performance target
+        allocated_budget (int): Maximum interaction budget allocated by the human. Represents their max fatigue level. 
+        skepticism_threshold (float): Activation threshold of the Skeptical Learning Check. When the skepticism calculated
+                                      for the instance evaluated exceeds this threshold, the machine actively challenges the 
+                                      user's authority.
+                                      (defined in master_config.py, DATASETS)
+        
+        **kwargs derived from BRIDGET class
 
     """
     def __init__(self,
                  RULE, PAST, SKEPT, GROUP, EVA, 
-                 n_bins, n_var, maxc, 
                  rule_att, rule_value, 
                  hic_model_name, hic_model,
-                 start_performance=60, # we input the accuracy/f1 score obtained by the incremental model during pre-training
-                 allocated_budget = 200,  # so we can fix it sorta as a benchmark, meaning we ideally want to achieve a +5% within the available budget):
+                 start_performance=60, #default value, can be used in the first iteration only if the Incremental Learner was cold started
+                 allocated_budget = 200,  
                  skepticism_threshold= 0.6,
                  performance_delta= 0.05,
                  **kwargs):  # budget (representing more like fatigue) of the user, works like an exit condition
                 
-        
-        # alla prima iterazione la start performance fissata ragionevolmente a caso, mettiamo un 60/62% ? si deve migliorare in ogni cas
-        #e ciò che interessa è cosa otteniamo alla fine del primo hic
         super().__init__(**kwargs)
          
 
@@ -276,14 +256,11 @@ class HiC(BRIDGET):
         self.SKEPT = SKEPT
         self.GROUP = GROUP
         self.EVA = EVA
-        self.n_bins = n_bins
-        self.n_var = n_var
-        self.maxc = maxc
 
         self.rule_att = rule_att
         self.rule_value = rule_value
        
-        self.start_performance= start_performance # qui leva
+        self.start_performance= start_performance 
         self.allocated_budget= allocated_budget
     
         self.skepticism_threshold= skepticism_threshold
@@ -302,7 +279,6 @@ class HiC(BRIDGET):
         self.hic_F1 = metrics.F1()
 
         #various counters for testing/debugging purposes
-
         self.rules_count = 0
         self.past_count = 0
         self.ok_count = 0
@@ -314,26 +290,23 @@ class HiC(BRIDGET):
         self.agree_count = 0
         self.disagree_count = 0
         self.fairness_records = [len(self.X) - 1]
-        for i in range(0, 100, 10)[1:]: #was 5 before
+        for i in range(0, 100, 10)[1:]: 
+            # defines the proportion of data after which the Group Fairness Check is enabled
+            # 10 means it requires 10% of the data, it can be changed without any issue
             self.fairness_records.append(percentage(i, len(self.X)))
 
-        self.retrain_count= 0
-        #self.rec_order= []
+        self.retrain_count= 0 # tracking the number of times the Incremental Learnes is trained from scratch during HIC
+       
 
 
     def train(self, x_warm_up, y_warm_up, x_test_warm_up, y_test_warm_up):
-        # QUESTA FUNZIONE VIENE CHIAMATA PRIMA DI ENTRARE IN BRIDGET !!!
-
-        # i dati di x_data e y_data fanno parte di un piccolo dataset di avviamento per fittare il modello incrementale
-        # che non entra assolutamente nel processo decisionale di BRIDGET
-        # e di conseguenza non sono la base sulla quale si costruisce il log
         
         """
         Funzione per calibrare il modello incrementale che poi diventa self.initial model
         
         Attributes:
             x_warm_up, 
-            _warm_up, 
+            y_warm_up, 
             x_test_warm_up, 
             y_test_warm_up
 
@@ -388,7 +361,7 @@ class HiC(BRIDGET):
     def start_HiC(self, warm_up_set):
             
             """
-            Attributes:
+            Args:
                 warm_up_set:
 
             Returns:
@@ -401,11 +374,9 @@ class HiC(BRIDGET):
 
             machine_predictions = []
             machine_conf_lvls= []
-            accuracy_score = []#Lista usata per salvare i vari punteggi di accuracy
-            f1_score = []#Lista salvata per salvare i vari punteggi di f1
+            accuracy_score = []
+            f1_score = []
             
-           
-
             # FEA structures
             skepticisms = []
             fea_num_machine= 0.0
@@ -434,13 +405,13 @@ class HiC(BRIDGET):
 
             for i in tqdm(range(len(self.X))):      
 
-                relabel = False #When this is set to True, Re-Labelling is triggered
+                relabel = False #when this is set to True, Re-Labelling is triggered for the Incremental Learner
 
                 x = self.X[i]
                 y = int(self.Y[i])
  
                 
-                if self.preprocessor is not None:
+                if self.preprocessor is not None: # if a RIVER scaler is provided it learns and transforms the features in row x
                     self.preprocessor.learn_one(x)
                     x= self.preprocessor.transform_one(x) 
 
@@ -448,10 +419,10 @@ class HiC(BRIDGET):
                 record = tuple(list(x.values()))
                 user_truth = int(self.user_model.predict(record, y, i))
 
-                machine_prediction = int(self.hic_model.predict_one(x)) # forzato int perchè adwin produce true/false            
+                machine_prediction = int(self.hic_model.predict_one(x))            
                 machine_predictions.append(machine_prediction)
 
-                if record in self.processed: #Duplicated record
+                if record in self.processed: #duplicated records are handled firsthand
                     self.processed[record]['times'] += 1
 
                     self.log.info(f"Record, row {i} already processed...")
@@ -465,8 +436,7 @@ class HiC(BRIDGET):
                     else:
                 
                         self.log.info(f"Inconsistent, record {i}. You previously said: {old_decision}, Want to change old decision?")                        
-                        
-                        #rng = random.Random(42 + i) 
+                                       
                         confirm= random.choices(population=[False, True], weights=[0.8, 0.2], k=1)[0]
 
                         if confirm == False:
@@ -519,7 +489,6 @@ class HiC(BRIDGET):
                     
                     # FEA COMPUTATION 
                     
-                    
                     if machine_prediction == y:
                         fea_num_machine += 1 
 
@@ -548,12 +517,13 @@ class HiC(BRIDGET):
 
 
                     # - LABELING LOGIC
-
-                    #provider= 'H'
-                    ideal_value = ideal_record_test(x, self.rule_att, self.rule_value) #Is record covered by Ideal Rule Check?
-
+                    
+                    #Is record covered by Ideal Rule Check?
+                    ideal_value = ideal_record_test(x, self.rule_att, self.rule_value) 
+                    
+                    #Is record covered by Individual Fairness Check?
                     vs_records, vs_decision = get_value_swap_records(x, self.processed,
-                                                                    self.protected, self.attr_list) #Is record covered by Individual Fairness Check?
+                                                                    self.protected, self.attr_list) 
 
                     if user_truth == machine_prediction:
                         skepticism = 0
@@ -562,8 +532,8 @@ class HiC(BRIDGET):
                     skepticisms.append({str(i):skepticism})
                     #print(f"Current skepticism: {skepticism}")
 
-
-                    if ideal_value is not None and user_truth != ideal_value and self.RULE: #User is not consistent w.r.t. Ideal Rule
+                    #User is not consistent w.r.t. Ideal Rule
+                    if ideal_value is not None and user_truth != ideal_value and self.RULE: 
                         self.rules_count += 1
                         decision = ideal_value
                         self.processed[record]['ideal'] = False
@@ -571,24 +541,23 @@ class HiC(BRIDGET):
                             provider= 'M'
                             self.stats[machine_prediction]['machine']['got'] += 1
 
-
-                    elif ideal_value is not None and user_truth == ideal_value and self.RULE: #User is consistent w.r.t. Ideal Rule
+                    #User is consistent w.r.t. Ideal Rule
+                    elif ideal_value is not None and user_truth == ideal_value and self.RULE:
                         decision = ideal_value
-                        provider= 'H'  # perchè l'umano aveva ragione, c'è scritto sopra
+                        provider= 'H'  
                         self.processed[record]['ideal'] = True
                         if machine_prediction == ideal_value:
                             self.stats[machine_prediction]['machine']['got'] += 1
 
 
-
-                    elif vs_decision is not None and user_truth != vs_decision and self.PAST: #IRC not triggered. User not consistent w.r.t. Individual Fairnesss
+                    #IRC not triggered. User not consistent w.r.t. Individual Fairnesss
+                    elif vs_decision is not None and user_truth != vs_decision and self.PAST: 
                         self.log.info(f"Record {i}, user not consistent w Individual Fairness")
                         self.processed[record]['vs'] = True
                         self.past_count += 1
                         for rec in vs_records:
                             self.processed[rec]['vs'] = True
 
-                        #rng = random.Random(42 + i) 
                         confirm = random.choices(population=[False, True], weights=[0.8, 0.2], k=1)[0]
                         
                         if confirm in [0, "0", False]:
@@ -609,7 +578,9 @@ class HiC(BRIDGET):
                                 self.processed[rec]['decision'] = user_truth
                             relabel = True
 
-                    elif vs_decision is not None and user_truth == vs_decision and self.PAST: #IRC not triggered. User not consistent w.r.t. Individual Fairnesss
+
+                     #IRC not triggered. User consistent w.r.t. Individual Fairnesss
+                    elif vs_decision is not None and user_truth == vs_decision and self.PAST:
                         self.processed[record]['vs'] = True
                         for rec in vs_records:
                             self.processed[rec]['vs'] = True
@@ -649,25 +620,24 @@ class HiC(BRIDGET):
                                     similar_nn.append(nearest_ex)
                                     opposite_nn.append(nearest_opp)
 
-                                    # no plausibility perchè li pesco dal log anyways 
-
-                                    # Metrics:
+                                    # XAI Evaluation Metrics: (adapted to the 1-NN, hence plausibility is not computed)
                     
-                                    #1. Proximity: distanza tra x e df, SAME CLASS VER
+                                    #1. Proximity: distance between x and df, same class
 
-                                    distance_x_nn_ex= calculate_distances(x, nearest_ex) # distance ritorna il formato lista = [(valido esempio:distanza)]
+                                    distance_x_nn_ex= calculate_distances(x, nearest_ex) 
                                     proximity_nn_ex= distance_x_nn_ex[0][1]
                                     
 
-                                    #2. Proximity: distanza tra x e df, OPPOSITE CLASS VER
-                                    distance_x_nn_opp= calculate_distances(x, nearest_opp) # distance ritorna il formato lista = [(valido esempio:distanza)]
+                                    #2. Proximity: distance between x and df, opposite class
+                                    distance_x_nn_opp= calculate_distances(x, nearest_opp) 
                                     proximity_nn_opp= distance_x_nn_opp[0][1]
 
                                     proximities_KNN_SAME.append({str(record):proximity_nn_ex})
                                     proximities_KNN_OPP.append({str(record):proximity_nn_opp})
 
                                     times_KNN.append(time_KNN)
-
+                                    
+                                    #3. Sparsity
                                     sparsities_KNN_SAME.append({str(record):sparsity_ex})
                                     sparsities_KNN_OPP.append({str(record):sparsity_opp})
                                     
@@ -677,9 +647,7 @@ class HiC(BRIDGET):
                                     if n_examples > 0:
 
                                         for e in nearest_ex.values:
-                                            # ora devo riprendere nuovamente la colonna della gt perchè il mio user
-                                            # necessita della gt originale assolutamente per predirre
-                                            gt_col = e[-1] # riprendo nuovamente la colonna della gt
+                                            gt_col = e[-1] 
                                             rec_feats= e[:-1]
 
                                             user_opinion = self.user_model.predict(rec_feats, gt_col, i)
@@ -690,8 +658,7 @@ class HiC(BRIDGET):
                                                 self.xai_no += 1
 
                                         for e in nearest_opp.values:
-
-                                            gt_col = e[-1] # riprendo nuovamente la colonna della gt
+                                            gt_col = e[-1] 
                                             rec_feats= e[:-1]
 
                                             user_opinion = self.user_model.predict(rec_feats,gt_col, i)
@@ -749,9 +716,10 @@ class HiC(BRIDGET):
 
                     
                     
-                    #Once the final decision has been taken, the model is updated. Internal data structure is also updated
+                    #Once the final decision has been taken, 
+                    # the model is updated. Internal data structures are also updated
                     
-                    self.processed[record]['decision'] = int(decision) # sometimes AdwinBagging and Adaboost provide bool, so cast to int
+                    self.processed[record]['decision'] = int(decision) 
                     self.processed[record]['provider_flag'] = provider
 
                     self.hic_model.learn_one(x, decision)
@@ -766,18 +734,10 @@ class HiC(BRIDGET):
                         print('err', x, decision)
                         self.hic_model = pickle.loads(pickle.dumps(self.initial_model))
 
-                        #for x_train_sample, y_train_sample in zip(x_avv, y_avv):
-                            #self.hic_model.learn_one(x_train_sample, y_train_sample)
-
                         for data in self.processed.values():
-                        #for idx in self.rec_order:
-                            #data= self.processed[idx]
-                            #x_relabel = self.processed[proc]['dict_form']
-                            #y_relabel = self.processed[proc]['decision']
                             self.retrain_count += 1
-                            self.hic_model.learn_one(data['dict_form'], data['decision']) #x_relabel, y_relabel)
+                            self.hic_model.learn_one(data['dict_form'], data['decision']) 
 
-                        # se learn one fallisce facciamo il re-training 
 
                     
                     
@@ -797,9 +757,6 @@ class HiC(BRIDGET):
                 if relabel == True:
 
                     self.hic_model = pickle.loads(pickle.dumps(self.initial_model))
-
-                    #for x_train_sample, y_train_sample in zip(x_avv, y_avv):
-                     #   self.hic_model.learn_one(x_train_sample, y_train_sample)
                     self.log.info(f"Retraining HiC model at record {i}")
                     for proc in (self.processed.keys()):
                                                
@@ -948,15 +905,15 @@ class MiC(BRIDGET):
     Class for the Machine-in-Command phase
 
     Attributes:
-        mic_model, 
-        mic_model_name,
-        benchmark_performance,
-        warm_up,
+        mic_model (object, DeferralNet):
+        mic_model_name (str):
+        benchmark_performance (float):
+        warm_up (int):
         device,
-        performance_delta= 0.05,
-        belief_threshold= 0.6,
-        tau_threshold= None,
-        human_deferral_cost= None,  #input as str so it can save
+        performance_delta (float):
+        belief_threshold (float):
+        tau_threshold (float, optional):
+        human_deferral_cost (float, optional)  
         **kwargs
 
 
@@ -976,15 +933,15 @@ class MiC(BRIDGET):
                  performance_delta= 0.05,
                  belief_threshold= 0.6,
                  tau_threshold= None,
-                 human_deferral_cost= None,  #input as str so it can save
+                 human_deferral_cost= None,  
                  **kwargs
                  ):
         
         
         super().__init__(**kwargs)
 
-        self.human_deferral_cost= str(human_deferral_cost)
-        self.mic_model= mic_model  ## modello già trainato
+        self.human_deferral_cost= str(human_deferral_cost) # cast to str to create the saving directory
+        self.mic_model= mic_model  
         self.mic_model_name= mic_model_name
         self.benchmark_performance=benchmark_performance
         self.device= device
@@ -995,16 +952,16 @@ class MiC(BRIDGET):
         self.belief_threshold= belief_threshold
         self.tau= tau_threshold
       
-       
+        # deriving desired performance for the current iteration based on the benchmark of the precedent iteration 
         self.performance_thresh= (self.benchmark_performance - (self.benchmark_performance * self.performance_delta)) /100
 
-        # containers delle metriche di valutazione custom
+        
         self.system_acc= 0.0
         self.model_acc_all= 0.0
         self.model_acc_undeferred=0.0
         self.model_acc_deferred= 0.0
 
-        self.mic_preds= []  # decisioni dell'intero sistema MiC
+        self.mic_preds= []  
         self.low_belief_count= 0
         self.deferred_decisions= 0
         self.undeferred_decisions= 0
@@ -1017,21 +974,20 @@ class MiC(BRIDGET):
 
 
     def start_MiC(self, x_stream, y_stream, df_switch, r_net=None, two_step_deferral= None): 
-        ## Df_switch è l'output di HiC, ricorda di passarlo come DATA FRAME
 
-        # df_batch3 è il terzo batch di dati che usiamo esclusivamente per la valutazione della strategia di deferral
-        # viene usato per continuare a costruire il log
-
-        # x_stream e y_stream sono tensori preprocessati in orchestrazione per la net del batch3
-
-        # in sostanza sarebbe df_batch3 attributo della classe, ma trasformato esternamente in tensore
-
-
-        # -- Logs
+        """
+        
+        Args:
+            x_stream (torch.tensor): feature matrix from batch3, transformed to tensor 
+            y_stream (torch.tensor): label vector from batch3, transformed to tensor 
+            df_switch (DataFrame): co-labeled data resulting from HIC phase
+            r_net (object, optional): trained rejector for Two-Stage Deferral policy
+            two_step_deferral (bool, optional): boolean flag signaling whether Two-Stage deferral is applied
+        """
+        # initializing logs and necessary storing structures
         self.processed= dict()
         self.mic_results= dict()
 
-        # counters for FEA
         fea_mic_num = 0
         fea_mic_den = 0
 
@@ -1041,57 +997,45 @@ class MiC(BRIDGET):
         fea_user_num= 0
         fea_user_den= 0
 
-        # counter for accuracy measures
-
+        # counters for accuracy measures
         net_correct_on_undeferred= 0
         net_correct_on_deferred= 0
 
-        mach_confidence= [] # lista contenente i valori di predict proba per le singole istanze processate dalla machine
-        mach_predictions= [] # lista contenente tutte le predizioni della machine
+        mach_confidence= [] 
+        mach_predictions= [] 
 
         # GROWING SPHERES structures
         times_GS= []
         sparsities_GS = []
-        proximities_GS = []  # queste metriche sono tutte calcolate su dati già scalati usando self.scaler
+        proximities_GS = [] 
         plausabilities_GS = []
 
-       
-
         ## Main Loop
-        
-        
+    
         for record, (x_rec, y_gt) in enumerate(tqdm(zip(x_stream, y_stream), total=len(x_stream))):
                 
-            self.processed[record]= dict() # analogo a quando in HiC si inizializza vuoto per gli unseen records
+            self.processed[record]= dict() 
             self.mic_results[record]= dict()
             x = self.df_batch3[self.feature_names].iloc[record].to_dict()
            
             y_gt= int(y_gt.item())
 
-            if record < 5:
-                print(f"DEBUG Record {record}: GT from Stream: {y_gt}, GT from DF: {self.df_batch3[self.target].iloc[record]}")
-
             self.processed[record]['dict_form'] = x
             self.processed[record]['ground_truth'] = y_gt
             
-
-            ## si ottengono i risultati della net
+            # obtaining Net predictions
             with torch.no_grad():
 
                 if x_rec.ndim == 1:
                     x_rec = x_rec.unsqueeze(0)
 
-                outputs= self.mic_model(x_rec) ##  qui ritorniamo i logits scores delle classi
+                outputs= self.mic_model(x_rec) # logit scores
 
-                ## da pytorch: non è necessario scrivere model.forward, ma basta passare direttamente model(x)
-                
-                ## quindi qui ora da outputs dobbiamo ricavare la classe con output in logit maggiore
-
-                net_output= torch.argmax(outputs, dim=1).item()
+                net_output= torch.argmax(outputs, dim=1).item() # obtaining label
             
                 mach_predictions.append(net_output)
 
-            ## - PREDICT PROBA, LOGGING
+            # computing predicted probability 
             try:
                 probas= self.mic_model.predict_proba_nn(x_rec, device=self.device)
                 max_conf = float(np.max(probas))
@@ -1144,8 +1088,7 @@ class MiC(BRIDGET):
 
             else:  # Selective Prediction
                  
-                # 1. No Deferral, these records are reliable according to the results obtained, 
-
+                # 1. No Deferral, these records are reliable according to the results obtained
                 
                 if max_conf >= self.tau:
 
@@ -1181,6 +1124,8 @@ class MiC(BRIDGET):
                
             self.mic_preds.append(decision) # updating the structure
 
+
+
             ### Explanation logic: GROWING SPHERES
 
             xai_log= prepr_log_for_xai(df_switch, self.processed, self.attr_list, self.target)
@@ -1205,7 +1150,7 @@ class MiC(BRIDGET):
             distance_cf_hist_GS = calculate_distances(cfs, xai_log, feature_ranges=None)  
             plausability_GS = distance_cf_hist_GS[0][1]
                     
-                    ## logging
+            # logging
             proximities_GS.append({str(record):proximity_GS})
             times_GS.append(time_GS)
             sparsities_GS.append({str(record):sparsity_GS})
@@ -1213,10 +1158,8 @@ class MiC(BRIDGET):
             
 
             ## - EMPIRICAL ACC COMPUTATION + AGENT-BASED ACCURACY
-
             
             # MiC System Accuracy
-           
             if decision == y_gt:
                 fea_mic_num += 1 
 
@@ -1227,10 +1170,7 @@ class MiC(BRIDGET):
             self.fea_mic.append(fea_mic_model)
             
 
-            # Deferral Net Acc
-            # there was an issue before because the FEA was computed regardless of the provider, hence it was polluted
-            # also to benchmark we needed the overall system FEA based on the decision too since its a global measure
-
+            # Deferral Net Accuracy
             if net_output == y_gt:
                 fea_net_num += 1 
 
@@ -1242,8 +1182,6 @@ class MiC(BRIDGET):
 
     
             # User Accuracy
-
-            
             if user_pred == y_gt:
                 fea_user_num += 1
             
@@ -1253,7 +1191,7 @@ class MiC(BRIDGET):
             self.mic_user_fea.append(fea_user)
             
             
-            # Emp Accuracy (measuring EA values for all classes)
+            # Empirical Accuracy computation (measuring EA values for all classes and both agents)
             try:
                 self.stats[user_pred]['user']['conf'] = self.stats[user_pred]['user']['got'] / self.stats[user_pred]['user']['tried']
             except:
@@ -1265,22 +1203,21 @@ class MiC(BRIDGET):
                 self.stats[net_output]['machine']['conf'] = 0
                         
         
-            ## - UPDATING LOG
-           
+            # updating log
+
             self.processed[record]['user'] = user_pred
             self.processed[record]['machine'] = net_output
             self.processed[record]['proba_model']= max_conf
             self.processed[record]['decision'] = decision   
             self.processed[record]['provider_flag'] = provider         
 
-            ## - DRIFT CHECK
+            # assessing concept drift and flagging low belief instances
 
             if torch.is_tensor(max_conf):
                     max_conf = max_conf.item()
 
             belief= max_conf * fea_mic_model
             
-
             if belief <= self.belief_threshold:
                 self.low_belief_count += 1
 
@@ -1290,7 +1227,7 @@ class MiC(BRIDGET):
                                 warm_up= self.warm_up
             )
             
-
+            
             if mic_drift:
                 #print(f"Drift here! Record index {record}")
                 self.log.warning(f"Drift here! Record index {record}")
@@ -1300,10 +1237,9 @@ class MiC(BRIDGET):
                 y_true = self.df_batch3[self.target].iloc[:len(y_mic)].to_numpy()
                 
                 self.system_acc= (y_mic == y_true).mean()
-                self.model_acc_all= (y_mach == y_true).mean() 
-                self.model_acc_undeferred= net_correct_on_undeferred/self.undeferred_decisions if self.undeferred_decisions > 0 else 0.5
-                # performance of the model on undeferred instances only
+                self.model_acc_all= (y_mach == y_true).mean()
 
+                self.model_acc_undeferred= net_correct_on_undeferred/self.undeferred_decisions if self.undeferred_decisions > 0 else 0.5
                 self.model_acc_deferred= net_correct_on_deferred/self.deferred_decisions if self.deferred_decisions > 0 else 0.5
 
                 self.mic_results[record]['system_accuracy'] = self.system_acc
@@ -1314,17 +1250,13 @@ class MiC(BRIDGET):
                 res_df= pd.DataFrame(self.mic_results).transpose()
                 
                 
-                # performance of the model on deferred instances
-
-
+                # checkpointing if drift happened
                 strat = "Two_Step" if two_step_deferral else "Confidence"
                 dir = os.path.join("MIC_res", 
                                    f"{self.dataset_name}", 
                                    f"iter_{self.training_iter}", 
                                    f"{self.name}_{strat}"
                                    )
-                
-                
                 
                 if two_step_deferral:
                     dir= os.path.join(dir,
@@ -1366,10 +1298,7 @@ class MiC(BRIDGET):
                 return df_log
            
             
-           
-            ## - ACCURACY MEASURES
-            # misura custom da inserire alla fine come fotografia
-
+            # when drift is not happening update accuracy metrics and evaluat
             y_mic = np.array(self.mic_preds)
             y_mach = np.array(mach_predictions)
             y_true = self.df_batch3[self.target].iloc[:len(y_mic)].to_numpy()
@@ -1386,8 +1315,7 @@ class MiC(BRIDGET):
 
             
 
-        ## - UPDATING SAVE STRUCTURES
-        
+        ## Main Loop exit with no drift
 
         strat = "Two_Step" if two_step_deferral else "Confidence"
         dir = os.path.join("MIC_res", 
@@ -1418,7 +1346,7 @@ class MiC(BRIDGET):
                     }
                 
         mic_res = { "model.pkl": self.mic_model,
-                    "Performances.txt": self.mic_results, #this basically being the processed log in the mic phase
+                    "Performances.txt": self.mic_results, 
                     "Model_Confidence.txt": mach_confidence,
                     "MiC_stats.txt": self.stats,
                     "System_Accuracy.txt": self.fea_mic,
